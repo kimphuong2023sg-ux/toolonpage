@@ -1,0 +1,1199 @@
+{
+  "secret": "df7add6ece713c8d3bd40772e0bf44615b97f45700972ee84e8080b09458ce6e",
+  "settings": {
+    "ipWhitelistEnabled": false,
+    "ipWhitelist": [
+      {
+        "id": "ip_1790303905514_619w",
+        "ip": "10.151.79.109",
+        "description": "cuiyang",
+        "enabled": true,
+        "createdAt": "2026-09-25T02:38:25.514Z"
+      },
+      {
+        "id": "ip_local_v4",
+        "ip": "127.0.0.1",
+        "description": "Máy Quản Trị Viên (admin)",
+        "enabled": true,
+        "createdAt": "2026-09-25T02:05:34.437Z"
+      },
+      {
+        "id": "ip_local_v6",
+        "ip": "::1",
+        "description": "Localhost IPv6",
+        "enabled": true,
+        "createdAt": "2026-09-25T02:05:34.438Z"
+      },
+      {
+        "id": "ip_lan_1",
+        "ip": "192.168.*",
+        "description": "Mạng nội bộ LAN (Dải 192.168.x.x)",
+        "enabled": true,
+        "createdAt": "2026-09-25T02:05:34.438Z"
+      }
+    ]
+  },
+  "users": [
+    {
+      "id": "usr_admin_root",
+      "username": "admin",
+      "displayName": "Quản Trị Viên (Root)",
+      "passwordHash": "20aa4a2221ee756b359a7c4726076601ba8a96bff2fb4a25e023b5d23035ed5afb4b89b820230bd7ad2ede63b4be209a7b653492a722a030698504dd83710037",
+      "salt": "1e4bf55435e822ea60d74ffd0f2dd09c",
+      "role": "admin",
+      "status": "active",
+      "allowedIps": [],
+      "currentSessionId": "sess_9ffb5c3d-10fc-4caf-8add-f2c58b90121c",
+      "lastLoginAt": "2026-09-25T03:27:16.477Z",
+      "lastLoginIp": "127.0.0.1",
+      "createdAt": "2026-09-25T02:05:34.438Z",
+      "lastActiveAt": "2026-09-25T03:27:16.481Z",
+      "lastHeartbeatAt": "2026-09-25T03:27:16.481Z",
+      "currentAction": {
+        "type": "login",
+        "title": "Đăng nhập vào hệ thống",
+        "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+        "siteName": "Mexboss Mexico",
+        "timestamp": "2026-09-25T03:27:16.481Z"
+      },
+      "activityHistory": [
+        {
+          "id": "act_1790306836481_i3th",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:27:16.481Z"
+        },
+        {
+          "id": "act_1790306796482_bgeu",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:26:36.482Z"
+        },
+        {
+          "id": "act_1790306552565_0v2z",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:22:32.565Z"
+        },
+        {
+          "id": "act_1790306151713_2imi",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:15:51.713Z"
+        },
+        {
+          "id": "act_1790306097500_h1zy",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:14:57.500Z"
+        },
+        {
+          "id": "act_1790305657466_klp8",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:07:37.466Z"
+        },
+        {
+          "id": "act_1790305437766_d4ah",
+          "type": "logout",
+          "title": "Đăng xuất khỏi hệ thống",
+          "detail": "Người dùng đã chủ động thoát phiên làm việc",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:03:57.766Z"
+        },
+        {
+          "id": "act_1790305429315_f2g0",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:03:49.315Z"
+        },
+        {
+          "id": "act_1790305427976_vuto",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:03:47.976Z"
+        },
+        {
+          "id": "act_1790305427961_hk52",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:03:47.961Z"
+        },
+        {
+          "id": "act_1790305423824_9f1f",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:03:43.824Z"
+        },
+        {
+          "id": "act_1790304938755_untv",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T02:55:38.755Z"
+        },
+        {
+          "id": "act_1790304867874_gwq9",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T02:54:27.874Z"
+        }
+      ],
+      "currentSite": {
+        "id": "https://mexboss.sh",
+        "name": "Mexboss Mexico",
+        "url": "https://mexboss.sh"
+      }
+    },
+    {
+      "id": "usr_1790301934460_xd9o",
+      "username": "seo_nhanvien",
+      "displayName": "Nguyễn Văn Nam (SEO)",
+      "passwordHash": "8fb90b58200a98456e36d967d9a3fd4d297a08845c54f14dda5f297b78dc79a331c825dee89043c84f4edeed8fa4090dea1773d752853a032e1d0007fa031beb",
+      "salt": "444392bb1f5787559ec5514a7da3ccb4",
+      "role": "member",
+      "status": "active",
+      "allowedIps": [],
+      "currentSessionId": "sess_8f4f3d50-7901-4af0-82ee-17c736e22c67",
+      "lastLoginAt": "2026-09-25T02:05:34.468Z",
+      "lastLoginIp": "127.0.0.1",
+      "createdAt": "2026-09-25T02:05:34.460Z"
+    },
+    {
+      "id": "usr_1790302826339_29sv",
+      "username": "michael",
+      "displayName": "michael",
+      "passwordHash": "57ab7f85d58b817ffae7ee67d01ae5943b5490bc7c522b5203062fcee05de8c7d69e66501c38039093af68dd54a111fa78af94502ce4621e645d439f569a85c4",
+      "salt": "d9dae29691c45bdb11e977668ce33a4b",
+      "role": "member",
+      "status": "active",
+      "allowedIps": [],
+      "currentSessionId": "sess_d065cdbb-f603-43bc-a70b-526aefea71a4",
+      "lastLoginAt": "2026-09-25T03:30:18.064Z",
+      "lastLoginIp": "127.0.0.1",
+      "createdAt": "2026-09-25T02:20:26.339Z",
+      "lastActiveAt": "2026-09-25T03:30:18.068Z",
+      "lastHeartbeatAt": "2026-09-25T03:30:18.068Z",
+      "currentSite": {
+        "id": "https://mexboss.sh",
+        "name": "Mexboss Mexico",
+        "url": "https://mexboss.sh"
+      },
+      "currentAction": {
+        "type": "login",
+        "title": "Đăng nhập vào hệ thống",
+        "detail": "Đăng nhập từ IP 127.0.0.1",
+        "siteName": "Mexboss Mexico",
+        "timestamp": "2026-09-25T03:30:18.068Z"
+      },
+      "activityHistory": [
+        {
+          "id": "act_1790307018068_cw4t",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:30:18.068Z"
+        },
+        {
+          "id": "act_1790306207921_xjd9",
+          "type": "logout",
+          "title": "Đăng xuất khỏi hệ thống",
+          "detail": "Người dùng đã chủ động thoát phiên làm việc",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:47.921Z"
+        },
+        {
+          "id": "act_1790306207403_mtba",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:47.403Z"
+        },
+        {
+          "id": "act_1790306207101_92ze",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:47.101Z"
+        },
+        {
+          "id": "act_1790306205434_mg7t",
+          "type": "editing",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:45.434Z"
+        },
+        {
+          "id": "act_1790306203824_xqdo",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:43.824Z"
+        },
+        {
+          "id": "act_1790306202430_h1ho",
+          "type": "editing",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:42.430Z"
+        },
+        {
+          "id": "act_1790306200839_kqyd",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:40.839Z"
+        },
+        {
+          "id": "act_1790306198384_k8qo",
+          "type": "editing",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:38.384Z"
+        },
+        {
+          "id": "act_1790306198311_r2t5",
+          "type": "editing",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:38.311Z"
+        },
+        {
+          "id": "act_1790306197825_8mdf",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:37.825Z"
+        },
+        {
+          "id": "act_1790306196429_lq2b",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:36.429Z"
+        },
+        {
+          "id": "act_1790306194829_qogl",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:34.829Z"
+        },
+        {
+          "id": "act_1790306193429_fiz3",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:33.429Z"
+        },
+        {
+          "id": "act_1790306191832_yrpc",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:31.832Z"
+        },
+        {
+          "id": "act_1790306190432_vz8u",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:30.432Z"
+        },
+        {
+          "id": "act_1790306188828_61ja",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:28.828Z"
+        },
+        {
+          "id": "act_1790306187430_ykj6",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:27.430Z"
+        },
+        {
+          "id": "act_1790306185825_6xlj",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang",
+          "detail": "",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:25.825Z"
+        },
+        {
+          "id": "act_1790306179817_83pu",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:19.817Z"
+        },
+        {
+          "id": "act_1790306175429_volz",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:15.429Z"
+        },
+        {
+          "id": "act_1790306175416_lt0w",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:16:15.416Z"
+        },
+        {
+          "id": "act_1790306152345_2zhz",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T03:15:52.345Z"
+        },
+        {
+          "id": "act_1790305405502_lebs",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T03:03:25.502Z"
+        },
+        {
+          "id": "act_1790305401462_v0as",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T03:03:21.462Z"
+        },
+        {
+          "id": "act_1790304920851_xqdc",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:55:20.851Z"
+        },
+        {
+          "id": "act_1790304897244_1bc3",
+          "type": "editing",
+          "title": "Đang biên tập: \"Acerca de Mexboss: Plataforma #1 de Casino y Juegos en México 2026\"",
+          "detail": "Slug: /acerca-de-mexboss (Trang)",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:57.244Z"
+        },
+        {
+          "id": "act_1790304895014_bygt",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:55.014Z"
+        },
+        {
+          "id": "act_1790304872084_21cr",
+          "type": "editing",
+          "title": "Đang biên tập: \"Inicio: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:32.084Z"
+        },
+        {
+          "id": "act_1790304872063_mrnb",
+          "type": "editing",
+          "title": "Đang biên tập: \"Inicio\"",
+          "detail": "Slug: /inicio (Trang)",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:32.063Z"
+        },
+        {
+          "id": "act_1790304872061_0f0w",
+          "type": "editing",
+          "title": "Đang biên tập: \"Inicio: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:32.061Z"
+        },
+        {
+          "id": "act_1790304867948_9t5r",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:27.948Z"
+        },
+        {
+          "id": "act_1790304863142_m4y1",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:23.142Z"
+        },
+        {
+          "id": "act_1790304854388_a17c",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "154.212.161.86",
+          "timestamp": "2026-09-25T02:54:14.387Z"
+        }
+      ]
+    },
+    {
+      "id": "usr_1790304038476_r02i",
+      "username": "cuiyang",
+      "displayName": "cuiyanglead",
+      "passwordHash": "52f1d1ec135d7fb6ca22f6a4e238ab3491e11d87f6fa05976b67f57d5c133d4331005ddcff95b3cf36a793d4e33dacddc646f6eaeffd236ee84a9b83f4020969",
+      "salt": "cdba34d68de28d6aa82c260bb6833132",
+      "role": "member",
+      "status": "active",
+      "allowedIps": [
+        "10.151.79.109"
+      ],
+      "currentSessionId": null,
+      "lastLoginAt": null,
+      "lastLoginIp": null,
+      "createdAt": "2026-09-25T02:40:38.476Z"
+    },
+    {
+      "id": "usr_1790306552657_cfov",
+      "username": "admin2",
+      "displayName": " (Admin 2)",
+      "passwordHash": "e8d258f6da9244ef842469eaf9b39439886f8ee315370cf4713be889903e972320a665ed549f9f7f2897343e5e855146c63be2e74a0d613e09b11ef5e946a4c2",
+      "salt": "be92ca99d2c0b93343736614d899108e",
+      "role": "admin",
+      "status": "active",
+      "allowedIps": [],
+      "currentSessionId": "sess_ae7c7e12-1758-42c6-973c-8c1e06955ec5",
+      "lastLoginAt": "2026-09-25T03:26:55.352Z",
+      "lastLoginIp": "127.0.0.1",
+      "createdAt": "2026-09-25T03:22:32.657Z",
+      "lastActiveAt": "2026-09-25T03:26:55.357Z",
+      "lastHeartbeatAt": "2026-09-25T03:26:55.357Z",
+      "currentAction": {
+        "type": "login",
+        "title": "Đăng nhập vào hệ thống",
+        "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+        "siteName": "",
+        "timestamp": "2026-09-25T03:26:55.357Z"
+      },
+      "activityHistory": [
+        {
+          "id": "act_1790306815357_ltl3",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:26:55.357Z"
+        },
+        {
+          "id": "act_1790306566788_mqs8",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1",
+          "siteName": "",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-25T03:22:46.788Z"
+        }
+      ]
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log_1790307018066_rlqqv",
+      "timestamp": "2026-09-25T03:30:18.066Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306836479_k3w23",
+      "timestamp": "2026-09-25T03:27:16.479Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306815355_tehu4",
+      "timestamp": "2026-09-25T03:26:55.355Z",
+      "username": "admin2",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306796481_y0xmw",
+      "timestamp": "2026-09-25T03:26:36.481Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306756804_psgmq",
+      "timestamp": "2026-09-25T03:25:56.804Z",
+      "username": "admin2",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_ADMIN_IN_TOOL",
+      "detail": "Từ chối tài khoản Quản trị viên (admin) đăng nhập vào Tool Đăng Bài của Nhân Viên",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790306566787_wahy0",
+      "timestamp": "2026-09-25T03:22:46.787Z",
+      "username": "admin2",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306552658_ged9e",
+      "timestamp": "2026-09-25T03:22:32.658Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "USER_CREATED",
+      "detail": "Đã cấp tài khoản Quản trị viên (Admin): \"admin2\"",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306552564_q0vtf",
+      "timestamp": "2026-09-25T03:22:32.564Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306207924_1b586",
+      "timestamp": "2026-09-25T03:16:47.924Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306175415_z5f8i",
+      "timestamp": "2026-09-25T03:16:15.415Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306151711_o7pbm",
+      "timestamp": "2026-09-25T03:15:51.711Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306125644_ws5jh",
+      "timestamp": "2026-09-25T03:15:25.644Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_ADMIN_IN_TOOL",
+      "detail": "Từ chối tài khoản Quản trị viên (admin) đăng nhập vào Tool Đăng Bài của Nhân Viên",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790306115537_4lig1",
+      "timestamp": "2026-09-25T03:15:15.537Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_ADMIN_IN_TOOL",
+      "detail": "Từ chối tài khoản Quản trị viên (admin) đăng nhập vào Tool Đăng Bài của Nhân Viên",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790306097557_ufrk3",
+      "timestamp": "2026-09-25T03:14:57.557Z",
+      "username": "seo_nhanvien",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_MEMBER_IN_ADMIN",
+      "detail": "Từ chối tài khoản Nhân Viên (@seo_nhanvien) truy cập Cổng Quản Trị Hệ Thống (/admin)",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790306097499_d35e4",
+      "timestamp": "2026-09-25T03:14:57.499Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790306097315_a0yl3",
+      "timestamp": "2026-09-25T03:14:57.315Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_ADMIN_IN_TOOL",
+      "detail": "Từ chối tài khoản Quản trị viên (admin) đăng nhập vào Tool Đăng Bài của Nhân Viên",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790305698111_0ofgn",
+      "timestamp": "2026-09-25T03:08:18.111Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790305671612_59opf",
+      "timestamp": "2026-09-25T03:07:51.612Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_MEMBER_IN_ADMIN",
+      "detail": "Từ chối tài khoản Nhân Viên (@michael) truy cập Cổng Quản Trị Hệ Thống (/admin)",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790305657464_ha1he",
+      "timestamp": "2026-09-25T03:07:37.464Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790305642676_yxyk4",
+      "timestamp": "2026-09-25T03:07:22.676Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_BLOCKED_ADMIN_IN_TOOL",
+      "detail": "Từ chối tài khoản Quản trị viên (admin) đăng nhập vào Tool Đăng Bài của Nhân Viên",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1790305437771_uaqyc",
+      "timestamp": "2026-09-25T03:03:57.771Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790305427960_jcw2g",
+      "timestamp": "2026-09-25T03:03:47.960Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790305423823_7n5gt",
+      "timestamp": "2026-09-25T03:03:43.823Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790305417102_mp6d2",
+      "timestamp": "2026-09-25T03:03:37.102Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790304938754_3e4tb",
+      "timestamp": "2026-09-25T02:55:38.754Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304867872_m1e0z",
+      "timestamp": "2026-09-25T02:54:27.872Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304758346_r8btk",
+      "timestamp": "2026-09-25T02:52:38.346Z",
+      "username": "michael",
+      "ip": "154.212.161.86",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 154.212.161.86",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304608094_lixcr",
+      "timestamp": "2026-09-25T02:50:08.094Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304590907_pn83n",
+      "timestamp": "2026-09-25T02:49:50.907Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304539859_3jahj",
+      "timestamp": "2026-09-25T02:48:59.859Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790304420895_diz2q",
+      "timestamp": "2026-09-25T02:47:00.895Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304418944_1muxy",
+      "timestamp": "2026-09-25T02:46:58.944Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304412855_zndxn",
+      "timestamp": "2026-09-25T02:46:52.855Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304407799_b98a1",
+      "timestamp": "2026-09-25T02:46:47.799Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304406457_s3jad",
+      "timestamp": "2026-09-25T02:46:46.457Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304405411_2rg7m",
+      "timestamp": "2026-09-25T02:46:45.411Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304403742_7v328",
+      "timestamp": "2026-09-25T02:46:43.742Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304391155_gnle5",
+      "timestamp": "2026-09-25T02:46:31.155Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304377833_0r8m1",
+      "timestamp": "2026-09-25T02:46:17.833Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790304038477_vqrz5",
+      "timestamp": "2026-09-25T02:40:38.477Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "USER_CREATED",
+      "detail": "Đã cấp tài khoản mới: \"cuiyang\" (Quyền: member)",
+      "status": "success"
+    },
+    {
+      "id": "log_1790303905516_opbwu",
+      "timestamp": "2026-09-25T02:38:25.516Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "IP_WHITELIST_ADD",
+      "detail": "Đã thêm IP \"10.151.79.109\" (cuiyang) vào Whitelist",
+      "status": "success"
+    },
+    {
+      "id": "log_1790303788589_zrq33",
+      "timestamp": "2026-09-25T02:36:28.589Z",
+      "username": "michael",
+      "ip": "154.212.161.86",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 154.212.161.86",
+      "status": "success"
+    },
+    {
+      "id": "log_1790303581355_cxrvo",
+      "timestamp": "2026-09-25T02:33:01.355Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790303008109_bzgo9",
+      "timestamp": "2026-09-25T02:23:28.109Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790302924695_7nox6",
+      "timestamp": "2026-09-25T02:22:04.695Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790302919403_ky9ru",
+      "timestamp": "2026-09-25T02:21:59.403Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "USER_UPDATED",
+      "detail": "Cập nhật thông tin tài khoản \"michael\"",
+      "status": "success"
+    },
+    {
+      "id": "log_1790302899591_aa7wg",
+      "timestamp": "2026-09-25T02:21:39.591Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302899400_aqzy7",
+      "timestamp": "2026-09-25T02:21:39.400Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302899280_f3bk0",
+      "timestamp": "2026-09-25T02:21:39.280Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302899124_qdqm0",
+      "timestamp": "2026-09-25T02:21:39.124Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302891423_z1ak4",
+      "timestamp": "2026-09-25T02:21:31.423Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302891275_k0l0i",
+      "timestamp": "2026-09-25T02:21:31.275Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302891141_4mc2e",
+      "timestamp": "2026-09-25T02:21:31.141Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302890991_k0yg3",
+      "timestamp": "2026-09-25T02:21:30.991Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302890409_w4bth",
+      "timestamp": "2026-09-25T02:21:30.409Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302883914_58ylk",
+      "timestamp": "2026-09-25T02:21:23.914Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_WRONG_PASSWORD",
+      "detail": "Đăng nhập thất bại: Sai mật khẩu",
+      "status": "failed"
+    },
+    {
+      "id": "log_1790302826340_zstks",
+      "timestamp": "2026-09-25T02:20:26.340Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "USER_CREATED",
+      "detail": "Đã cấp tài khoản mới: \"michael\" (Quyền: member)",
+      "status": "success"
+    },
+    {
+      "id": "log_1790302664959_jzvnm",
+      "timestamp": "2026-09-25T02:17:44.959Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790302613866_3vxh0",
+      "timestamp": "2026-09-25T02:16:53.866Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1790302097396_9gd01",
+      "timestamp": "2026-09-25T02:08:17.396Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790301934476_bea2j",
+      "timestamp": "2026-09-25T02:05:34.476Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "WHITELIST_TOGGLE",
+      "detail": "Đã TẮT cơ chế bảo vệ IP Whitelist toàn hệ thống",
+      "status": "success"
+    },
+    {
+      "id": "log_1790301934472_u1ftn",
+      "timestamp": "2026-09-25T02:05:34.472Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "WHITELIST_TOGGLE",
+      "detail": "Đã BẬT cơ chế bảo vệ IP Whitelist toàn hệ thống",
+      "status": "success"
+    },
+    {
+      "id": "log_1790301934470_joq5m",
+      "timestamp": "2026-09-25T02:05:34.470Z",
+      "username": "seo_nhanvien",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_1790301934462_8gtq5",
+      "timestamp": "2026-09-25T02:05:34.462Z",
+      "username": "admin",
+      "ip": "192.168.1.50",
+      "action": "USER_CREATED",
+      "detail": "Đã cấp tài khoản mới: \"seo_nhanvien\" (Quyền: member)",
+      "status": "success"
+    },
+    {
+      "id": "log_1790301934454_1cwik",
+      "timestamp": "2026-09-25T02:05:34.454Z",
+      "username": "admin",
+      "ip": "192.168.1.50",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 192.168.1.50. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790301934448_295et",
+      "timestamp": "2026-09-25T02:05:34.448Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1",
+      "status": "success"
+    },
+    {
+      "id": "log_init",
+      "timestamp": "2026-09-25T02:05:34.438Z",
+      "username": "system",
+      "ip": "127.0.0.1",
+      "action": "SYSTEM_INIT",
+      "detail": "Khởi tạo hệ thống phân quyền, tài khoản quản trị ban đầu (admin) và IP Whitelist",
+      "status": "success"
+    }
+  ]
+}
