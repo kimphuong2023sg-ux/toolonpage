@@ -13,10 +13,44 @@ import { authService } from './auth-service.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Cấu hình danh sách Origins được phép truy cập (CORS Whitelist)
+const defaultAllowedOrigins = [
+  'https://toolseo.uk',
+  'http://toolseo.uk',
+  'https://api.toolseo.uk',
+  'http://api.toolseo.uk',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000'
+];
+
+const envOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) 
+  : [];
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envOrigins])];
+
 app.use(cors({
-  origin: '*',
+  origin: function (origin, callback) {
+    // Cho phép request không có origin (như curl, postman, cron job, server-to-server)
+    if (!origin) return callback(null, true);
+    
+    // Nếu origin nằm trong danh sách whitelist hoặc là subdomain của toolseo.uk hoặc localhost
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.toolseo.uk') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1')
+    ) {
+      return callback(null, origin); // Trả về chính xác origin để hỗ trợ credentials & browser strict policy
+    }
+    
+    return callback(null, origin);
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-auth-token']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-auth-token', 'Accept', 'Origin']
 }));
 app.options('*', cors());
 app.use(express.json({ limit: '100mb' }));
