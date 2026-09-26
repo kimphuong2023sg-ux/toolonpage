@@ -360,7 +360,7 @@ export default function ContentFolderUploader({ targetItem, onApplyContent, onCl
               gap: '6px'
             }}
           >
-            <span>📄</span> Nạp File Lẻ / Bộ Ảnh / File Zip
+            <span>📄</span> Nạp File Lẻ / File Zip
           </button>
 
           <button

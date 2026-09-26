@@ -521,6 +521,8 @@ app.post('/api/local/scan-folder-path', requireAuth, async (req, res) => {
   }
 });
 
+
+
 // 5. Upload 1 ảnh lên WordPress
 app.post('/api/wp/upload-media', requireAuth, async (req, res) => {
   try {

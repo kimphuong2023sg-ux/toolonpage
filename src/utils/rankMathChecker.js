@@ -98,8 +98,21 @@ export function analyzeRankMath({
 
   // --- 3. KHẢ NĂNG ĐỌC & TRÌNH BÀY ---
   // A. Mục lục Table of Contents
-  const hasToc = /class=["'][^"']*toc[^"']*["']|<ul[^>]*>[\s\S]*?<a\s+href=["']#[^"']+["']/i.test(contentHtml);
-  addCheck('has_toc', 'Trình bày', 'Mục lục bài viết (TOC)', hasToc, 6, hasToc ? 'Đã có khối mục lục điều hướng bài viết.' : 'Nên có mục lục phân chia các phần.');
+  // Website sử dụng plugin tự động (Easy Table of Contents) - plugin sẽ tự động sinh mục lục trên web khi bài viết có từ 2 thẻ đề mục H2/H3 trở lên.
+  // Thuật toán Rank Math chính thức tự động nhận diện plugin TOC và cho điểm tuyệt đối.
+  const hasHeadingsForToc = h2h3Match.length >= 2;
+  const hasExplicitToc = /class=["'][^"']*toc[^"']*["']|<ul[^>]*>[\s\S]*?<a\s+href=["']#[^"']+["']|<!--\s*ez-toc|ez-toc-section/i.test(contentHtml);
+  const hasToc = hasHeadingsForToc || hasExplicitToc;
+  addCheck(
+    'has_toc', 
+    'Trình bày', 
+    'Mục lục bài viết (TOC)', 
+    hasToc, 
+    6, 
+    hasToc 
+      ? `Đã kích hoạt tự động qua plugin Easy Table of Contents (có ${h2h3Match.length} đề mục H2/H3).` 
+      : `Cần tối thiểu 2 đề mục H2/H3 để plugin Easy Table of Contents tự sinh mục lục (hiện có ${h2h3Match.length}).`
+  );
 
   // B. Bài viết có hình ảnh / video
   const hasImgOrVideo = /<img|<figure|<video|<iframe/i.test(contentHtml) || (images && images.length > 0);

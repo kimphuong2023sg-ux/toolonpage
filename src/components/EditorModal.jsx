@@ -78,6 +78,28 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
     }, true);
   }, [activeViewTab, seoTitle, item]);
 
+  // Lọc sạch sạn, preview badges, Rank Math score header và ghi chú thừa khỏi HTML
+  const sanitizeArticleHtml = (html) => {
+    if (!html) return '';
+    let clean = html;
+    clean = clean.replace(/<div[^>]*class="[^"]*(?:seo-badge|google-preview)[^"]*"[\s\S]*?<\/div>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?(?:Rank Math Score|Score:\s*\d+\s*\/\s*100|●\s*Perfecto)(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Palabra clave:\s*<strong(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Vista Previa en Google Snippet(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?https?:\/\/[^\s<]+\s*(?:›|>)[^<]*<\/p>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?TÀI LIỆU BÀI VIẾT(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Trang:(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    clean = clean.replace(/<(p|em|strong|span|div)[^>]*>(?:(?!<\/\1>)[\s\S])*?(?:📸|📷)?\s*(?:Chú thích|Caption|Pie de foto)(?:(?!<\/\1>)[\s\S])*?<\/\1>/gi, '');
+    clean = clean.replace(/<(p|em|strong|span|div)[^>]*>(?:(?!<\/\1>)[\s\S])*?(?:🏷️|🏷)?\s*(?:Thẻ Alt|Alt text|Texto alt|Alt \(SEO\))(?:(?!<\/\1>)[\s\S])*?<\/\1>/gi, '');
+    clean = clean.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?(?:MEXBOSS\.sh Oficial|BẢNG KIỂM TRA|CHECKLIST 100\/100)(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    clean = clean.replace(/<table[^>]*>(?:(?!<\/table>)[\s\S])*?(?:BẢNG KIỂM TRA|CHECKLIST 100\/100|Tiêu chí Rank Math)(?:(?!<\/table>)[\s\S])*?<\/table>/gi, '');
+    clean = clean.replace(/sảnh de slots/gi, 'sala de slots');
+    clean = clean.replace(/nuestra sảnh/gi, 'nuestra sala');
+    clean = clean.replace(/Sảnh trò chơi/gi, 'Sala de juegos');
+    clean = clean.replace(/sảnh trò chơi/gi, 'sala de juegos');
+    return clean.trim();
+  };
+
   // Khởi tạo dữ liệu khi mở modal
   useEffect(() => {
     if (item) {
@@ -95,7 +117,42 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
         setFocusKeyword(item.title || '');
         setSeoTitle(`${item.title}: Sitio Oficial en México 2026`);
         setMetaDescription(`Descubre todo sobre ${item.title}. Plataforma oficial en México con retiros rápidos SPEI.`);
-        setContentHtml(item.content_html || '');
+        const cleanContent = sanitizeArticleHtml(item.content_html || '');
+        setContentHtml(cleanContent);
+
+        // Trích xuất các ảnh đã có sẵn trong nội dung bài viết từ WordPress để hiển thị vào bộ quản lý ảnh
+        if (cleanContent) {
+          const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+          const extractedImgs = [];
+          let match;
+          while ((match = imgRegex.exec(cleanContent)) !== null) {
+            const src = match[1];
+            const altMatch = match[0].match(/alt=["']([^"']*)["']/i);
+            const titleMatch = match[0].match(/title=["']([^"']*)["']/i);
+            const filename = src.split('/').pop().split('?')[0];
+            extractedImgs.push({
+              filename,
+              wpUrl: src.startsWith('http') ? src : '',
+              alt: altMatch ? altMatch[1] : '',
+              title: titleMatch ? titleMatch[1] : '',
+              caption: ''
+            });
+          }
+
+          if (extractedImgs.length > 0) {
+            setFeaturedImage(prev => ({
+              ...prev,
+              filename: extractedImgs[0].filename,
+              wpUrl: extractedImgs[0].wpUrl,
+              alt: extractedImgs[0].alt || prev.alt,
+              title: extractedImgs[0].title || prev.title
+            }));
+
+            if (extractedImgs.length > 1) {
+              setBodyImages(extractedImgs.slice(1));
+            }
+          }
+        }
         
         // Nếu bài chưa có content (0 từ hoặc không có HTML), tự động mở form upload & check folder
         if (!item.content_html || item.word_count === 0) {
@@ -138,7 +195,7 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
       }));
     }
     if (pkgData.content_html) {
-      setContentHtml(pkgData.content_html);
+      setContentHtml(sanitizeArticleHtml(pkgData.content_html));
     }
     setShowFolderUploader(false);
     setStatusMessage({
@@ -185,7 +242,7 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
           }));
         }
 
-        setContentHtml(d.content_html || '');
+        setContentHtml(sanitizeArticleHtml(d.content_html || ''));
         setStatusMessage({ type: 'success', text: '✅ Đã nạp thành công nội dung chuẩn Rank Math 100/100!' });
       }
     } catch (err) {

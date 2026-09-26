@@ -126,12 +126,17 @@ export class ContentParser {
       const fullHtml = fs.readFileSync(htmlPreviewPath, 'utf8');
       // Trích xuất phần thân bài viết trong .container
       const containerMatch = fullHtml.match(/<div class="container">([\s\S]*?)<\/div>\s*<\/body>/i);
-      if (containerMatch) {
-        // Loại bỏ các thẻ SEO badge preview chỉ giữ nội dung bài viết
+        // Loại bỏ các thẻ SEO badge preview chỉ giữ nội dung bài viết bắt đầu từ <h1>
         let bodyContent = containerMatch[1];
-        bodyContent = bodyContent.replace(/<!-- RANK MATH SCORE HEADER -->[\s\S]*?<!-- GOOGLE SERP PREVIEW BOX -->[\s\S]*?<\/div>/i, '');
+        const h1Idx = bodyContent.indexOf('<h1');
+        if (h1Idx !== -1) {
+          bodyContent = bodyContent.substring(h1Idx);
+        } else {
+          bodyContent = bodyContent.replace(/<!-- RANK MATH SCORE HEADER -->[\s\S]*?<!-- GOOGLE SERP PREVIEW BOX -->[\s\S]*?<\/div>/i, '');
+          bodyContent = bodyContent.replace(/<div class="seo-badge-container"[\s\S]*?<\/div>\s*<\/div>/gi, '');
+          bodyContent = bodyContent.replace(/<div class="google-preview-box"[\s\S]*?<\/div>/gi, '');
+        }
         result.content_html = bodyContent.trim();
-      }
     }
 
     if (!result.content_html && fs.existsSync(mdPath)) {
@@ -275,29 +280,44 @@ export class ContentParser {
       seoTitle: '',
       seoDescription: '',
       slug: '',
-      headings: []
+      headings: [],
+      extractedFeaturedImage: null
     };
 
-    // Sắp xếp docFiles: ưu tiên file khớp với slug/title của targetItem, rồi ưu tiên .docx
+    // Sắp xếp docFiles: ưu tiên file khớp với slug/title của targetItem,
+    // và ƯU TIÊN .md / .html TRƯỚC .docx vì .md/.html chứa mã nguồn HTML sạch chuẩn SEO, không dính rác Word/base64
     if (docFiles.length > 0) {
       const targetSlugClean = (targetItem.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       docFiles.sort((a, b) => {
         const aExt = path.extname(a).toLowerCase();
         const bExt = path.extname(b).toLowerCase();
+
+        // 1. Ưu tiên trùng khớp slug/tiêu đề bài viết
         if (targetSlugClean) {
           const aMatch = a.toLowerCase().replace(/[^a-z0-9]/g, '').includes(targetSlugClean);
           const bMatch = b.toLowerCase().replace(/[^a-z0-9]/g, '').includes(targetSlugClean);
           if (aMatch && !bMatch) return -1;
           if (!aMatch && bMatch) return 1;
         }
-        if (aExt === '.docx' && bExt !== '.docx') return -1;
-        if (aExt !== '.docx' && bExt === '.docx') return 1;
-        return 0;
+
+        // 2. Ưu tiên định dạng: file nội dung gốc .md > .docx > .html; hạ thấp file preview HTML
+        const extRank = (ext, fileName) => {
+          if (fileName.toLowerCase().startsWith('preview-')) return 1;
+          if (ext === '.md') return 4;
+          if (ext === '.docx') return 3;
+          if (ext === '.html' || ext === '.htm') return 2;
+          return 0;
+        };
+
+        const rankDiff = extRank(bExt, b) - extRank(aExt, a);
+        if (rankDiff !== 0) return rankDiff;
+
+        return a.localeCompare(b);
       });
 
       let parsedSuccessfully = false;
 
-      // Duyệt qua từng file văn bản ứng viên (nếu 1 file lỗi sẽ tự động thử file kế tiếp, không bao giờ crash)
+      // Duyệt qua từng file văn bản ứng viên (nếu 1 file lỗi sẽ tự động thử file kế tiếp)
       for (const docCandidate of docFiles) {
         const docPath = path.join(CONTENT_DIR, docCandidate);
         const ext = path.extname(docCandidate).toLowerCase();
@@ -311,12 +331,35 @@ export class ContentParser {
             continue;
           }
 
-          if (ext === '.docx') {
-            const buffer = fs.readFileSync(docPath);
-            const docxResult = await mammoth.convertToHtml({ buffer });
-            fullHtml = docxResult.value || '';
-          } else if (ext === '.md' || ext === '.txt') {
+          if (ext === '.md') {
             const raw = fs.readFileSync(docPath, 'utf8');
+
+            // Bóc tách thông số Rank Math từ bảng Markdown
+            const kwMatch = raw.match(/Palabra clave objetivo[^\x60]*\x60([^\x60]+)\x60/s) || raw.match(/Focus Keyword[^\x60]*\x60([^\x60]+)\x60/s);
+            const titleMatch = raw.match(/Título SEO[^\x60]*\x60([^\x60]+)\x60/s) || raw.match(/SEO Title[^\x60]*\x60([^\x60]+)\x60/s);
+            const descMatch = raw.match(/Descripción SEO[^\x60]*\x60([^\x60]+)\x60/s) || raw.match(/Meta Description[^\x60]*\x60([^\x60]+)\x60/s);
+            const slugMatch = raw.match(/URL \/ Slug[^\x60]*\x60([^\x60]+)\x60/s) || raw.match(/Slug[^\x60]*\x60([^\x60]+)\x60/s);
+
+            if (kwMatch) docData.focusKeyword = kwMatch[1].trim();
+            if (titleMatch) docData.seoTitle = titleMatch[1].trim();
+            if (descMatch) docData.seoDescription = descMatch[1].trim();
+            if (slugMatch) docData.slug = slugMatch[1].trim();
+
+            // Bóc tách thông tin Featured Image nếu có trong mục 2 của Markdown
+            const featFileMatch = raw.match(/Tên file ảnh[^\x60]*\x60([^\x60]+)\x60/i);
+            const featAltMatch = raw.match(/(?:Texto alternativo|Alt text)[^\x60]*\x60([^\x60]+)\x60/i);
+            const featTitleMatch = raw.match(/(?:Título|Title)[^\x60]*\x60([^\x60]+)\x60/i);
+            const featCaptionMatch = raw.match(/(?:Leyenda|Caption)[^\x60]*\x60([^\x60]+)\x60/i);
+            if (featFileMatch) {
+              docData.extractedFeaturedImage = {
+                filename: featFileMatch[1].trim(),
+                alt: featAltMatch ? featAltMatch[1].trim() : (docData.focusKeyword || ''),
+                title: featTitleMatch ? featTitleMatch[1].trim() : (docData.seoTitle || ''),
+                caption: featCaptionMatch ? featCaptionMatch[1].trim() : ''
+              };
+            }
+
+            // Trích xuất khối HTML bài viết sạch sẽ
             const htmlBlock = raw.match(/```html\s*([\s\S]*?)\s*```/i);
             if (htmlBlock) {
               fullHtml = htmlBlock[1].trim();
@@ -330,6 +373,42 @@ export class ContentParser {
                 fullHtml = `<p>${fullHtml}</p>`;
               }
             }
+          } else if (ext === '.html' || ext === '.htm') {
+            const rawHtml = fs.readFileSync(docPath, 'utf8');
+
+            // Bóc tách metadata Rank Math từ preview HTML nếu chưa có
+            const kwMatch = rawHtml.match(/Palabra clave:\s*<strong>([^<]+)<\/strong>/i) || rawHtml.match(/Palabra clave objetivo[^\x60]*\x60([^\x60]+)\x60/i);
+            const titleMatch = rawHtml.match(/<div class="preview-title">([^<]+)<\/div>/i) || rawHtml.match(/Título SEO[^\x60]*\x60([^\x60]+)\x60/i);
+            const descMatch = rawHtml.match(/<div class="preview-desc">([^<]+)<\/div>/i) || rawHtml.match(/Descripción SEO[^\x60]*\x60([^\x60]+)\x60/i);
+            const slugMatch = rawHtml.match(/URL:\s*<code>\/([^\/]+)\/<\/code>/i) || rawHtml.match(/URL \/ Slug[^\x60]*\x60([^\x60]+)\x60/i);
+
+            if (kwMatch && !docData.focusKeyword) docData.focusKeyword = kwMatch[1].trim();
+            if (titleMatch && !docData.seoTitle) docData.seoTitle = titleMatch[1].trim();
+            if (descMatch && !docData.seoDescription) docData.seoDescription = descMatch[1].trim();
+            if (slugMatch && !docData.slug) docData.slug = slugMatch[1].trim();
+
+            // Trích xuất nội dung bài viết thực thụ (LOẠI BỎ TOÀN BỘ KHỐI BADGE SCORE & GOOGLE SERP PREVIEW)
+            let bodyContent = rawHtml;
+            bodyContent = bodyContent.replace(/<style[\s\S]*?<\/style>/gi, '');
+            // Nếu có thẻ <h1>, bài viết thực sự bắt đầu từ <h1>
+            const h1Idx = bodyContent.indexOf('<h1');
+            if (h1Idx !== -1) {
+              bodyContent = bodyContent.substring(h1Idx);
+            } else {
+              bodyContent = bodyContent.replace(/<div class="seo-badge-container"[\s\S]*?<\/div>\s*<\/div>/gi, '');
+              bodyContent = bodyContent.replace(/<div class="google-preview-box"[\s\S]*?<\/div>/gi, '');
+              bodyContent = bodyContent.replace(/<div[^>]*class="[^"]*(?:seo-badge|google-preview)[^"]*"[\s\S]*?<\/div>/gi, '');
+            }
+
+            bodyContent = bodyContent.replace(/<\/div>\s*<\/body>[\s\S]*$/i, '');
+            bodyContent = bodyContent.replace(/<\/body>[\s\S]*$/i, '');
+            bodyContent = bodyContent.replace(/<\/html>[\s\S]*$/i, '');
+
+            fullHtml = bodyContent.trim();
+          } else if (ext === '.docx') {
+            const buffer = fs.readFileSync(docPath);
+            const docxResult = await mammoth.convertToHtml({ buffer });
+            fullHtml = docxResult.value || '';
           } else {
             fullHtml = fs.readFileSync(docPath, 'utf8');
           }
@@ -342,67 +421,74 @@ export class ContentParser {
           }
         } catch (docErr) {
           console.warn(`Lỗi bóc tách file ${docCandidate}:`, docErr.message);
-          // Tiếp tục thử file kế tiếp thay vì crash
         }
       }
 
-      // Xử lý metadata và nội dung HTML nếu đã bóc tách thành công
+      // Xử lý metadata và làm sạch nội dung HTML bài viết
       if (parsedSuccessfully && docData.rawHtml) {
-        const fullHtml = docData.rawHtml;
+        let cleanHtml = docData.rawHtml;
 
-        // Trích xuất metadata từ bảng hoặc văn bản Rank Math (hỗ trợ cả tiếng Tây Ban Nha, tiếng Việt, tiếng Anh)
-        const kwPatterns = [
-          /Palabra clave objetivo[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
-          /(?:Focus Keyword|Từ khóa chính|Từ khóa mục tiêu)[:\s\-]+([^\r\n<]+)/i,
-          /<td[^>]*>(?:Focus Keyword|Từ khóa chính|Palabra clave)[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/i
-        ];
-        for (const pat of kwPatterns) {
-          const m = fullHtml.match(pat);
-          if (m && m[1]) {
-            docData.focusKeyword = m[1].replace(/<[^>]+>/g, '').trim();
-            break;
+        // Trích xuất metadata từ bảng HTML nếu chưa có từ Markdown (dành cho file DOCX)
+        if (!docData.focusKeyword) {
+          const kwPatterns = [
+            /Palabra clave objetivo[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
+            /(?:Focus Keyword|Từ khóa chính|Từ khóa mục tiêu)[:\s\-]+([^\r\n<]+)/i,
+            /<td[^>]*>(?:Focus Keyword|Từ khóa chính|Palabra clave)[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/i
+          ];
+          for (const pat of kwPatterns) {
+            const m = cleanHtml.match(pat);
+            if (m && m[1]) {
+              docData.focusKeyword = m[1].replace(/<[^>]+>/g, '').trim();
+              break;
+            }
           }
         }
 
-        const titlePatterns = [
-          /Título SEO[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
-          /(?:SEO Title|Tiêu đề SEO)[:\s\-]+([^\r\n<]+)/i,
-          /<td[^>]*>(?:SEO Title|Tiêu đề SEO|Título SEO)[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/i
-        ];
-        for (const pat of titlePatterns) {
-          const m = fullHtml.match(pat);
-          if (m && m[1]) {
-            docData.seoTitle = m[1].replace(/<[^>]+>/g, '').trim();
-            break;
+        if (!docData.seoTitle) {
+          const titlePatterns = [
+            /Título SEO[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
+            /(?:SEO Title|Tiêu đề SEO)[:\s\-]+([^\r\n<]+)/i,
+            /<td[^>]*>(?:SEO Title|Tiêu đề SEO|Título SEO)[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/i
+          ];
+          for (const pat of titlePatterns) {
+            const m = cleanHtml.match(pat);
+            if (m && m[1]) {
+              docData.seoTitle = m[1].replace(/<[^>]+>/g, '').trim();
+              break;
+            }
           }
         }
 
-        const descPatterns = [
-          /(?:Descripción SEO|Meta descripción)[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
-          /(?:SEO Description|Mô tả Meta|Meta Description)[:\s\-]+([^\r\n<]+)/i,
-          /<td[^>]*>(?:SEO Description|Mô tả Meta|Descripción SEO)[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/i
-        ];
-        for (const pat of descPatterns) {
-          const m = fullHtml.match(pat);
-          if (m && m[1]) {
-            docData.seoDescription = m[1].replace(/<[^>]+>/g, '').trim();
-            break;
+        if (!docData.seoDescription) {
+          const descPatterns = [
+            /(?:Descripción SEO|Meta descripción)[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
+            /(?:SEO Description|Mô tả Meta|Meta Description)[:\s\-]+([^\r\n<]+)/i,
+            /<td[^>]*>(?:SEO Description|Mô tả Meta|Descripción SEO)[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/i
+          ];
+          for (const pat of descPatterns) {
+            const m = cleanHtml.match(pat);
+            if (m && m[1]) {
+              docData.seoDescription = m[1].replace(/<[^>]+>/g, '').trim();
+              break;
+            }
           }
         }
 
-        const slugPatterns = [
-          /(?:URL \/ Slug|Slug|Đường dẫn)[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
-          /(?:Slug|Đường dẫn URL)[:\s\-]+([^\r\n<]+)/i
-        ];
-        for (const pat of slugPatterns) {
-          const m = fullHtml.match(pat);
-          if (m && m[1]) {
-            docData.slug = m[1].replace(/<[^>]+>/g, '').trim();
-            break;
+        if (!docData.slug) {
+          const slugPatterns = [
+            /(?:URL \/ Slug|Slug|Đường dẫn)[^\<]*<\/p><\/td><td><p>([\s\S]*?)<\/p>/i,
+            /(?:Slug|Đường dẫn URL)[:\s\-]+([^\r\n<]+)/i
+          ];
+          for (const pat of slugPatterns) {
+            const m = cleanHtml.match(pat);
+            if (m && m[1]) {
+              docData.slug = m[1].replace(/<[^>]+>/g, '').trim();
+              break;
+            }
           }
         }
 
-        // Bổ khuyết giá trị mặc định nếu file bài viết không có bảng metadata
+        // Bổ khuyết giá trị mặc định nếu file bài viết không có metadata
         if (!docData.focusKeyword) {
           docData.focusKeyword = targetItem.title || path.basename(docData.filename, path.extname(docData.filename)).replace(/[_\-]+/g, ' ');
         }
@@ -416,19 +502,56 @@ export class ContentParser {
           docData.slug = targetItem.slug || docData.focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         }
 
-        // Bóc tách thân bài viết (loại bỏ bảng metadata thông số Rank Math đầu bài nếu có)
-        let articleBody = fullHtml;
-        const contentSectionMatch = fullHtml.match(/<h2><strong>2\.\s*NỘI DUNG[\s\S]*?<\/h2>/i);
-        if (contentSectionMatch) {
-          const startIdx = fullHtml.indexOf(contentSectionMatch[0]) + contentSectionMatch[0].length;
-          articleBody = fullHtml.substring(startIdx);
-        } else if (fullHtml.includes('Palabra clave') || fullHtml.includes('Focus Keyword') || fullHtml.includes('Rank Math') || fullHtml.includes('Từ khóa chính')) {
-          articleBody = fullHtml.replace(/<table[^>]*>[\s\S]*?<\/table>/i, '');
+        // ========================================================
+        // 🧹 BỘ LỌC SANITIZER TOÀN DIỆN (TRIỆT TIÊU TOÀN BỘ SẠN TIẾNG VIỆT, NOTE, PREVIEW BADGES & BASE64)
+        // ========================================================
+        // Lớp 1: Cắt bỏ toàn bộ phần metadata, tiêu đề hướng dẫn tiếng Việt từ đầu file cho đến trước Section 2 (nếu có)
+        const section2Regex = /<h[1-6][^>]*>(?:<strong[^>]*>)?\s*2\.\s*NỘI DUNG CHI TIẾT[\s\S]*?<\/h[1-6]>/i;
+        const matchSec2 = cleanHtml.match(section2Regex);
+        if (matchSec2) {
+          const startIdx = cleanHtml.indexOf(matchSec2[0]) + matchSec2[0].length;
+          cleanHtml = cleanHtml.substring(startIdx);
+        } else {
+          const tableEnd = cleanHtml.indexOf('</table>');
+          if (tableEnd !== -1 && tableEnd < 1500 && (cleanHtml.includes('Palabra clave') || cleanHtml.includes('Focus Keyword') || cleanHtml.includes('THIẾT LẬP'))) {
+            cleanHtml = cleanHtml.substring(tableEnd + 8);
+          }
         }
 
-        docData.articleHtml = articleBody.trim();
+        // Lớp 2: Xóa sạch các badge preview, Google SERP Snippet và Rank Math Score Header còn sót lại
+        cleanHtml = cleanHtml.replace(/<div[^>]*class="[^"]*(?:seo-badge|google-preview)[^"]*"[\s\S]*?<\/div>/gi, '');
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?(?:Rank Math Score|Score:\s*\d+\s*\/\s*100|●\s*Perfecto)(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Palabra clave:\s*<strong(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Vista Previa en Google Snippet(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?https?:\/\/[^\s<]+\s*(?:›|>)[^<]*<\/p>/gi, '');
 
-        // Đếm số từ thực tế
+        // Lớp 3: Xóa sạch các đoạn văn tiếng Việt chỉ dẫn (per paragraph)
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?TÀI LIỆU BÀI VIẾT(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Trang:(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<h[1-6][^>]*>(?:(?!<\/h[1-6]>)[\s\S])*?(?:THÔNG SỐ CÀI ĐẶT|NỘI DUNG CHI TIẾT|THIẾT LẬP CÁC Ô)(?:(?!<\/h[1-6]>)[\s\S])*?<\/h[1-6]>/gi, '');
+
+        // Lớp 4: Xóa các dòng note chú thích ảnh / Alt text tiếng Việt
+        cleanHtml = cleanHtml.replace(/<(p|em|strong|span|div)[^>]*>(?:(?!<\/\1>)[\s\S])*?(?:📸|📷)?\s*(?:Chú thích|Caption|Pie de foto)(?:(?!<\/\1>)[\s\S])*?<\/\1>/gi, '');
+        cleanHtml = cleanHtml.replace(/<(p|em|strong|span|div)[^>]*>(?:(?!<\/\1>)[\s\S])*?(?:🏷️|🏷)?\s*(?:Thẻ Alt|Alt text|Texto alt|Alt \(SEO\))(?:(?!<\/\1>)[\s\S])*?<\/\1>/gi, '');
+
+        // Lớp 5: Xóa chữ ký tài liệu cuối bài hoặc checklist
+        cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?(?:MEXBOSS\.sh Oficial|BẢNG KIỂM TRA|CHECKLIST 100\/100)(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<table[^>]*>(?:(?!<\/table>)[\s\S])*?(?:BẢNG KIỂM TRA|CHECKLIST 100\/100|Tiêu chí Rank Math)(?:(?!<\/table>)[\s\S])*?<\/table>/gi, '');
+
+        // Lớp 6: Chuẩn hóa các từ tiếng Việt sót lại trong ngữ cảnh tiếng Tây Ban Nha
+        cleanHtml = cleanHtml.replace(/sảnh de slots/gi, 'sala de slots');
+        cleanHtml = cleanHtml.replace(/nuestra sảnh/gi, 'nuestra sala');
+        cleanHtml = cleanHtml.replace(/Sảnh trò chơi/gi, 'Sala de juegos');
+        cleanHtml = cleanHtml.replace(/sảnh trò chơi/gi, 'sala de juegos');
+
+        // Lớp 7: Triệt tiêu toàn bộ ảnh base64 do Mammoth sinh ra (chống phình dữ liệu 1.6MB)
+        cleanHtml = cleanHtml.replace(/<p[^>]*>\s*<img[^>]+src="data:image\/[^">]+"[^>]*>\s*<\/p>/gi, '');
+        cleanHtml = cleanHtml.replace(/<img[^>]+src="data:image\/[^">]+"[^>]*>/gi, '');
+        cleanHtml = cleanHtml.replace(/<p>\s*<\/p>/gi, '');
+
+        docData.articleHtml = cleanHtml.trim();
+
+        // Đếm số từ thực tế của bài viết
         const cleanText = docData.articleHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
         docData.wordCount = cleanText ? cleanText.split(/\s+/).length : 0;
 
@@ -457,17 +580,39 @@ export class ContentParser {
     let bodyImages = [];
 
     if (imageFiles.length > 0) {
-      // Tìm ảnh đại diện / banner
-      const bannerFilename = imageFiles.find(img => {
-        const lower = img.toLowerCase();
-        return lower.includes('banner') || lower.includes('oficial') || lower.includes('portada') || lower.includes('featured') || lower.includes('01');
-      }) || imageFiles[0];
+      // 1. Tìm ảnh đại diện chuẩn xác
+      let bannerFilename = null;
+
+      // Ưu tiên 1: Tên file ảnh đại diện đã được chỉ định rõ trong file Markdown/Docx
+      if (docData.extractedFeaturedImage?.filename && imageFiles.includes(docData.extractedFeaturedImage.filename)) {
+        bannerFilename = docData.extractedFeaturedImage.filename;
+      }
+
+      // Ưu tiên 2: Ảnh khớp với slug của bài viết (ví dụ: fortune-gems-500-mexboss-sh-seo.webp)
+      if (!bannerFilename && docData.slug) {
+        const cleanSlugPart = docData.slug.replace(/[^a-z0-9]/g, '');
+        bannerFilename = imageFiles.find(img => {
+          const cleanImg = img.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return cleanImg.includes(cleanSlugPart) && !img.toLowerCase().includes('banner-bono');
+        });
+      }
+
+      // Ưu tiên 3: Ảnh có chứa từ khóa portada / oficial / featured
+      if (!bannerFilename) {
+        bannerFilename = imageFiles.find(img => {
+          const lower = img.toLowerCase();
+          return (lower.includes('oficial') || lower.includes('portada') || lower.includes('featured')) && !lower.includes('banner-bono');
+        });
+      }
+
+      // Fallback
+      if (!bannerFilename) bannerFilename = imageFiles[0];
 
       featuredImage = {
         filename: bannerFilename,
-        alt: `${docData.focusKeyword || targetItem.title || 'Mexboss'} plataforma oficial de casino en México`,
-        title: `${docData.focusKeyword || targetItem.title || 'Mexboss'} Oficial`,
-        caption: `Plataforma oficial de Mexboss.sh: Líder en juegos de casino en línea y apuestas seguras en México.`,
+        alt: docData.extractedFeaturedImage?.alt || `${docData.focusKeyword || targetItem.title || 'Mexboss'} plataforma oficial de casino en México`,
+        title: docData.extractedFeaturedImage?.title || `${docData.focusKeyword || targetItem.title || 'Mexboss'} Oficial`,
+        caption: docData.extractedFeaturedImage?.caption || `Plataforma oficial de Mexboss.sh: Líder en juegos de casino en línea y apuestas seguras en México.`,
         placement: 'Ảnh đại diện (Featured Image) & Banner đầu bài'
       };
 
@@ -486,42 +631,70 @@ export class ContentParser {
         };
       });
 
-      // 4. Tự động chèn ảnh vào nội dung HTML nếu bài viết chưa chứa thẻ <img>
-      if (docData.articleHtml && !docData.articleHtml.includes('<img')) {
+      // 4. Tự động gắn đầy đủ bộ ảnh vào nội dung bài viết
+      if (docData.articleHtml) {
         let enhancedHtml = docData.articleHtml;
 
-        // Nếu có banner, chèn ảnh banner ngay sau đoạn mở đầu đầu tiên
-        if (featuredImage) {
-          const firstP = /(<\/p>)/i;
-          if (firstP.test(enhancedHtml)) {
+        // A. Đảm bảo ảnh đại diện Banner đã có mặt ở đầu bài (dưới H1 hoặc mở đầu)
+        if (featuredImage && featuredImage.filename) {
+          const hasBanner = enhancedHtml.includes(featuredImage.filename);
+          if (!hasBanner) {
             const bannerFig = `\n\n<figure style="margin: 24px 0; text-align: center;">
   <img src="${featuredImage.filename}" alt="${featuredImage.alt}" title="${featuredImage.title}" style="max-width: 100%; border-radius: 8px;">
   <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 6px;">${featuredImage.caption}</figcaption>
 </figure>\n\n`;
-            enhancedHtml = enhancedHtml.replace(firstP, `$1${bannerFig}`);
+
+            const h1Match = enhancedHtml.match(/<\/h1>/i);
+            if (h1Match) {
+              const h1Pos = enhancedHtml.indexOf(h1Match[0]) + h1Match[0].length;
+              enhancedHtml = enhancedHtml.slice(0, h1Pos) + bannerFig + enhancedHtml.slice(h1Pos);
+            } else {
+              const firstPMatch = enhancedHtml.match(/<\/p>/i);
+              if (firstPMatch) {
+                const pPos = enhancedHtml.indexOf(firstPMatch[0]) + firstPMatch[0].length;
+                enhancedHtml = enhancedHtml.slice(0, pPos) + bannerFig + enhancedHtml.slice(pPos);
+              } else {
+                enhancedHtml = bannerFig + enhancedHtml;
+              }
+            }
           }
         }
 
-        // Chèn các ảnh thân bài vào dưới các thẻ H2 tương ứng hoặc các đoạn văn
-        bodyImages.forEach((img, i) => {
-          const h2Matches = [...enhancedHtml.matchAll(/<h2[^>]*>[\s\S]*?<\/h2>/gi)];
-          if (h2Matches[i]) {
-            const match = h2Matches[i];
-            const insertIdx = match.index + match[0].length;
+        // B. Lọc toàn bộ các ảnh thân bài (Body Images) chưa có trong nội dung
+        const missingBodyImages = bodyImages.filter(img => !enhancedHtml.includes(img.filename));
+
+        if (missingBodyImages.length > 0) {
+          // Lấy danh sách các đề mục H2 hiện có trong bài
+          const h2Regex = /<h2[^>]*>[\s\S]*?<\/h2>/gi;
+          const h2Matches = [...enhancedHtml.matchAll(h2Regex)];
+
+          // Bắt đầu chèn từ H2 thứ 2 trở đi để phân bổ đều khắp bài viết (H2 đầu tiên thường ngay dưới banner)
+          let h2Index = 1;
+          if (h2Matches.length <= 1) h2Index = 0;
+
+          missingBodyImages.forEach((img) => {
             const fig = `\n\n<figure style="margin: 24px 0; text-align: center;">
   <img src="${img.filename}" alt="${img.alt}" title="${img.title}" style="max-width: 100%; border-radius: 8px;">
   <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 6px;">${img.caption}</figcaption>
 </figure>\n\n`;
-            enhancedHtml = enhancedHtml.slice(0, insertIdx) + fig + enhancedHtml.slice(insertIdx);
-          } else {
-            // Nếu số ảnh nhiều hơn số thẻ H2, chèn ảnh vào cuối bài
-            const fig = `\n\n<figure style="margin: 24px 0; text-align: center;">
-  <img src="${img.filename}" alt="${img.alt}" title="${img.title}" style="max-width: 100%; border-radius: 8px;">
-  <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 6px;">${img.caption}</figcaption>
-</figure>\n\n`;
-            enhancedHtml += fig;
-          }
-        });
+
+            if (h2Matches.length > 0 && h2Index < h2Matches.length) {
+              const targetH2 = h2Matches[h2Index];
+              const insertPos = targetH2.index + targetH2[0].length;
+              enhancedHtml = enhancedHtml.slice(0, insertPos) + fig + enhancedHtml.slice(insertPos);
+              h2Index++;
+            } else {
+              // Nếu hết H2 hoặc bài ít H2, chèn trước mục FAQ hoặc trước đoạn cuối bài
+              const faqMatch = enhancedHtml.match(/<h[23][^>]*>(?:(?!<\/h[23]>)[\s\S])*?(?:FAQ|Preguntas Frecuentes)/i);
+              if (faqMatch) {
+                const insertPos = enhancedHtml.indexOf(faqMatch[0]);
+                enhancedHtml = enhancedHtml.slice(0, insertPos) + fig + enhancedHtml.slice(insertPos);
+              } else {
+                enhancedHtml += fig;
+              }
+            }
+          });
+        }
 
         docData.articleHtml = enhancedHtml;
       }
