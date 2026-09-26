@@ -1,4 +1,5 @@
 // server/server.js
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -12,7 +13,12 @@ import { authService } from './auth-service.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-auth-token']
+}));
+app.options('*', cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
@@ -672,6 +678,19 @@ app.post('/api/wp/publish', requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// Phục vụ frontend tĩnh khi triển khai production (nếu có thư mục dist đã build)
+const DIST_DIR = path.resolve('dist');
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR));
+  app.get('*', (req, res, next) => {
+    // Không can thiệp nếu là request API hoặc local-media
+    if (req.path.startsWith('/api') || req.path.startsWith('/local-media')) {
+      return next();
+    }
+    res.sendFile(path.join(DIST_DIR, 'index.html'));
+  });
+}
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 WP AutoPost Server đang chạy tại http://localhost:${PORT}`);

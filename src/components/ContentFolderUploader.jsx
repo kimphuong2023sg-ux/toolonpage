@@ -1,6 +1,6 @@
 // src/components/ContentFolderUploader.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { authFetch } from '../utils/auth';
+import { authFetch, getApiUrl } from '../utils/auth';
 
 export default function ContentFolderUploader({ targetItem, onApplyContent, onClose }) {
   const [uploading, setUploading] = useState(false);
@@ -93,9 +93,8 @@ export default function ContentFolderUploader({ targetItem, onApplyContent, onCl
         if (fetchErr.name === 'AbortError') {
           throw new Error(`Upload quá thời gian (${Math.round(timeoutMs / 1000)}s). Vui lòng thử nạp ít file hơn hoặc dùng tab "Nhập Đường Dẫn Thư Mục".`);
         }
-        // Fallback gọi trực tiếp vào port 5000 nếu Vite proxy có sự cố
-        console.warn('Vite proxy gặp sự cố, thử kết nối trực tiếp http://localhost:5000...', fetchErr);
-        res = await authFetch('http://localhost:5000/api/local/upload-package', {
+        // Thử lại với URL API đầy đủ nếu có lỗi mạng
+        res = await authFetch(getApiUrl('/api/local/upload-package'), {
           method: 'POST',
           body: formData
         });
@@ -154,8 +153,7 @@ export default function ContentFolderUploader({ targetItem, onApplyContent, onCl
           })
         });
       } catch (fetchErr) {
-        console.warn('Vite proxy gặp sự cố, thử kết nối trực tiếp http://localhost:5000...', fetchErr);
-        res = await authFetch('http://localhost:5000/api/local/scan-folder-path', {
+        res = await authFetch(getApiUrl('/api/local/scan-folder-path'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

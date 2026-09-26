@@ -3,7 +3,7 @@ import { analyzeRankMath } from '../utils/rankMathChecker';
 import InternalLinkManager from './InternalLinkManager';
 import ContentFolderUploader from './ContentFolderUploader';
 import { extractInternalLinks, insertCustomInternalLink } from '../utils/internalLinker';
-import { authFetch } from '../utils/auth';
+import { authFetch, getApiUrl } from '../utils/auth';
 import { setTrackerAction } from '../utils/activityTracker';
 
 export default function EditorModal({ item, siteItems = [], onClose, onSaveSuccess }) {
@@ -279,7 +279,7 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
           body: formData
         });
       } catch (err) {
-        res = await authFetch('http://localhost:5000/api/local/upload-package', {
+        res = await authFetch(getApiUrl('/api/local/upload-package'), {
           method: 'POST',
           body: formData
         });
@@ -770,7 +770,7 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
                 <div>
                   {featuredImage.filename ? (
                     <img 
-                      src={`/local-media/${featuredImage.filename}`} 
+                      src={getApiUrl(`/local-media/${featuredImage.filename}`)} 
                       alt="Featured" 
                       style={{ width: '100%', height: '90px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border-accent)' }} 
                     />
@@ -999,7 +999,7 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
                     <div dangerouslySetInnerHTML={{ 
                       __html: contentHtml.replace(/src=["']([^"']+)["']/g, (match, src) => {
                         if (!src.startsWith('http') && !src.startsWith('/')) {
-                          return `src="/local-media/${src}"`;
+                          return `src="${getApiUrl(`/local-media/${src}`)}"`;
                         }
                         return match;
                       }) 
@@ -1037,7 +1037,7 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
                     <div key={idx} className="image-item-card">
                       <div>
                         <img 
-                          src={`/local-media/${img.filename}`} 
+                          src={getApiUrl(`/local-media/${img.filename}`)} 
                           alt={img.alt} 
                           className="image-thumb-preview"
                           onError={(e) => { e.target.style.display = 'none'; }}

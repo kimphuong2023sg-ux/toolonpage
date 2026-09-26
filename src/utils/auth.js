@@ -125,9 +125,20 @@ export function clearAuth(scope = 'auto') {
   removeUser(scope);
 }
 
+// Base URL của API (Ví dụ: https://api.toolseo.uk hoặc để trống nếu chạy cùng domain)
+export const API_BASE_URL = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
+
+export function getApiUrl(url = '') {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return API_BASE_URL ? `${API_BASE_URL}${path}` : path;
+}
+
 // Wrapper fetch tự động đính kèm Token xác thực tương ứng từng cổng (User hoặc Admin)
 export async function authFetch(url, options = {}, scope = 'auto') {
-  const resolvedScope = resolveScope(scope, url);
+  const fullUrl = getApiUrl(url);
+  const resolvedScope = resolveScope(scope, fullUrl);
   const token = getToken(resolvedScope);
   const headers = new Headers(options.headers || {});
 
@@ -140,7 +151,7 @@ export async function authFetch(url, options = {}, scope = 'auto') {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(fullUrl, {
     ...options,
     headers
   });

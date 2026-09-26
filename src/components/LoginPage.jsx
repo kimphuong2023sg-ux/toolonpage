@@ -1,5 +1,6 @@
 // src/components/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '../utils/auth';
 
 export default function LoginPage({ portal = 'auto', onLoginSuccess, onNavigate }) {
   const [username, setUsername] = useState('');
@@ -17,7 +18,7 @@ export default function LoginPage({ portal = 'auto', onLoginSuccess, onNavigate 
 
   // Nhận diện IP của máy hiện tại để người dùng tiện tra cứu
   useEffect(() => {
-    fetch('/api/auth/my-ip')
+    fetch(getApiUrl('/api/auth/my-ip'))
       .then(res => res.json())
       .then(data => {
         if (data.ip) setClientIp(data.ip);
@@ -45,7 +46,7 @@ export default function LoginPage({ portal = 'auto', onLoginSuccess, onNavigate 
     setErrorInfo(null);
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
