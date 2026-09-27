@@ -8,6 +8,8 @@ import SiteModal from './components/SiteModal';
 import LoginPage from './components/LoginPage';
 import AdminPage from './components/AdminPage';
 import KickoutModal from './components/KickoutModal';
+import BotGuideModal from './components/BotGuideModal';
+import DocxBatchModal from './components/DocxBatchModal';
 import { getToken, setToken, getUser, setUser, clearAuth, authFetch } from './utils/auth';
 import { setTrackerSite, setTrackerAction, sendHeartbeatWithTracking } from './utils/activityTracker';
 
@@ -42,6 +44,9 @@ export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSiteModalOpen, setIsSiteModalOpen] = useState(false);
+  const [isBotGuideOpen, setIsBotGuideOpen] = useState(false);
+  const [isDocxBatchOpen, setIsDocxBatchOpen] = useState(false);
+  const [docxQueueCount, setDocxQueueCount] = useState(0);
 
   // Lắng nghe sự kiện thay đổi URL từ trình duyệt (nút Back/Forward)
   useEffect(() => {
@@ -219,8 +224,51 @@ export default function App() {
 
   useEffect(() => {
     if (isToolLoggedIn && currentRoute === '/') {
-      fetchAllData();
+      // Khi tải lại trang (F5) hoặc mở trang mới, làm sạch kết quả kiểm tra cũ (In-Memory session - không lưu dữ liệu)
+      authFetch('/api/spineditor/clear-results', { method: 'POST' }, 'user')
+        .catch(() => {})
+        .finally(() => {
+          fetchAllData();
+        });
     }
+  }, [isToolLoggedIn, currentRoute]);
+
+  // TỰ ĐỘNG ĐỒNG BỘ KẾT QUẢ TỪ BOT SPINDITOR VỀ TOOLONPAGE THEO THỜI GIAN THỰC (REALTIME)
+  useEffect(() => {
+    if (!isToolLoggedIn || currentRoute !== '/') return;
+
+    const syncSpineditorResults = async () => {
+      try {
+        const res = await authFetch('/api/spineditor/results', {}, 'user');
+        const data = await res.json();
+        if (data.success && data.results) {
+          setItems(prevItems => {
+            if (!prevItems || prevItems.length === 0) return prevItems;
+            let changed = false;
+            const updated = prevItems.map(item => {
+              const key = (item.slug || item.id || '').toString().toLowerCase().replace(/(^\/|\/$)/g, '');
+              const latest = data.results[key] || data.results[`id_${item.id}`] || null;
+              if (latest && JSON.stringify(item.spineditor) !== JSON.stringify(latest)) {
+                changed = true;
+                return { ...item, spineditor: latest };
+              }
+              return item;
+            });
+            return changed ? updated : prevItems;
+          });
+        }
+
+        // Đồng bộ số lượng bài trong hàng đợi docx
+        const queueRes = await authFetch('/api/spineditor/docx-queue', {}, 'user');
+        const queueData = await queueRes.json();
+        if (queueData.success && Array.isArray(queueData.queue)) {
+          setDocxQueueCount(queueData.queue.length);
+        }
+      } catch (e) {}
+    };
+
+    const interval = setInterval(syncSpineditorResults, 3000);
+    return () => clearInterval(interval);
   }, [isToolLoggedIn, currentRoute]);
 
   // --- XỬ LÝ ĐĂNG NHẬP / ĐĂNG XUẤT TOOL USER ---
@@ -352,6 +400,9 @@ export default function App() {
         onRefresh={fetchAllData} 
         loading={loading}
         onOpenSiteModal={() => setIsSiteModalOpen(true)}
+        onOpenBotGuide={() => setIsBotGuideOpen(true)}
+        onOpenDocxBatch={() => setIsDocxBatchOpen(true)}
+        docxQueueCount={docxQueueCount}
         currentUser={toolUser}
         onNavigate={navigate}
         onLogout={handleToolLogout}
@@ -389,6 +440,23 @@ export default function App() {
           fetchAllData();
         }}
       />
+
+      {/* MODAL HƯỚNG DẪN & BOT SPINETITOR */}
+      {isBotGuideOpen && (
+        <BotGuideModal 
+          onClose={() => setIsBotGuideOpen(false)} 
+          onResultsCleared={() => {
+            setItems(prev => prev.map(item => ({ ...item, spineditor: null })));
+          }}
+        />
+      )}
+
+      {/* MODAL KÉO THẢ QUÉT DOCX HÀNG LOẠT */}
+      {isDocxBatchOpen && (
+        <DocxBatchModal
+          onClose={() => setIsDocxBatchOpen(false)}
+        />
+      )}
 
       {/* CẢNH BÁO BỊ ĐÁ PHIÊN KHI MÁY KHÁC ĐĂNG NHẬP */}
       {kickoutMessage && (

@@ -204,25 +204,79 @@
       "role": "member",
       "status": "active",
       "allowedIps": [],
-      "currentSessionId": "sess_c327d211-3d0f-48db-8d73-38dceea5fc8b",
-      "lastLoginAt": "2026-09-26T02:18:04.768Z",
+      "currentSessionId": "sess_92321414-40f6-4f45-a862-cd3e7b5a7c71",
+      "lastLoginAt": "2026-09-27T03:59:15.238Z",
       "lastLoginIp": "127.0.0.1",
       "createdAt": "2026-09-25T02:20:26.339Z",
-      "lastActiveAt": "2026-09-26T07:33:29.817Z",
-      "lastHeartbeatAt": "2026-09-26T07:33:29.817Z",
+      "lastActiveAt": "2026-09-27T03:59:15.241Z",
+      "lastHeartbeatAt": "2026-09-27T03:59:15.241Z",
       "currentSite": {
         "id": "https://mexboss.sh",
         "name": "Mexboss Mexico",
         "url": "https://mexboss.sh"
       },
       "currentAction": {
-        "type": "publish_success",
-        "title": "Vừa xuất bản: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (Xuất bản)",
-        "detail": "ID: 67 | SEO: 95/100 | Lúc 14:33:29",
+        "type": "login",
+        "title": "Đăng nhập vào hệ thống",
+        "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
         "siteName": "Mexboss Mexico",
-        "timestamp": "2026-09-26T07:33:29.817Z"
+        "timestamp": "2026-09-27T03:59:15.241Z"
       },
       "activityHistory": [
+        {
+          "id": "act_1790481555241_ij5e",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-27T03:59:15.241Z"
+        },
+        {
+          "id": "act_1790481346730_57hf",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-27T03:55:46.730Z"
+        },
+        {
+          "id": "act_1790481345352_noqe",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-27T03:55:45.352Z"
+        },
+        {
+          "id": "act_1790481345256_7s58",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-27T03:55:45.256Z"
+        },
+        {
+          "id": "act_1790480740159_84br",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-27T03:45:40.159Z"
+        },
+        {
+          "id": "act_1790480735085_clrf",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-27T03:45:35.084Z"
+        },
         {
           "id": "act_1790408009817_wkxl",
           "type": "publish_success",
@@ -618,60 +672,6 @@
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
           "timestamp": "2026-09-26T04:04:57.829Z"
-        },
-        {
-          "id": "act_1790395483162_l41f",
-          "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:04:43.162Z"
-        },
-        {
-          "id": "act_1790395403344_q3n8",
-          "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%: Sitio Oficial en México 2026\"",
-          "detail": "Slug: /slots (Trang)",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:03:23.344Z"
-        },
-        {
-          "id": "act_1790395403317_k0s5",
-          "type": "publish_success",
-          "title": "Vừa xuất bản: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (Xuất bản)",
-          "detail": "ID: 27 | SEO: 98/100 | Lúc 11:03:23",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:03:23.317Z"
-        },
-        {
-          "id": "act_1790395403305_9kvt",
-          "type": "publish_success",
-          "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (/slots) | SEO Rank Math: 0/100",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:03:23.305Z"
-        },
-        {
-          "id": "act_1790395400261_b38r",
-          "type": "publishing",
-          "title": "Đang đăng bài: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (Xuất bản)",
-          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:03:20.261Z"
-        },
-        {
-          "id": "act_1790395381391_vdxf",
-          "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\"",
-          "detail": "Tab: Điều hướng Internal Link",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:03:01.391Z"
         }
       ]
     },
@@ -736,6 +736,24 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_1790481555239_ze5n5",
+      "timestamp": "2026-09-27T03:59:15.239Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1790481345254_oqhnm",
+      "timestamp": "2026-09-27T03:55:45.254Z",
+      "username": "michael",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
     {
       "id": "log_1790389084771_yewhz",
       "timestamp": "2026-09-26T02:18:04.771Z",

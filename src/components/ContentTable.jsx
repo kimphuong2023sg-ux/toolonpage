@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import SpineditorModal from './SpineditorModal';
 
 export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) {
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'pages', 'posts', 'empty'
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'pages', 'posts', 'empty', 'plagiarized'
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSpineditorItem, setSelectedSpineditorItem] = useState(null);
 
   // Lọc dữ liệu
   const filteredItems = items.filter(item => {
@@ -10,6 +12,7 @@ export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) 
     if (activeTab === 'pages' && item.type !== 'page') return false;
     if (activeTab === 'posts' && item.type !== 'post') return false;
     if (activeTab === 'empty' && (item.word_count > 30 || item.seo_status === 'green')) return false;
+    if (activeTab === 'plagiarized' && (!item.spineditor || item.spineditor.status !== 'failed')) return false;
 
     // Lọc theo từ khóa tìm kiếm
     if (searchTerm.trim()) {
@@ -25,6 +28,7 @@ export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) 
   const totalPages = items.filter(i => i.type === 'page').length;
   const totalPosts = items.filter(i => i.type === 'post').length;
   const totalEmpty = items.filter(i => i.word_count === 0 || i.seo_status === 'yellow-empty').length;
+  const totalPlagiarized = items.filter(i => i.spineditor && i.spineditor.status === 'failed').length;
 
   return (
     <div className="content-table-card">
@@ -55,6 +59,15 @@ export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) 
           >
             🟡 Cần Bơm Bài (Trống) <span className="tab-badge">{totalEmpty}</span>
           </button>
+          {totalPlagiarized > 0 && (
+            <button 
+              className={`tab-btn ${activeTab === 'plagiarized' ? 'active' : ''}`}
+              onClick={() => setActiveTab('plagiarized')}
+              style={{ color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+            >
+              ⛔ Trùng Lặp &gt; 10% <span className="tab-badge" style={{ background: '#ef4444', color: '#fff' }}>{totalPlagiarized}</span>
+            </button>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -81,16 +94,17 @@ export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) 
             <tr>
               <th style={{ width: '80px' }}>Phân loại</th>
               <th>Tiêu Đề & Đường Dẫn (Slug)</th>
-              <th style={{ width: '180px' }}>Chuyên mục</th>
-              <th style={{ width: '140px' }}>Số Từ</th>
-              <th style={{ width: '170px' }}>Trạng Thái SEO</th>
-              <th style={{ width: '230px', textAlign: 'right' }}>Thao Tác</th>
+              <th style={{ width: '170px' }}>Chuyên mục</th>
+              <th style={{ width: '130px' }}>Số Từ</th>
+              <th style={{ width: '150px' }}>Trạng Thái SEO</th>
+              <th style={{ width: '160px' }}>Unique (Sniper)</th>
+              <th style={{ width: '220px', textAlign: 'right' }}>Thao Tác</th>
             </tr>
           </thead>
           <tbody>
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                   Không tìm thấy nội dung nào phù hợp.
                 </td>
               </tr>
@@ -151,6 +165,40 @@ export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) 
                         </span>
                       )}
                     </td>
+                    <td>
+                      {item.spineditor ? (
+                        item.spineditor.status === 'passed' ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSpineditorItem(item)}
+                            className="status-badge green"
+                            style={{ cursor: 'pointer', border: '1px solid rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.15)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', padding: '4px 8px' }}
+                            title="Bấm để xem chi tiết độ Unique Spineditor"
+                          >
+                            <span>🛡️</span> {item.spineditor.uniqueScore}% 🟢
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSpineditorItem(item)}
+                            className="status-badge red"
+                            style={{ cursor: 'pointer', border: '1px solid rgba(239, 68, 68, 0.6)', background: 'rgba(239, 68, 68, 0.22)', color: '#f87171', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', padding: '4px 8px', fontWeight: 700 }}
+                            title="BỊ TỪ CHỐI: Trùng lặp > 10%! Bấm để xem các câu bị trùng"
+                          >
+                            <span>⛔</span> Trùng {item.spineditor.duplicateScore}% 🔴
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSpineditorItem(item)}
+                          style={{ cursor: 'pointer', border: '1px dashed #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', padding: '3px 8px', borderRadius: '4px' }}
+                          title="Chưa check Spineditor. Bấm để xem chi tiết"
+                        >
+                          ⚪ Chưa check
+                        </button>
+                      )}
+                    </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         <button 
@@ -193,6 +241,14 @@ export default function ContentTable({ items = [], onSelectForEdit, onAddNew }) 
           </tbody>
         </table>
       </div>
+
+      {/* Modal chi tiết kết quả Spineditor */}
+      {selectedSpineditorItem && (
+        <SpineditorModal
+          item={selectedSpineditorItem}
+          onClose={() => setSelectedSpineditorItem(null)}
+        />
+      )}
     </div>
   );
 }

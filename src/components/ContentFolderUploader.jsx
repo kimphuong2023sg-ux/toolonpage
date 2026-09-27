@@ -837,6 +837,44 @@ export default function ContentFolderUploader({ targetItem, onApplyContent, onCl
             </div>
           )}
 
+          {/* CẢNH BÁO CHI TIẾT NẾU BỊ TỪ CHỐI DO TRÙNG LẶP SPINETITOR */}
+          {validationResult.validation.checks.find(c => c.id === 'spineditor_unique' && c.status === 'fail') && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.5)',
+              borderRadius: '8px',
+              padding: '14px 16px',
+              marginTop: '4px'
+            }}>
+              <div style={{ color: '#f87171', fontWeight: 800, fontSize: '13px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>⛔</span> BÀI VIẾT BỊ TỪ CHỐI DO TRÙNG LẶP VƯỢT QUY ĐỊNH 10%:
+              </div>
+              <div style={{ fontSize: '12px', color: '#fca5a5', marginBottom: '10px' }}>
+                {validationResult.validation.checks.find(c => c.id === 'spineditor_unique')?.message}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
+                {(validationResult.validation.checks.find(c => c.id === 'spineditor_unique')?.duplicateSentences || []).map((s, idx) => {
+                  const sText = typeof s === 'string' ? s : (s.sentence || s.text || '');
+                  const sUrl = typeof s === 'object' ? (s.source_url || s.url || '') : '';
+                  const sPercent = typeof s === 'object' ? s.percent : null;
+                  return (
+                    <div key={idx} style={{ background: '#0a101c', padding: '8px 12px', borderRadius: '4px', borderLeft: '3px solid #ef4444', fontSize: '12px', color: '#fca5a5' }}>
+                      <div>"{sText}"</div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', fontSize: '10.5px', color: '#94a3b8' }}>
+                        {sUrl ? (
+                          <span>↳ Nguồn trùng: <a href={sUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8' }}>{sUrl}</a></span>
+                        ) : (
+                          <span>↳ Phát hiện trùng lặp trên Google</span>
+                        )}
+                        {sPercent && <span style={{ color: '#f87171', fontWeight: 700 }}>Trùng {sPercent}%</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* CÁC NÚT HÀNH ĐỘNG */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', flexWrap: 'wrap', gap: '10px' }}>
             <button
@@ -858,15 +896,26 @@ export default function ContentFolderUploader({ targetItem, onApplyContent, onCl
                 fontSize: '13px',
                 padding: '9px 24px',
                 fontWeight: 800,
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+                background: !validationResult.validation.isValid 
+                  ? '#334155' 
+                  : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                boxShadow: !validationResult.validation.isValid 
+                  ? 'none' 
+                  : '0 4px 14px rgba(16, 185, 129, 0.4)',
+                cursor: !validationResult.validation.isValid ? 'not-allowed' : 'pointer',
+                opacity: !validationResult.validation.isValid ? 0.7 : 1,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}
+              disabled={!validationResult.validation.isValid}
               onClick={handleApply}
+              title={!validationResult.validation.isValid ? 'Bài viết vi phạm tiêu chuẩn trùng lặp > 10% nên bị từ chối bơm bài' : ''}
             >
-              <span>🚀</span> BƠM NỘI DUNG & GÁN CHUẨN XÁC VÀO TRÌNH SOẠN THẢO
+              <span>{validationResult.validation.isValid ? '🚀' : '⛔'}</span> 
+              {validationResult.validation.isValid 
+                ? 'BƠM NỘI DUNG & GÁN CHUẨN XÁC VÀO TRÌNH SOẠN THẢO' 
+                : 'BÀI VIẾT BỊ TỪ CHỐI (TRÙNG LẶP > 10%)'}
             </button>
           </div>
 

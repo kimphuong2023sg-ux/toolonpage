@@ -4,6 +4,7 @@ import InternalLinkManager from './InternalLinkManager';
 import ContentFolderUploader from './ContentFolderUploader';
 import { extractInternalLinks, insertCustomInternalLink } from '../utils/internalLinker';
 import { authFetch, getApiUrl } from '../utils/auth';
+import SpineditorModal from './SpineditorModal';
 import { setTrackerAction } from '../utils/activityTracker';
 
 export default function EditorModal({ item, siteItems = [], onClose, onSaveSuccess }) {
@@ -43,6 +44,8 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
   const [savingWp, setSavingWp] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
   const [showFolderUploader, setShowFolderUploader] = useState(false);
+  const [showSpineditorModal, setShowSpineditorModal] = useState(false);
+  const [copiedCleanText, setCopiedCleanText] = useState(false);
   const [mediaMap, setMediaMap] = useState({});
 
   // Lấy bản đồ các ảnh đã có sẵn trên WordPress để không bị upload lại
@@ -588,7 +591,88 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
             )}
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Nút Copy Văn Bản Sạch (Plain Text) */}
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{
+                fontSize: '12px',
+                padding: '6px 12px',
+                background: '#0f172a',
+                color: copiedCleanText ? '#34d399' : '#94a3b8',
+                borderColor: copiedCleanText ? '#10b981' : 'var(--border-subtle)'
+              }}
+              onClick={() => {
+                let clean = (contentHtml || '')
+                  .replace(/<style[\s\S]*?<\/style>/gi, '')
+                  .replace(/<script[\s\S]*?<\/script>/gi, '')
+                  .replace(/<figure[\s\S]*?<\/figure>/gi, '')
+                  .replace(/<img[^>]*>/gi, '')
+                  .replace(/<div[^>]*class="[^"]*(?:toc|table-of-contents|seo-badge)[^"]*"[\s\S]*?<\/div>/gi, '')
+                  .replace(/<\/h[1-6]>/gi, '\n\n')
+                  .replace(/<\/p>/gi, '\n\n')
+                  .replace(/<br\s*\/?>/gi, '\n')
+                  .replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1')
+                  .replace(/<[^>]+>/g, '')
+                  .replace(/&nbsp;/g, ' ')
+                  .replace(/&amp;/g, '&')
+                  .replace(/\n\s*\n/g, '\n\n')
+                  .trim();
+                navigator.clipboard.writeText(clean);
+                setCopiedCleanText(true);
+                setTimeout(() => setCopiedCleanText(false), 3000);
+              }}
+              title="Copy toàn bộ chữ sạch (bỏ thẻ ảnh, link, style) để dán sang Spineditor"
+            >
+              <span>📋</span> {copiedCleanText ? '✓ Đã Copy Text!' : 'Copy Text Sạch'}
+            </button>
+
+            {/* Huy hiệu Spineditor */}
+            {item?.spineditor ? (
+              <button
+                type="button"
+                onClick={() => setShowSpineditorModal(true)}
+                style={{
+                  fontSize: '12px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: item.spineditor.status === 'passed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.2)',
+                  borderColor: item.spineditor.status === 'passed' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.5)',
+                  color: item.spineditor.status === 'passed' ? '#34d399' : '#f87171',
+                  border: '1px solid'
+                }}
+                title="Bấm để xem chi tiết đối soát trùng lặp Spineditor"
+              >
+                <span>{item.spineditor.status === 'passed' ? '🛡️' : '⛔'}</span>
+                {item.spineditor.status === 'passed' 
+                  ? `${item.spineditor.uniqueScore}% Unique 🟢` 
+                  : `Trùng ${item.spineditor.duplicateScore}% (Từ chối) 🔴`}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowSpineditorModal(true)}
+                style={{
+                  fontSize: '12px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  background: '#0f172a',
+                  color: '#94a3b8',
+                  border: '1px dashed var(--border-subtle)'
+                }}
+                title="Chưa kiểm tra Spineditor. Bấm để xem chi tiết"
+              >
+                ⚪ Check Sniper
+              </button>
+            )}
+
             <button 
               type="button"
               className="btn-secondary" 
@@ -610,6 +694,33 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
             <button className="modal-close-btn" onClick={onClose} title="Đóng">✕</button>
           </div>
         </div>
+
+        {/* CẢNH BÁO BÀI VIẾT BỊ TỪ CHỐI DO TRÙNG LẶP */}
+        {item?.spineditor?.status === 'failed' && (
+          <div 
+            onClick={() => setShowSpineditorModal(true)}
+            style={{
+              padding: '10px 24px',
+              background: 'rgba(239, 68, 68, 0.25)',
+              borderBottom: '1px solid rgba(239, 68, 68, 0.5)',
+              color: '#fca5a5',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>⛔</span>
+              <span>CẢNH BÁO: Bài viết này đang bị TỪ CHỐI do trùng lặp {item.spineditor.duplicateScore}% trên Spineditor (Vượt quá quy định ≤ 10%).</span>
+            </div>
+            <span style={{ textDecoration: 'underline', color: '#fff', fontSize: '12px' }}>
+              Xem danh sách {item.spineditor.duplicateCount || 0} câu bị trùng ➔
+            </span>
+          </div>
+        )}
 
         {/* Thông báo trạng thái */}
         {statusMessage && (
@@ -1264,6 +1375,14 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
             </button>
           </div>
         </div>
+
+        {/* Modal chi tiết kết quả Spineditor */}
+        {showSpineditorModal && (
+          <SpineditorModal
+            item={item}
+            onClose={() => setShowSpineditorModal(false)}
+          />
+        )}
       </div>
     </div>
   );

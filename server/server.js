@@ -6,9 +6,11 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
+import mammoth from 'mammoth';
 import { wpService } from './wp-service.js';
 import { ContentParser } from './content-parser.js';
 import { authService } from './auth-service.js';
+import { spineditorService } from './spineditor-service.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -114,7 +116,8 @@ const uploadStorage = multer.diskStorage({
     } catch (e) {}
 
     const safeName = base.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim();
-    cb(null, safeName || `upload_${Date.now()}`);
+    const uniquePrefix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    cb(null, `${uniquePrefix}_${safeName || 'file'}`);
   }
 });
 
@@ -415,6 +418,17 @@ app.delete('/api/sites/:id', requireAuth, (req, res) => {
 app.get('/api/content/all', requireAuth, async (req, res) => {
   try {
     const data = await wpService.getAllContent();
+    if (data.success && Array.isArray(data.items)) {
+      const allResults = spineditorService.getAllResults();
+      data.items = data.items.map(item => {
+        const key = (item.slug || item.id || '').toString().toLowerCase().replace(/(^\/|\/$)/g, '');
+        const spineditor = allResults[key] || allResults[`id_${item.id}`] || null;
+        return {
+          ...item,
+          spineditor
+        };
+      });
+    }
     res.json(data);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -686,6 +700,16 @@ app.post('/api/wp/publish', requireAuth, async (req, res) => {
       }
     }
 
+    // Kiểm tra quy tắc trùng lặp Spineditor (Không cho phép xuất bản nếu trùng > 10% trừ khi force_publish)
+    const spineditorCheck = spineditorService.getResult(slug || id);
+    if (spineditorCheck && spineditorCheck.status === 'failed' && req.body.force_publish !== true) {
+      return res.status(400).json({
+        success: false,
+        error: `⛔ TỪ CHỐI XUẤT BẢN: Bài viết đang bị trùng lặp ${spineditorCheck.duplicateScore}% trên Spineditor (Vượt quá quy tắc cho phép ≤ 10%). Vui lòng viết lại các câu trùng lặp hoặc liên hệ Admin!`,
+        spineditor: spineditorCheck
+      });
+    }
+
     const saved = await wpService.saveContent({
       id,
       type,
@@ -708,6 +732,296 @@ app.post('/api/wp/publish', requireAuth, async (req, res) => {
     }, req.clientIp);
 
     res.json({ success: true, ...saved });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// 8. HỆ THỐNG SPINETITOR & PLAGIARISM CHECK
+// ==========================================
+
+// Lấy danh sách các bài viết kèm nội dung Plain Text sạch để Bot tự động check
+app.get('/api/spineditor/articles', async (req, res) => {
+  try {
+    const { source } = req.query; // 'docx' | 'wp' | 'all'
+    const docxQueue = spineditorService.getDocxQueue();
+
+    // Nếu yêu cầu rõ ràng nguồn docx HOẶC đang có bài trong hàng đợi docx (và client không ép buộc lấy wp)
+    if (source === 'docx' || (docxQueue.length > 0 && source !== 'wp')) {
+      return res.json({
+        success: true,
+        source: 'docx',
+        total: docxQueue.length,
+        articles: docxQueue
+      });
+    }
+
+    const data = await wpService.getAllContent();
+    const allResults = spineditorService.getAllResults();
+
+    let articles = [];
+    if (data.success && Array.isArray(data.items)) {
+      articles = data.items.map(item => {
+        const key = (item.slug || item.id || '').toString().toLowerCase().replace(/(^\/|\/$)/g, '');
+        const spineditor = allResults[key] || allResults[`id_${item.id}`] || null;
+        const cleanText = spineditorService.extractCleanText(item.content_html || '');
+        return {
+          id: item.id,
+          title: item.title,
+          slug: item.slug,
+          type: item.type,
+          word_count: item.word_count || 0,
+          clean_text: cleanText,
+          spineditor
+        };
+      });
+    }
+
+    res.json({
+      success: true,
+      source: 'wp',
+      total: articles.length,
+      articles
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Nạp hàng loạt file .docx (Kéo thả thư mục content hoặc nhiều file docx) vào hàng đợi quét Unique
+app.post('/api/spineditor/upload-docx-queue', upload.array('files'), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, error: 'Vui lòng chọn hoặc kéo thả ít nhất 1 file .docx!' });
+    }
+
+    let metaList = [];
+    try {
+      if (req.body.metadata) {
+        metaList = JSON.parse(req.body.metadata);
+      }
+    } catch (e) {}
+
+    const parsedArticles = [];
+
+    for (let i = 0; i < req.files.length; i++) {
+      const file = req.files[i];
+      const meta = metaList[i] || {};
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (ext !== '.docx' && ext !== '.doc') {
+        try { fs.unlinkSync(file.path); } catch (e) {}
+        continue;
+      }
+
+      // Xác định tên thư mục cha hoặc slug từ relativePath
+      // Ví dụ: "01-fortune-gems-500-mexboss/article.docx" -> folderName: "01-fortune-gems-500-mexboss"
+      const relPath = (meta.relativePath || file.originalname || '').replace(/\\/g, '/');
+      const parts = relPath.split('/').filter(Boolean);
+      let folderName = parts.length > 1 ? parts[parts.length - 2] : path.basename(file.originalname, ext);
+
+      // Chuẩn hóa slug: ví dụ "01-fortune-gems-500-mexboss" -> giữ nguyên để map đúng bài
+      let slug = folderName
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+
+      // Đọc nội dung file docx bằng mammoth
+      let rawText = '';
+      try {
+        const docResult = await mammoth.extractRawText({ path: file.path });
+        rawText = (docResult.value || '').trim();
+      } catch (errDoc) {
+        console.error(`Lỗi đọc file docx ${file.originalname}:`, errDoc);
+      }
+
+      // Dọn file tạm khỏi staging sau khi đã đọc text vào bộ nhớ
+      try { fs.unlinkSync(file.path); } catch (e) {}
+
+      if (!rawText) continue;
+
+      // Trích xuất văn bản sạch chỉ có nội dung chính (loại bỏ metadata Rank Math, note, caption)
+      const cleanText = spineditorService.extractCleanText(rawText);
+      const wordCount = cleanText ? cleanText.split(/\s+/).filter(Boolean).length : 0;
+
+      // Trích xuất tiêu đề thực tế: dòng đầu tiên của cleanText (chính là Tiêu đề H1 bài viết)
+      const firstLine = cleanText.split('\n').map(l => l.trim()).filter(Boolean)[0] || '';
+      const title = firstLine.length > 5 && firstLine.length < 150 ? firstLine : folderName;
+
+      const item = {
+        id: `docx_${Date.now()}_${i}`,
+        slug: slug,
+        folderName: folderName,
+        filename: file.originalname,
+        title: title,
+        clean_text: cleanText,
+        word_count: wordCount,
+        uploadedAt: new Date().toISOString()
+      };
+
+      spineditorService.addDocxItem(item);
+      parsedArticles.push(item);
+    }
+
+    res.json({
+      success: true,
+      totalAdded: parsedArticles.length,
+      queue: spineditorService.getDocxQueue()
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Lấy danh sách hàng đợi các file .docx kèm kết quả kiểm tra mới nhất
+app.get('/api/spineditor/docx-queue', (req, res) => {
+  try {
+    res.json({
+      success: true,
+      queue: spineditorService.getDocxQueue()
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Xóa sạch toàn bộ hàng đợi docx
+app.post('/api/spineditor/clear-docx-queue', (req, res) => {
+  try {
+    spineditorService.clearDocxQueue();
+    res.json({ success: true, message: 'Đã làm mới hàng đợi docx.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Xóa 1 bài docx cụ thể khỏi hàng đợi
+app.post('/api/spineditor/remove-docx-item', (req, res) => {
+  try {
+    const { slug, id } = req.body;
+    spineditorService.removeDocxItem(slug || id);
+    res.json({ success: true, queue: spineditorService.getDocxQueue() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Cập nhật kết quả kiểm tra từ Spineditor Bot (Tampermonkey / Client)
+app.post('/api/spineditor/update-result', async (req, res) => {
+  try {
+    const { articleId, slug, title, uniqueScore, duplicateScore, duplicateSentences, checkedBy } = req.body;
+    if (!slug && !articleId) {
+      return res.status(400).json({ success: false, error: 'Thiếu thông tin slug hoặc articleId!' });
+    }
+
+    const saved = spineditorService.recordCheckResult({
+      articleId,
+      slug,
+      title,
+      uniqueScore,
+      duplicateScore,
+      duplicateSentences,
+      checkedBy: checkedBy || 'Spineditor Bot'
+    });
+
+    res.json({ success: true, result: saved });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Lấy toàn bộ kết quả kiểm tra
+app.get('/api/spineditor/results', (req, res) => {
+  try {
+    res.json({ success: true, results: spineditorService.getAllResults() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Xóa toàn bộ kết quả kiểm tra Spineditor (đưa về trạng thái ban đầu sạch sẽ)
+app.post('/api/spineditor/clear-results', (req, res) => {
+  try {
+    spineditorService.clearAllResults();
+    res.json({ success: true, message: 'Đã xóa toàn bộ kết quả kiểm tra Spineditor.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Trích xuất văn bản sạch từ HTML (hỗ trợ nút Copy Plain Text trên UI)
+app.post('/api/spineditor/clean-text', (req, res) => {
+  try {
+    const { html = '' } = req.body;
+    const cleanText = spineditorService.extractCleanText(html);
+    res.json({ success: true, cleanText });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Tải trọn bộ Chrome Extension dạng .ZIP để người dùng cài trực tiếp qua Developer Mode
+app.get('/api/spineditor/download-extension', (req, res) => {
+  try {
+    const extDir = path.resolve('extension');
+    if (!fs.existsSync(extDir)) {
+      return res.status(404).json({ success: false, error: 'Thư mục extension không tồn tại!' });
+    }
+
+    // Tự động nhận diện URL của Server (Ưu tiên VITE_API_URL trong .env, hoặc lấy qua HTTP request host)
+    let detectedApiUrl = process.env.VITE_API_URL;
+    if (!detectedApiUrl) {
+      const proto = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+      detectedApiUrl = `${proto}://${req.get('host')}`;
+    }
+    detectedApiUrl = detectedApiUrl.replace(/\/+$/, '');
+
+    const zip = new AdmZip();
+    zip.addLocalFolder(extDir, 'toolonpage-spineditor-extension');
+
+    // Tự động chèn link API server vào content.js, popup.html, manifest.json trong file zip
+    const entries = zip.getEntries();
+    for (const entry of entries) {
+      if (entry.entryName.endsWith('content.js')) {
+        let content = entry.getData().toString('utf8');
+        // Nếu tải từ môi trường server thực tế (không phải localhost), đổi apiUrl mặc định sang detectedApiUrl
+        if (!detectedApiUrl.includes('localhost') && !detectedApiUrl.includes('127.0.0.1')) {
+          content = content.replace(/apiUrl:\s*['"]http:\/\/localhost:5000['"]/g, `apiUrl: '${detectedApiUrl}'`);
+        }
+        content = content.replace(/serverApiUrl:\s*['"][^'"]*['"]/g, `serverApiUrl: '${detectedApiUrl}'`);
+        entry.setData(Buffer.from(content, 'utf8'));
+      }
+      if (entry.entryName.endsWith('popup.html')) {
+        let html = entry.getData().toString('utf8');
+        if (!detectedApiUrl.includes('localhost') && !detectedApiUrl.includes('127.0.0.1')) {
+          html = html.replace('value="http://localhost:5000"', `value="${detectedApiUrl}"`);
+        }
+        entry.setData(Buffer.from(html, 'utf8'));
+      }
+      if (entry.entryName.endsWith('manifest.json')) {
+        try {
+          const manifest = JSON.parse(entry.getData().toString('utf8'));
+          const perm = `${detectedApiUrl}/*`;
+          if (Array.isArray(manifest.host_permissions) && !manifest.host_permissions.includes(perm)) {
+            manifest.host_permissions.push(perm);
+          }
+          entry.setData(Buffer.from(JSON.stringify(manifest, null, 2), 'utf8'));
+        } catch (e) {
+          console.warn('Lỗi inject manifest permissions:', e);
+        }
+      }
+    }
+
+    const zipBuffer = zip.toBuffer();
+
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': 'attachment; filename="toolonpage-spineditor-extension.zip"',
+      'Content-Length': zipBuffer.length
+    });
+    res.send(zipBuffer);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

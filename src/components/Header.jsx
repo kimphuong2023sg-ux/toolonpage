@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Header({ wpStatus, onRefresh, loading, onOpenSiteModal, currentUser, onNavigate, onLogout }) {
+export default function Header({ wpStatus, onRefresh, loading, onOpenSiteModal, onOpenBotGuide, onOpenDocxBatch, docxQueueCount = 0, currentUser, onNavigate, onLogout }) {
   const siteDisplay = wpStatus?.site 
     ? wpStatus.site.replace(/^https?:\/\//, '')
     : 'Đang tải...';
@@ -56,6 +56,47 @@ export default function Header({ wpStatus, onRefresh, loading, onOpenSiteModal, 
             title="Đồng bộ lại dữ liệu từ WordPress"
           >
             {loading ? '🔄 Đang đồng bộ...' : '🔄 Đồng bộ WP'}
+          </button>
+
+          {/* Nút mở Kéo Thả Quét Docx Hàng Loạt */}
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onOpenDocxBatch}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderColor: 'rgba(16, 185, 129, 0.45)',
+              color: '#34d399',
+              background: 'rgba(16, 185, 129, 0.1)'
+            }}
+            title="Kéo thả hàng loạt thư mục bài viết hoặc file .docx để quét trùng lặp trước khi xuất bản"
+          >
+            <span>📂</span> Quét Docx Hàng Loạt
+            {docxQueueCount > 0 && (
+              <span style={{ fontSize: '10px', background: '#10b981', color: '#000', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
+                {docxQueueCount}
+              </span>
+            )}
+          </button>
+
+          {/* Nút mở Extension Spineditor */}
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onOpenBotGuide}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderColor: 'rgba(56, 189, 248, 0.4)',
+              color: '#38bdf8',
+              background: 'rgba(56, 189, 248, 0.08)'
+            }}
+            title="Mở hướng dẫn cài đặt trực tiếp Extension tự động quét Spineditor (Chrome Dev Mode)"
+          >
+            <span>⚡</span> Extension Spineditor
           </button>
 
           {/* Nút Đăng Xuất đơn giản cho trang tool */}

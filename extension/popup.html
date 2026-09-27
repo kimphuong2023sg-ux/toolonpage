@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>ToolOnpage Extension</title>
+  <style>
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #090e1a;
+      color: #f1f5f9;
+      box-sizing: border-box;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .icon {
+      font-size: 24px;
+    }
+    .title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #38bdf8;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 8px;
+    }
+    .btn {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+    }
+    .status-msg {
+      font-size: 11px;
+      text-align: center;
+      margin-top: 6px;
+      min-height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="icon">⚡</div>
+    <div>
+      <div class="title">ToolOnpage Spineditor Bot</div>
+      <div class="subtitle">Chrome Extension v1.0.0 (Dev Mode)</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+      <label style="margin-bottom: 0;">Địa chỉ API ToolOnpage:</label>
+      <div style="display: flex; gap: 4px;">
+        <button id="btn-quick-local" type="button" style="background: #1e293b; border: 1px solid #475569; color: #cbd5e1; font-size: 10px; padding: 2px 6px; border-radius: 4px; cursor: pointer;">💻 Local</button>
+        <button id="btn-quick-server" type="button" style="background: #0369a1; border: 1px solid #38bdf8; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-weight: 600;">🌐 Server</button>
+      </div>
+    </div>
+    <input id="api-url" type="text" value="http://localhost:5000" />
+  </div>
+
+  <div class="row">
+    <div class="form-group">
+      <label>Domain loại trừ:</label>
+      <input id="excluded-domain" type="text" value="mexboss.sh" />
+    </div>
+    <div class="form-group">
+      <label>Nghỉ (giây):</label>
+      <input id="delay-seconds" type="number" min="3" max="30" value="6" />
+    </div>
+  </div>
+
+  <button id="btn-save" class="btn btn-primary">💾 Lưu Cấu Hình</button>
+  <div id="status-msg" class="status-msg"></div>
+
+  <div style="margin-top: 12px; border-top: 1px solid #1e293b; padding-top: 10px;">
+    <button id="btn-open-spineditor" class="btn btn-secondary">🚀 Mở Trang Spineditor</button>
+    <button id="btn-open-tool" class="btn btn-secondary">🌐 Mở ToolOnpage</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

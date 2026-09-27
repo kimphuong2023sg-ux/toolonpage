@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import mammoth from 'mammoth';
+import { spineditorService } from './spineditor-service.js';
 
 const CONTENT_DIR = path.resolve('content');
 
@@ -764,8 +765,45 @@ export class ContentParser {
         : 'Thiếu thông số SEO (Sẽ tự động suy luận theo tiêu đề trang).'
     });
 
-    // Tổng kết tính hợp lệ: Cho phép nạp nếu có bài viết HOẶC có hình ảnh
-    const isFolderValid = hasDoc || imgCount >= 1;
+    // Kiểm tra 6: Kiểm tra độ trùng lặp Spineditor (Quy định ≤ 10%)
+    const spineditorCheck = spineditorService.getResult(docData.slug || targetItem?.slug || targetItem?.id);
+    let isPlagiarismViolated = false;
+    if (spineditorCheck) {
+      if (spineditorCheck.status === 'failed') {
+        isPlagiarismViolated = true;
+        checks.push({
+          id: 'spineditor_unique',
+          title: 'Kiểm tra sao chép Spineditor (Quy định trùng lặp ≤ 10%)',
+          status: 'fail',
+          uniqueScore: spineditorCheck.uniqueScore,
+          duplicateScore: spineditorCheck.duplicateScore,
+          duplicateCount: spineditorCheck.duplicateCount,
+          duplicateSentences: spineditorCheck.duplicateSentences || [],
+          message: `TỪ CHỐI: Trùng lặp ${spineditorCheck.duplicateScore}% (Vượt quá quy định 10% 🔴). Phát hiện ${spineditorCheck.duplicateCount} câu bị trùng lặp.`
+        });
+      } else {
+        checks.push({
+          id: 'spineditor_unique',
+          title: 'Kiểm tra sao chép Spineditor (Quy định trùng lặp ≤ 10%)',
+          status: 'pass',
+          uniqueScore: spineditorCheck.uniqueScore,
+          duplicateScore: spineditorCheck.duplicateScore,
+          message: `Đạt chuẩn Unique tuyệt đối: ${spineditorCheck.uniqueScore}% (Trùng lặp: ${spineditorCheck.duplicateScore}% ≤ 10% 🟢)`
+        });
+      }
+    } else {
+      checks.push({
+        id: 'spineditor_unique',
+        title: 'Kiểm tra sao chép Spineditor (Quy định trùng lặp ≤ 10%)',
+        status: 'warning',
+        uniqueScore: null,
+        duplicateScore: null,
+        message: 'Chưa quét độ trùng lặp. Khuyên dùng Bot Spineditor kiểm tra tự động trước khi xuất bản lên website.'
+      });
+    }
+
+    // Tổng kết tính hợp lệ: Cho phép nạp nếu có bài viết HOẶC có hình ảnh VÀ KHÔNG VI PHẠM TRÙNG LẶP
+    const isFolderValid = (hasDoc || imgCount >= 1) && !isPlagiarismViolated;
     let scoreEstimate = 50;
     if (docOk) scoreEstimate += 25;
     else if (hasDoc) scoreEstimate += 15;
@@ -773,9 +811,13 @@ export class ContentParser {
     else if (imgCount >= 1) scoreEstimate += 8;
     if (allWebp) scoreEstimate += 5;
     if (headingsOk) scoreEstimate += 5;
+    if (spineditorCheck && spineditorCheck.isPassed) scoreEstimate += 10;
+    if (isPlagiarismViolated) scoreEstimate = Math.min(scoreEstimate, 40);
 
     let summaryText = '';
-    if (hasDoc && imgCount >= 1) {
+    if (isPlagiarismViolated) {
+      summaryText = `⛔ TỪ CHỐI BƠM BÀI: Bài viết bị trùng lặp ${spineditorCheck.duplicateScore}% trên Spineditor (Vượt quá quy định ≤ 10%). Vui lòng viết lại các câu bị trùng!`;
+    } else if (hasDoc && imgCount >= 1) {
       summaryText = `🎉 GÓI NỘI DUNG HỢP LỆ (${scoreEstimate}/100)! Đã nạp thành công bài viết (${docData.wordCount.toLocaleString()} từ) và gắn ${imgCount} ảnh vào các mục.`;
     } else if (hasDoc) {
       summaryText = `📄 ĐÃ NẠP FILE BÀI VIẾT THÀNH CÔNG (${docData.wordCount.toLocaleString()} từ)! Chưa có hình ảnh đính kèm (Bạn có thể bổ sung thêm ảnh để đạt điểm tối đa).`;
@@ -802,7 +844,8 @@ export class ContentParser {
         images: bodyImages,
         content_html: docData.articleHtml || docData.rawHtml,
         word_count: docData.wordCount,
-        headings: docData.headings
+        headings: docData.headings,
+        spineditor: spineditorCheck || null
       }
     };
   }

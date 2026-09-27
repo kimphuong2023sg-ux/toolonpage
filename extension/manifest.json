@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "ToolOnpage - Spineditor Auto Bot",
+  "version": "1.0.0",
+  "description": "Tự động hóa kiểm tra trùng lặp nội dung từ ToolOnpage sang Spineditor qua SCheckPro",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://localhost/*",
+    "*://127.0.0.1/*",
+    "https://*.toolseo.uk/*",
+    "https://toolseo.uk/*",
+    "https://spineditor.com/*",
+    "http://spineditor.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://spineditor.com/kiem-tra-trung-lap-noi-dung*",
+        "http://spineditor.com/kiem-tra-trung-lap-noi-dung*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ToolOnpage Spineditor Bot"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
