@@ -13,6 +13,8 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
   const [copiedReport, setCopiedReport] = useState(false);
   const [isDropzoneCollapsed, setIsDropzoneCollapsed] = useState(false);
 
+  const MAX_QUEUE = 10; // Giới hạn tối đa 10 bài trong hàng đợi
+
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
 
@@ -61,6 +63,12 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
       return;
     }
 
+    // Kiểm tra giới hạn phía client trước khi gửi lên server
+    if (queue.length >= MAX_QUEUE) {
+      alert(`⚠️ Hàng đợi đã đầy (${queue.length}/${MAX_QUEUE} bài)!\n\nVui lòng xóa bớt bài đã quét xong trước khi nạp thêm.`);
+      return;
+    }
+
     setUploading(true);
     setUploadProgress(`Đang tải lên và phân tích ${docxFiles.length} file .docx...`);
 
@@ -79,8 +87,14 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
       const data = await res.json();
       if (data.success && Array.isArray(data.queue)) {
         setQueue(data.queue);
-        setUploadProgress(`✓ Đã nạp thành công ${data.totalAdded} bài viết vào hàng đợi!`);
-        setTimeout(() => setUploadProgress(''), 3000);
+        if (data.limitReached) {
+          // Hiển thị cảnh báo khi bị giới hạn
+          setUploadProgress(`⚠️ Đã nạp ${data.totalAdded} bài. Hàng đợi đã đầy (${data.currentCount}/${data.maxAllowed}). Các bài vượt giới hạn bị bỏ qua!`);
+          setTimeout(() => setUploadProgress(''), 6000);
+        } else {
+          setUploadProgress(`✓ ${data.message || `Đã nạp thành công ${data.totalAdded} bài viết!`}`);
+          setTimeout(() => setUploadProgress(''), 3000);
+        }
       } else {
         alert(data.error || 'Lỗi khi nạp file docx');
       }
@@ -210,10 +224,8 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
     } catch (e) {}
   };
 
-  // Copy Báo Cáo Nghiệm Thu Trùng Lặp Gửi Cho Writer
-  const handleCopyReport = () => {
-    if (queue.length === 0) return;
-
+  // Tạo nội dung báo cáo nghiệm thu
+  const generateReportText = () => {
     let report = `📊 BÁO CÁO NGHIỆM THU ĐỘ TRÙNG LẶP NỘI DUNG (SPINETITOR / SNIPER)\n`;
     report += `Thời gian: ${new Date().toLocaleString('vi-VN')}\n`;
     report += `Tổng số bài kiểm tra: ${queue.length} bài\n`;
@@ -228,11 +240,21 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
       if (!sp) {
         report += `Trạng thái: ⚪ Chưa kiểm tra\n\n`;
       } else if (sp.status === 'passed') {
-        report += `Kết quả: 🟢 ĐẠT CHUẨN (Unique: ${sp.uniqueScore}% | Trùng lặp: ${sp.duplicateScore}% ≤ 10%)\n\n`;
+        report += `Kết quả: 🟢 ĐẠT CHUẨN (Unique: ${sp.uniqueScore}% | Trùng lặp: ${sp.duplicateScore}% ≤ 10%)\n`;
+        if (sp.duplicateSentences && sp.duplicateSentences.length > 0) {
+          report += `Các câu trùng lặp phát hiện được (có thể viết lại để tối ưu 100% Unique):\n`;
+          sp.duplicateSentences.forEach((s, sIdx) => {
+            const text = typeof s === 'string' ? s : (s.sentence || s.text || '');
+            const url = typeof s === 'object' ? (s.source_url || s.url || '') : '';
+            report += `  ${sIdx + 1}. "${text}"\n`;
+            if (url) report += `     ↳ Nguồn trùng: ${url}\n`;
+          });
+        }
+        report += `\n`;
       } else {
         report += `Kết quả: 🔴 TỪ CHỐI (Trùng lặp: ${sp.duplicateScore}% > 10% - Phát hiện ${sp.duplicateCount || 0} câu trùng)\n`;
         if (sp.duplicateSentences && sp.duplicateSentences.length > 0) {
-          report += `Danh sách câu cần viết lại:\n`;
+          report += `Danh sách câu BẮT BUỘC cần viết lại:\n`;
           sp.duplicateSentences.forEach((s, sIdx) => {
             const text = typeof s === 'string' ? s : (s.sentence || s.text || '');
             const url = typeof s === 'object' ? (s.source_url || s.url || '') : '';
@@ -245,11 +267,30 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
     });
 
     report += `--------------------------------------------------------\n`;
-    report += `Yêu cầu: Các bài viết bị TỪ CHỐI cần được viết lại toàn bộ các câu bị trùng lặp trước khi xuất bản.`;
+    report += `Lưu ý: Các bài viết bị TỪ CHỐI cần được viết lại toàn bộ các câu bị trùng lặp trước khi xuất bản.`;
+    return report;
+  };
 
+  // Copy Báo Cáo Nghiệm Thu Trùng Lặp Gửi Cho Writer
+  const handleCopyReport = () => {
+    if (queue.length === 0) return;
+    const report = generateReportText();
     navigator.clipboard.writeText(report);
     setCopiedReport(true);
     setTimeout(() => setCopiedReport(false), 3500);
+  };
+
+  // Tải File Báo Cáo (.txt) về máy tính để tra cứu & fix content
+  const handleDownloadReport = () => {
+    if (queue.length === 0) return;
+    const report = generateReportText();
+    const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bao_Cao_Trung_Lap_Spineditor_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Thống kê nhanh
@@ -459,8 +500,17 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
           {/* Badges thống kê */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: '#94a3b8' }}>Hàng đợi:</span>
-            <span style={{ fontSize: '12px', background: '#1e293b', color: '#fff', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
-              {totalCount} bài
+            {/* Thanh đếm số bài / giới hạn */}
+            <span style={{
+              fontSize: '12px',
+              background: totalCount >= MAX_QUEUE ? 'rgba(239, 68, 68, 0.15)' : totalCount >= MAX_QUEUE * 0.7 ? 'rgba(251, 191, 36, 0.15)' : '#1e293b',
+              color: totalCount >= MAX_QUEUE ? '#f87171' : totalCount >= MAX_QUEUE * 0.7 ? '#fbbf24' : '#fff',
+              border: totalCount >= MAX_QUEUE ? '1px solid rgba(239, 68, 68, 0.5)' : totalCount >= MAX_QUEUE * 0.7 ? '1px solid rgba(251, 191, 36, 0.4)' : 'none',
+              padding: '3px 10px',
+              borderRadius: '12px',
+              fontWeight: 700
+            }}>
+              {totalCount >= MAX_QUEUE ? `🔴 ${totalCount}/${MAX_QUEUE} Bài (ĐÃ ĐẦY)` : `${totalCount}/${MAX_QUEUE} bài`}
             </span>
             <span style={{ fontSize: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
               🟢 {passedCount} Đạt chuẩn
@@ -471,6 +521,11 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
             <span style={{ fontSize: '12px', background: '#0f172a', color: '#94a3b8', border: '1px solid #334155', padding: '3px 10px', borderRadius: '12px' }}>
               ⚪ {pendingCount} Đang chờ
             </span>
+            {totalCount >= MAX_QUEUE && (
+              <span style={{ fontSize: '11px', color: '#f87171', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 8px', borderRadius: '8px' }}>
+                ⚠️ Xóa bật bài đã quét xong rồi nạp thêm
+              </span>
+            )}
           </div>
 
           {/* Các nút hành động */}
@@ -494,7 +549,18 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
               style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '5px', borderColor: copiedReport ? '#10b981' : undefined }}
               title="Copy toàn bộ kết quả kiểm tra kèm các câu trùng để gửi cho Writer sửa"
             >
-              <span>📋</span> {copiedReport ? '✓ Đã Copy Báo Cáo!' : 'Copy Báo Cáo Cho Writer'}
+              <span>📋</span> {copiedReport ? '✓ Đã Copy Báo Cáo!' : 'Copy Báo Cáo'}
+            </button>
+
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleDownloadReport}
+              disabled={queue.length === 0}
+              style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '5px', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.4)' }}
+              title="Tải toàn bộ báo cáo trùng lặp về file text (.txt) để biết câu nào trùng mà sửa"
+            >
+              <span>📥</span> Xuất File Báo Cáo (.txt)
             </button>
 
             <button

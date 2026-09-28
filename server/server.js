@@ -803,9 +803,37 @@ app.post('/api/spineditor/upload-docx-queue', upload.array('files'), async (req,
       }
     } catch (e) {}
 
+    // === GIỚI HẠN TỐI ĐA 10 BÀI TRONG HÀNG ĐỢI ===
+    const MAX_QUEUE_SIZE = 10;
+    const currentQueue = spineditorService.getDocxQueue();
+    const currentCount = currentQueue.length;
+
+    if (currentCount >= MAX_QUEUE_SIZE) {
+      // Xóa tất cả file tạm đã upload
+      if (req.files) {
+        req.files.forEach(f => { try { fs.unlinkSync(f.path); } catch (e) {} });
+      }
+      return res.status(400).json({
+        success: false,
+        error: `Hàng đợi đã đầy (${currentCount}/${MAX_QUEUE_SIZE} bài). Vui lòng xóa bớt bài trong hàng đợi trước khi nạp thêm.`
+      });
+    }
+
+    // Số slot còn trống trong hàng đợi
+    const slotsAvailable = MAX_QUEUE_SIZE - currentCount;
+
     const parsedArticles = [];
 
     for (let i = 0; i < req.files.length; i++) {
+      // Dừng khi đã đủ slot còn trống
+      if (parsedArticles.length >= slotsAvailable) {
+        // Xóa các file tạm còn lại chưa xử lý
+        for (let j = i; j < req.files.length; j++) {
+          try { fs.unlinkSync(req.files[j].path); } catch (e) {}
+        }
+        break;
+      }
+
       const file = req.files[i];
       const meta = metaList[i] || {};
       const ext = path.extname(file.originalname).toLowerCase();
@@ -865,10 +893,21 @@ app.post('/api/spineditor/upload-docx-queue', upload.array('files'), async (req,
       parsedArticles.push(item);
     }
 
+    const finalQueue = spineditorService.getDocxQueue();
+    const totalSkipped = Math.max(0, req.files.length - parsedArticles.length - (req.files.length > slotsAvailable ? req.files.length - slotsAvailable : 0));
+    const limitReached = finalQueue.length >= MAX_QUEUE_SIZE;
+
     res.json({
       success: true,
       totalAdded: parsedArticles.length,
-      queue: spineditorService.getDocxQueue()
+      totalSkipped: req.files.filter(f => ['.docx','.doc'].includes(path.extname(f.originalname).toLowerCase())).length - parsedArticles.length,
+      limitReached,
+      currentCount: finalQueue.length,
+      maxAllowed: MAX_QUEUE_SIZE,
+      queue: finalQueue,
+      message: limitReached
+        ? `Đã nạp ${parsedArticles.length} bài. Hàng đợi đã đầy (${finalQueue.length}/${MAX_QUEUE_SIZE}). Các bài vượt giới hạn đã bị bỏ qua.`
+        : `Đã nạp thành công ${parsedArticles.length} bài viết vào hàng đợi! (${finalQueue.length}/${MAX_QUEUE_SIZE})`
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

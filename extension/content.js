@@ -9,8 +9,8 @@
     apiUrl: 'http://localhost:5000',
     serverApiUrl: 'https://api.toolseo.uk',
     excludedDomain: 'mexboss.sh',
-    delaySeconds: 6,
-    maxWaitSeconds: 90
+    delaySeconds: 5,
+    maxWaitSeconds: 180
   };
 
   let currentConfig = { ...DEFAULT_CONFIG };
@@ -21,11 +21,12 @@
   // Lấy cấu hình từ chrome.storage.local
   function loadConfig(callback) {
     if (chrome?.storage?.local) {
-      chrome.storage.local.get(['top_api_url', 'top_excluded_domain', 'top_delay_seconds', 'top_server_api_url'], (res) => {
+      chrome.storage.local.get(['top_api_url', 'top_excluded_domain', 'top_delay_seconds', 'top_server_api_url', 'top_max_wait_seconds'], (res) => {
         currentConfig.apiUrl = res.top_api_url || DEFAULT_CONFIG.apiUrl;
         currentConfig.serverApiUrl = res.top_server_api_url || DEFAULT_CONFIG.serverApiUrl;
         currentConfig.excludedDomain = res.top_excluded_domain !== undefined ? res.top_excluded_domain : DEFAULT_CONFIG.excludedDomain;
         currentConfig.delaySeconds = parseInt(res.top_delay_seconds, 10) || DEFAULT_CONFIG.delaySeconds;
+        currentConfig.maxWaitSeconds = parseInt(res.top_max_wait_seconds, 10) || DEFAULT_CONFIG.maxWaitSeconds;
         if (callback) callback(currentConfig);
       });
     } else {
@@ -33,6 +34,7 @@
       currentConfig.serverApiUrl = localStorage.getItem('top_server_api_url') || DEFAULT_CONFIG.serverApiUrl;
       currentConfig.excludedDomain = localStorage.getItem('top_excluded_domain') || DEFAULT_CONFIG.excludedDomain;
       currentConfig.delaySeconds = parseInt(localStorage.getItem('top_delay_seconds'), 10) || DEFAULT_CONFIG.delaySeconds;
+      currentConfig.maxWaitSeconds = parseInt(localStorage.getItem('top_max_wait_seconds'), 10) || DEFAULT_CONFIG.maxWaitSeconds;
       if (callback) callback(currentConfig);
     }
   }
@@ -142,6 +144,11 @@
         <div id="top-log-box" style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 8px; font-size: 10.5px; color: #cbd5e1; max-height: 110px; overflow-y: auto; font-family: monospace; line-height: 1.5;">
           [Hệ thống] Extension đã nạp sẵn sàng. Bấm nút BẮT ĐẦU để quét bài.
         </div>
+
+        <!-- Nút xuất file câu trùng -->
+        <button id="top-btn-download-file" type="button" style="background: #1e293b; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 7px 10px; border-radius: 6px; font-weight: 600; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-sizing: border-box;" title="Tải toàn bộ các câu bị trùng hiện tại về file .txt để xem và fix content">
+          <span>📥</span> Xuất File Câu Trùng (.txt)
+        </button>
       </div>
     `;
 
@@ -172,6 +179,16 @@
         inputApi.value = targetServer;
         saveConfigFromInputs();
         logMessage(`🌐 Đã chuyển sang API Server (${targetServer})`, 'success');
+      });
+    }
+
+    // Nút xuất file câu trùng trực tiếp từ Spineditor
+    const btnDownload = document.getElementById('top-btn-download-file');
+    if (btnDownload) {
+      btnDownload.addEventListener('click', () => {
+        const title = articlesQueue[currentIndex]?.title || 'Spineditor';
+        const snap = getResultSnapshot();
+        downloadDuplicateSentencesFile(title, snap.dup, snap.uniq);
       });
     }
 
@@ -302,6 +319,10 @@
 
   function stopAutomation(reason = '') {
     isRunning = false;
+    // Xóa state reload để tránh auto-resume khi tải lại trang
+    if (chrome?.storage?.local) {
+      chrome.storage.local.remove(['top_queue_data', 'top_queue_index', 'top_queue_running', 'top_queue_api_url']);
+    }
     const btnStart = document.getElementById('top-btn-start');
     const btnStop = document.getElementById('top-btn-stop');
     if (btnStart) {
@@ -345,32 +366,35 @@
     }
 
     try {
-      // 1. Điền text vào trình soạn thảo Spineditor
+      // 0. Điền text vào trình soạn thảo Spineditor
       logMessage(`Đang điền ${cleanText.split(/\s+/).length} từ vào khung soạn thảo...`);
       const setSuccess = setEditorContent(cleanText);
       if (!setSuccess) {
         throw new Error('Không thể tìm thấy khung soạn thảo CKEditor trên trang Spineditor!');
       }
 
-      // 2. Điền domain loại trừ
+      // 1. Điền domain loại trừ
       if (currentConfig.excludedDomain) {
         setExcludedDomain(currentConfig.excludedDomain);
       }
 
-      await sleep(1000);
+      // 2. Lấy snapshot kết quả TRƯỚC khi click (để phát hiện thay đổi sau)
+      await sleep(800);
+      const baseline = getResultSnapshot();
+      logMessage(`📸 Baseline trước khi quét: dup=${baseline.dup}% uniq=${baseline.uniq}% sentences=${baseline.sentences}`, 'info');
 
-      // 3. Bấm nút "Kiểm tra sao chép nội dung"
-      logMessage(`Đang bấm nút "Kiểm tra sao chép"...`);
+      // 3. Bấm nút "Start" để SCheckPro quét
+      logMessage(`Đang bấm nút "Start" để SCheckPro bắt đầu quét...`);
       const clickSuccess = clickCheckButton();
       if (!clickSuccess) {
-        throw new Error('Không tìm thấy nút bấm Kiểm tra sao chép!');
+        throw new Error('Không tìm thấy nút bấm Start!');
       }
 
-      // 4. Chờ SCheckPro quét xong và trích xuất kết quả
-      logMessage(`Đang chờ SCheckPro quét Google...`);
-      const result = await waitForCheckComplete(currentConfig.maxWaitSeconds || 90);
+      // 4. Chờ SCheckPro quét xong: Tối đa 3 phút (180s), bài ngắn kết thúc sớm
+      logMessage(`Đang chờ SCheckPro quét Google (Quy tắc: tối đa 3 phút, bài ngắn tự xong sớm)...`);
+      const result = await waitForCheckComplete(baseline, currentConfig.maxWaitSeconds || 180);
 
-      logMessage(`Kết quả: Unique: ${result.uniqueScore}% | Trùng lặp: ${result.duplicateScore}% (${result.duplicateSentences.length} câu trùng)`, result.duplicateScore <= 10 ? 'success' : 'error');
+      logMessage(`✅ Chốt kết quả bài ${itemNum}: Unique: ${result.uniqueScore}% | Trùng lặp: ${result.duplicateScore}% (${result.duplicateSentences.length} câu trùng)`, result.duplicateScore <= 10 ? 'success' : 'error');
 
       // 5. Gửi kết quả về ToolOnpage
       await sendResultToTool(currentConfig.apiUrl, {
@@ -385,25 +409,158 @@
 
       logMessage(`Đã đồng bộ kết quả bài ${itemNum} về ToolOnpage!`, 'success');
 
-      // 6. Nghỉ một chút trước khi chuyển sang bài kế tiếp
+      // 6. Lưu trạng thái và RELOAD TRANG SPINEDITOR để chạy bài tiếp theo
       currentIndex++;
-      const delayMs = (currentConfig.delaySeconds || 6) * 1000;
-      logMessage(`Nghỉ ${currentConfig.delaySeconds}s trước khi chuyển bài tiếp theo...`);
-      await sleep(delayMs);
 
-      processNextArticle();
+      if (currentIndex < articlesQueue.length) {
+        // Còn bài tiếp theo → lưu state vào chrome.storage + reload
+        const stateToSave = {
+          top_queue_data: JSON.stringify(articlesQueue),
+          top_queue_index: currentIndex,
+          top_queue_running: true,
+          top_queue_api_url: currentConfig.apiUrl
+        };
+        if (chrome?.storage?.local) {
+          chrome.storage.local.set(stateToSave);
+        }
+
+        const delaySec = currentConfig.delaySeconds || 5;
+        logMessage(`♻️ Reload Spineditor sau ${delaySec}s để quét tiếp bài ${currentIndex + 1}/${articlesQueue.length}...`, 'warning');
+        await sleep(delaySec * 1000);
+        window.location.reload();
+      } else {
+        // Hết bài → xóa state và dừng
+        if (chrome?.storage?.local) {
+          chrome.storage.local.remove(['top_queue_data', 'top_queue_index', 'top_queue_running']);
+        }
+        logMessage(`🎉 HOÀN TẤT TOÀN BỘ ${articlesQueue.length} BÀI VIẾT!`, 'success');
+        updateStatus('Hoàn thành 100%', articlesQueue.length, articlesQueue.length);
+        stopAutomation('Quét xong 100%');
+      }
     } catch (err) {
       logMessage(`Lỗi khi check bài ${itemNum}: ${err.message}`, 'error');
-      // Chờ 5s rồi thử tiếp bài kế tiếp
-      await sleep(5000);
       currentIndex++;
-      processNextArticle();
+      if (currentIndex < articlesQueue.length) {
+        const stateToSave = {
+          top_queue_data: JSON.stringify(articlesQueue),
+          top_queue_index: currentIndex,
+          top_queue_running: true,
+          top_queue_api_url: currentConfig.apiUrl
+        };
+        if (chrome?.storage?.local) chrome.storage.local.set(stateToSave);
+        logMessage(`Lưu state và reload sau lỗi...`, 'warning');
+        await sleep(5000);
+        window.location.reload();
+      } else {
+        if (chrome?.storage?.local) {
+          chrome.storage.local.remove(['top_queue_data', 'top_queue_index', 'top_queue_running']);
+        }
+        stopAutomation('Lỗi - Hết bài');
+      }
     }
   }
 
   // ==========================================
   // 4. HÀM THAO TÁC VỚI DOM SPINETITOR
   // ==========================================
+  // Lấy snapshot kết quả từ DOM thật của Spineditor (Trực tiếp, không clone)
+  function getResultSnapshot() {
+    try {
+      const widget = document.getElementById('toolonpage-extension-widget');
+
+      let dup = null;
+      let uniq = null;
+
+      // 1. Quét trực tiếp các text node và phần tử trên trang (loại trừ widget)
+      const dupRegex = /(?:Kết quả trùng lặp|Tỷ lệ trùng lặp|Độ trùng lặp|Trùng lặp|Duplicate|Plagiarism)[\s:]*([0-9.,]+)\s*%/i;
+      const uniqRegex = /(?:Unique|Độ độc nhất|Nội dung mới|Độc nhất)[\s:]*([0-9.,]+)\s*%/i;
+
+      // Tìm trong các phần tử văn bản trực tiếp
+      const candidateEls = document.querySelectorAll('div, span, b, strong, p, td, h1, h2, h3, h4, h5, font, label');
+      for (const el of candidateEls) {
+        if (widget && widget.contains(el)) continue;
+        const txt = (el.innerText || el.textContent || '').trim();
+        if (!txt.includes('%')) continue;
+
+        if (dup === null) {
+          const m = txt.match(dupRegex);
+          if (m) dup = parseFloat(m[1].replace(',', '.'));
+        }
+        if (uniq === null) {
+          const m = txt.match(uniqRegex);
+          if (m) uniq = parseFloat(m[1].replace(',', '.'));
+        }
+      }
+
+      // Fallback: Tìm trên toàn bộ bodyText (loại trừ widget)
+      if (dup === null || uniq === null) {
+        let fullText = document.body.innerText || document.body.textContent || '';
+        if (widget) {
+          fullText = fullText.replace(widget.innerText || widget.textContent || '', '');
+        }
+        if (dup === null) {
+          const m = fullText.match(dupRegex);
+          if (m) dup = parseFloat(m[1].replace(',', '.'));
+        }
+        if (uniq === null) {
+          const m = fullText.match(uniqRegex);
+          if (m) uniq = parseFloat(m[1].replace(',', '.'));
+        }
+      }
+
+      // Tự tính giá trị còn lại nếu có 1 trong 2
+      if (dup !== null && uniq === null) uniq = Math.max(0, Math.round((100 - dup) * 10) / 10);
+      if (uniq !== null && dup === null) dup = Math.max(0, Math.round((100 - uniq) * 10) / 10);
+
+      // 2. Đếm số câu bị bôi đỏ hoặc có dấu hiệu trùng lặp trong bảng
+      const redElements = Array.from(document.querySelectorAll(
+        'span[style*="red"], span[style*="#f00"], span[style*="rgb(255, 0, 0)"], span.duplicate, .duplicate-sentence, font[color="red"]'
+      )).filter(el => !(widget && widget.contains(el)));
+
+      // 3. Phân tích trạng thái bảng quét từng dòng
+      const allRows = Array.from(document.querySelectorAll('table tbody tr')).filter(tr => {
+        return !(widget && widget.contains(tr));
+      });
+      const totalRows = allRows.length;
+
+      let completedRows = 0;
+      let duplicateRowsCount = 0;
+      if (totalRows > 0) {
+        completedRows = allRows.filter(tr => {
+          const cells = tr.querySelectorAll('td');
+          if (cells.length === 0) return false;
+          const lastCell = cells[cells.length - 1];
+          const hasIcon = lastCell.querySelector('.fa-check, .fa-check-circle, [class*="check"], [class*="ok"], svg, img, i');
+          const hasText = lastCell.textContent.trim().length > 0;
+
+          // Kiểm tra xem dòng này có bị đánh dấu trùng lặp không (chấm than đỏ, fa-exclamation, style đỏ)
+          const isDup = 
+            lastCell.querySelector('.fa-exclamation, .fa-exclamation-circle, .fa-warning, .fa-times, [class*="danger"], [class*="error"], [class*="alert"]') ||
+            lastCell.querySelector('[style*="red"], [style*="#f00"], [style*="rgb(255, 0, 0)"]') ||
+            lastCell.innerHTML.toLowerCase().includes('red') ||
+            lastCell.innerHTML.toLowerCase().includes('exclamation') ||
+            tr.querySelector('span[style*="red"], font[color="red"], .duplicate');
+          if (isDup) duplicateRowsCount++;
+
+          return !!(hasIcon || hasText || isDup);
+        }).length;
+      }
+
+      const totalDuplicatesDetected = Math.max(redElements.length, duplicateRowsCount);
+
+      return {
+        dup,
+        uniq,
+        sentences: totalDuplicatesDetected,
+        completedRows,
+        totalRows
+      };
+    } catch (e) {
+      console.error('Lỗi getResultSnapshot:', e);
+      return { dup: null, uniq: null, sentences: 0, completedRows: 0, totalRows: 0 };
+    }
+  }
+
   function setEditorContent(text) {
     try {
       // 1. Nếu có CKEditor instance
@@ -528,63 +685,155 @@
     return false;
   }
 
-  // Đợi SCheckPro quét xong và bóc tách kết quả
-  function waitForCheckComplete(maxWaitSec = 90) {
+  // Đợi SCheckPro quét xong: Tối đa 3 phút (180s), bài ngắn kết thúc sớm
+  function waitForCheckComplete(baseline, maxWaitSec = 180) {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
+      let lastProgressLog = 0;
+      let stableCount = 0;
+      let lastSnapshotKey = null;
+      const MIN_SCAN_MS = 8000; // Tối thiểu chờ 8s sau khi bấm Start
+
+      function snapshotKey(s) {
+        return `${s.dup ?? 'null'}|${s.uniq ?? 'null'}|${s.sentences}`;
+      }
+
+      logMessage(`⏳ Bắt đầu quét SCheckPro (Tối đa 3 phút / 180s. Bài ngắn sẽ kết thúc sớm)...`, 'info');
 
       const timer = setInterval(() => {
-        if ((Date.now() - startTime) > (maxWaitSec * 1000)) {
-          clearInterval(timer);
-          const fallback = extractCurrentResult();
-          if (fallback.uniqueScore > 0 || fallback.duplicateScore > 0) {
-            resolve(fallback);
+        const elapsed = Date.now() - startTime;
+        const elapsedSec = Math.round(elapsed / 1000);
+        const snap = getResultSnapshot();
+        const currentKey = snapshotKey(snap);
+
+        // Định kỳ 4s log tiến độ một lần
+        if (elapsed - lastProgressLog >= 4000) {
+          lastProgressLog = elapsed;
+          if (snap.totalRows > 0) {
+            const pct = Math.round((snap.completedRows / snap.totalRows) * 100);
+            logMessage(`⏳ Đang quét: ${snap.completedRows}/${snap.totalRows} câu (${pct}%) [${elapsedSec}s/180s] - Trùng: ${snap.dup !== null ? snap.dup + '%' : (snap.sentences > 0 ? snap.sentences + ' câu đỏ' : 'Đang dò...')}`, 'info');
           } else {
-            reject(new Error(`Quá thời gian chờ (${maxWaitSec}s) SCheckPro chưa hoàn thành.`));
+            logMessage(`⏳ SCheckPro đang phân tích bài viết [${elapsedSec}s/180s]...`, 'info');
           }
+        }
+
+        // ==============================================================
+        // ĐIỀU KIỆN 1: HẾT 3 PHÚT (180 GIÂY) → CHỐT KẾT QUẢ VÀ KẾT THÚC
+        // ==============================================================
+        if (elapsed >= maxWaitSec * 1000) {
+          clearInterval(timer);
+          logMessage(`⏰ ĐÃ HẾT 3 PHÚT (180s)! Chốt kết quả Spineditor và chuẩn bị chuyển bài...`, 'warning');
+
+          // Đọc kết quả cuối cùng
+          if (snap.dup === null && snap.totalRows > 0) {
+            const scannedCount = snap.completedRows > 0 ? snap.completedRows : snap.totalRows;
+            snap.dup = Math.round((snap.sentences / scannedCount) * 1000) / 10;
+            snap.uniq = Math.max(0, Math.round((100 - snap.dup) * 10) / 10);
+            logMessage(`📊 Tính điểm từ ${snap.sentences} câu đỏ / ${scannedCount} câu đã quét: Trùng lặp ${snap.dup}% | Unique ${snap.uniq}%`, 'warning');
+          }
+
+          resolve(buildResult(snap));
           return;
         }
 
-        const res = extractCurrentResult();
-        if (res.isFinished) {
-          clearInterval(timer);
-          resolve(res);
+        // Chưa qua thời gian khởi động tối thiểu 8s → tiếp tục chờ
+        if (elapsed < MIN_SCAN_MS) return;
+
+        // ==============================================================
+        // ĐIỀU KIỆN 2: BÀI NGẮN KẾT THÚC SỚM (XONG TRƯỚC 3 PHÚT)
+        // ==============================================================
+        const hasScore = snap.dup !== null;
+        const tableFinished = snap.totalRows > 0 ? (snap.completedRows >= snap.totalRows) : false;
+
+        // Nếu bảng vẫn còn dòng chưa quét xong (completedRows < totalRows) → TUYỆT ĐỐI KHÔNG DỪNG SỚM
+        if (snap.totalRows > 0 && snap.completedRows < snap.totalRows) {
+          stableCount = 0;
+          return;
+        }
+
+        // Trường hợp A: Bảng quét đã xong VÀ đã có % trùng lặp rõ ràng từ Spineditor
+        if (hasScore && (tableFinished || snap.totalRows === 0)) {
+          if (currentKey === lastSnapshotKey) {
+            stableCount++;
+            // Ổn định 2 giây là chốt kết thúc sớm!
+            if (stableCount >= 2) {
+              clearInterval(timer);
+              logMessage(`⚡ KẾT THÚC SỚM (${elapsedSec}s < 180s)! Kết quả: Trùng lặp ${snap.dup}% | Unique ${snap.uniq}%`, 'success');
+              resolve(buildResult(snap));
+              return;
+            }
+          } else {
+            lastSnapshotKey = currentKey;
+            stableCount = 1;
+            logMessage(`🎯 Đã phát hiện kết quả: Trùng lặp ${snap.dup}% | Unique ${snap.uniq}%, đang xác nhận...`, 'info');
+          }
+        }
+        // Trường hợp B: Toàn bộ bảng đã quét xong hết, nhưng Spineditor chưa render text %
+        else if (tableFinished && snap.totalRows > 0 && elapsed >= 15000) {
+          stableCount++;
+          if (stableCount >= 4) {
+            clearInterval(timer);
+            if (snap.dup === null) {
+              snap.dup = Math.round((snap.sentences / snap.totalRows) * 1000) / 10;
+              snap.uniq = Math.max(0, Math.round((100 - snap.dup) * 10) / 10);
+            }
+            logMessage(`⚡ BẢNG ĐÃ QUÉT XONG TẤT CẢ ${snap.totalRows} CÂU (${elapsedSec}s)! Trùng lặp ${snap.dup}% | Unique ${snap.uniq}%`, 'success');
+            resolve(buildResult(snap));
+            return;
+          }
         }
       }, 1000);
     });
   }
 
-  // Trích xuất kết quả từ giao diện trang Spineditor
-  function extractCurrentResult() {
-    let isFinished = false;
-    let duplicateScore = 0;
-    let uniqueScore = 100;
+  // Trích xuất toàn bộ câu trùng lặp từ bảng Spineditor và DOM
+  function extractDuplicateSentences() {
     const duplicateSentences = [];
+    const widget = document.getElementById('toolonpage-extension-widget');
 
+    // 1. Quét theo từng dòng trong bảng Spineditor (Bắt icon chấm than đỏ và link trùng)
     try {
-      // 1. Clone và loại bỏ widget ToolOnpage để tránh match nhầm % trong widget
-      const clone = document.body.cloneNode(true);
-      const widgetInClone = clone.querySelector('#toolonpage-extension-widget');
-      if (widgetInClone) widgetInClone.remove();
-      const allText = clone.innerText || '';
-      
-      const dupMatch = allText.match(/(?:Trùng lặp|Tỷ lệ trùng lặp|Độ trùng lặp|Duplicate|Plagiarism|Trùng)[\s:]*([0-9.,]+)\s*%/i) ||
-                       allText.match(/([0-9.,]+)\s*%\s*(?:trùng lặp|duplicate|plagiarism|trùng)/i);
-      const uniqMatch = allText.match(/(?:Unique|Độ độc nhất|Nội dung mới|Độc nhất)[\s:]*([0-9.,]+)\s*%/i) ||
-                        allText.match(/([0-9.,]+)\s*%\s*(?:unique|độc nhất|mới)/i);
+      const allRows = document.querySelectorAll('table tbody tr');
+      allRows.forEach(tr => {
+        if (widget && widget.contains(tr)) return;
+        const cells = tr.querySelectorAll('td');
+        if (cells.length < 2) return;
 
-      if (dupMatch) {
-        duplicateScore = parseFloat(dupMatch[1].replace(',', '.'));
-        uniqueScore = Math.max(0, 100 - duplicateScore);
-      } else if (uniqMatch) {
-        uniqueScore = parseFloat(uniqMatch[1].replace(',', '.'));
-        duplicateScore = Math.max(0, 100 - uniqueScore);
-      }
+        const sentenceText = cells[0].textContent.trim();
+        if (sentenceText.length < 10) return;
 
-      // 2. Tìm các câu bị bôi đỏ (loại trừ các phần tử trong widget)
-      const redElements = [
-        ...document.querySelectorAll('span[style*="red"], span[style*="#f00"], span[style*="rgb(255, 0, 0)"], span.duplicate, .duplicate-sentence, font[color="red"]')
-      ].filter(el => !el.closest('#toolonpage-extension-widget'));
+        const statusCell = cells[cells.length - 1];
+        // Dấu hiệu câu trùng: icon chấm than đỏ, fa-exclamation, fa-warning, fa-times, text/style đỏ
+        const isDuplicate = 
+          statusCell.querySelector('.fa-exclamation, .fa-exclamation-circle, .fa-warning, .fa-times, [class*="danger"], [class*="error"], [class*="alert"]') ||
+          statusCell.querySelector('[style*="red"], [style*="#f00"], [style*="rgb(255, 0, 0)"]') ||
+          statusCell.innerHTML.toLowerCase().includes('red') ||
+          statusCell.innerHTML.toLowerCase().includes('exclamation') ||
+          tr.querySelector('span[style*="red"], font[color="red"], .duplicate');
+
+        if (isDuplicate) {
+          let sourceUrl = '';
+          const link = tr.querySelector('a[href^="http"]');
+          if (link && !link.href.includes('spineditor.com')) {
+            sourceUrl = link.href;
+          }
+          if (!duplicateSentences.some(s => s.sentence === sentenceText)) {
+            duplicateSentences.push({
+              sentence: sentenceText,
+              source_url: sourceUrl
+            });
+          }
+        }
+      });
+    } catch (e) {
+      console.error('Lỗi trích xuất bảng trùng lặp:', e);
+    }
+
+    // 2. Quét các thẻ bôi đỏ trên toàn trang (CKEditor / text span)
+    try {
+      const redElements = Array.from(document.querySelectorAll(
+        'span[style*="red"], span[style*="#f00"], span[style*="rgb(255, 0, 0)"], span.duplicate, .duplicate-sentence, font[color="red"]'
+      )).filter(el => !(widget && widget.contains(el)));
 
       redElements.forEach(el => {
         const text = (el.textContent || '').trim();
@@ -593,26 +842,77 @@
           const parent = el.closest('tr') || el.closest('div') || el.parentElement;
           if (parent) {
             const link = parent.querySelector('a[href^="http"]');
-            if (link) sourceUrl = link.href;
+            if (link && !link.href.includes('spineditor.com')) sourceUrl = link.href;
           }
-
-          duplicateSentences.push({
-            sentence: text,
-            source_url: sourceUrl
-          });
+          duplicateSentences.push({ sentence: text, source_url: sourceUrl });
         }
       });
+    } catch (e) {}
 
-      // 3. Nhận diện trạng thái đã quét xong
-      if (dupMatch || uniqMatch || duplicateSentences.length > 0) {
-        isFinished = true;
-      }
-    } catch (e) {
-      console.error('Lỗi extractCurrentResult:', e);
+    return duplicateSentences;
+  }
+
+  // Tải file .txt báo cáo chi tiết các câu trùng lặp về máy
+  function downloadDuplicateSentencesFile(title = '', dupScore = null, uniqScore = null) {
+    const list = extractDuplicateSentences();
+    let content = `BÁO CÁO CÂU TRÙNG LẶP NỘI DUNG (SPINETITOR / SNIPER)\n`;
+    content += `Thời gian: ${new Date().toLocaleString('vi-VN')}\n`;
+    if (title) content += `Bài viết: ${title}\n`;
+    if (dupScore !== null) content += `Tỷ lệ trùng lặp: ${dupScore}% | Unique: ${uniqScore ?? (100 - dupScore)}%\n`;
+    content += `Số câu phát hiện bị trùng: ${list.length} câu\n`;
+    content += `--------------------------------------------------------\n\n`;
+
+    if (list.length === 0) {
+      content += `✨ Tuyệt vời! Không phát hiện câu văn nào bị trùng lặp trên trang này.\n`;
+    } else {
+      content += `DANH SÁCH CÁC CÂU TRÙNG LẶP CẦN VIẾT LẠI:\n\n`;
+      list.forEach((item, idx) => {
+        content += `${idx + 1}. "${item.sentence}"\n`;
+        if (item.source_url) {
+          content += `   ↳ Nguồn trùng: ${item.source_url}\n`;
+        } else {
+          content += `   ↳ Nguồn: Phát hiện trùng lặp trên Google\n`;
+        }
+        content += `\n`;
+      });
+      content += `--------------------------------------------------------\n`;
+      content += `Hướng dẫn: Hãy viết lại các câu trên theo văn phong mới để đạt 100% Unique trước khi xuất bản.\n`;
     }
 
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeTitle = (title || 'Spineditor').replace(/[^a-zA-Z0-9_\u00C0-\u1EF9-]/g, '_').slice(0, 40);
+    a.download = `Bao_Cao_Cau_Trung_${safeTitle}_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    logMessage(`📥 Đã xuất file báo cáo ${list.length} câu trùng về máy!`, 'success');
+  }
+
+  // Xây dựng kết quả đầy đủ từ snapshot
+  function buildResult(snap) {
+    let duplicateScore = 0;
+    let uniqueScore = 100;
+
+    if (snap.dup !== null && snap.uniq !== null) {
+      duplicateScore = snap.dup;
+      uniqueScore = snap.uniq;
+    } else if (snap.dup !== null) {
+      duplicateScore = snap.dup;
+      uniqueScore = Math.max(0, Math.round((100 - duplicateScore) * 10) / 10);
+    } else if (snap.uniq !== null) {
+      uniqueScore = snap.uniq;
+      duplicateScore = Math.max(0, Math.round((100 - uniqueScore) * 10) / 10);
+    } else if (snap.totalRows > 0 && snap.sentences > 0) {
+      duplicateScore = Math.round((snap.sentences / snap.totalRows) * 1000) / 10;
+      uniqueScore = Math.max(0, Math.round((100 - duplicateScore) * 10) / 10);
+    }
+
+    // Thu thập câu trùng từ DOM & Bảng Spineditor
+    const duplicateSentences = extractDuplicateSentences();
+
     return {
-      isFinished,
       uniqueScore: Math.round(uniqueScore * 10) / 10,
       duplicateScore: Math.round(duplicateScore * 10) / 10,
       duplicateSentences
@@ -623,10 +923,71 @@
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Khởi động khi tải xong trang web
+  // ==============================================================
+  // KHỚI ĐỘNG: Kiểm tra resume sau reload và tạo widget
+  // ==============================================================
   window.addEventListener('load', () => {
     loadConfig(() => {
-      setTimeout(createFloatingWidget, 1500);
+      setTimeout(() => {
+        createFloatingWidget();
+
+        // Kiểm tra resume sau reload
+        if (!chrome?.storage?.local) return;
+        chrome.storage.local.get(
+          ['top_queue_running', 'top_queue_data', 'top_queue_index', 'top_queue_api_url'],
+          (res) => {
+            if (!res.top_queue_running) return;
+
+            const savedQueueRaw = res.top_queue_data || '';
+            const savedIndex = res.top_queue_index || 0;
+            const savedApiUrl = res.top_queue_api_url || currentConfig.apiUrl;
+
+            if (!savedQueueRaw) {
+              chrome.storage.local.remove(['top_queue_running']);
+              return;
+            }
+
+            let savedQueue;
+            try { savedQueue = JSON.parse(savedQueueRaw); } catch (e) {
+              chrome.storage.local.remove(['top_queue_running', 'top_queue_data']);
+              return;
+            }
+
+            if (!Array.isArray(savedQueue) || savedQueue.length === 0 || savedIndex >= savedQueue.length) {
+              chrome.storage.local.remove(['top_queue_running', 'top_queue_data']);
+              return;
+            }
+
+            // Khôi phục trạng thái
+            articlesQueue = savedQueue;
+            currentIndex = savedIndex;
+            isRunning = true;
+            if (savedApiUrl) currentConfig.apiUrl = savedApiUrl;
+
+            // Cập nhật UI
+            const btnStart = document.getElementById('top-btn-start');
+            const btnStop = document.getElementById('top-btn-stop');
+            if (btnStart) { btnStart.disabled = true; btnStart.style.opacity = '0.5'; }
+            if (btnStop) {
+              btnStop.disabled = false;
+              btnStop.style.background = '#ef4444';
+              btnStop.style.color = '#fff';
+              btnStop.style.cursor = 'pointer';
+            }
+            const inputApi = document.getElementById('top-input-api');
+            if (inputApi && savedApiUrl) inputApi.value = savedApiUrl;
+
+            logMessage(`♻️ Tiếp tục tự động sau reload: bài ${savedIndex + 1}/${savedQueue.length}`, 'success');
+            updateStatus(`Reload xong, chuẩn bị bài ${savedIndex + 1}/${savedQueue.length}`, savedIndex, savedQueue.length);
+
+            // Chờ Spineditor khởi động xong rồi tiếp tục
+            setTimeout(() => {
+              logMessage(`🚀 Spineditor đã tải lại. Bắt đầu xử lý bài ${savedIndex + 1}/${savedQueue.length}...`, 'success');
+              processNextArticle();
+            }, 3000);
+          }
+        );
+      }, 2000);
     });
   });
 

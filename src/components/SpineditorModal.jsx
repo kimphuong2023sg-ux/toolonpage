@@ -21,6 +21,30 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
     setTimeout(() => setCopiedSentences(false), 3000);
   };
 
+  const handleDownloadDuplicateFile = () => {
+    if (!sp?.duplicateSentences || sp.duplicateSentences.length === 0) return;
+    let content = `BÁO CÁO CÂU TRÙNG LẶP SPINETITOR\n`;
+    content += `Bài viết: ${item.title || item.slug}\n`;
+    content += `Tỷ lệ: ${sp.uniqueScore}% Unique | Trùng lặp: ${sp.duplicateScore}%\n`;
+    content += `Thời gian: ${new Date().toLocaleString('vi-VN')}\n`;
+    content += `--------------------------------------------------------\n\n`;
+    content += `DANH SÁCH CÁC CÂU TRÙNG LẶP CẦN VIẾT LẠI (${sp.duplicateSentences.length} CÂU):\n\n`;
+    sp.duplicateSentences.forEach((s, idx) => {
+      const sentenceText = typeof s === 'string' ? s : (s.sentence || s.text || '');
+      const sourceUrl = typeof s === 'object' ? (s.source_url || s.url || '') : '';
+      content += `${idx + 1}. "${sentenceText}"\n`;
+      if (sourceUrl) content += `   ↳ Nguồn trùng: ${sourceUrl}\n`;
+      content += `\n`;
+    });
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Cau_Trung_Lap_${item.slug || 'bai-viet'}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleCopyCleanText = () => {
     const raw = item.content_html || item.content || '';
     // Làm sạch HTML
@@ -135,21 +159,32 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
               </div>
             </div>
 
-            {/* Danh sách các câu bị trùng lặp */}
-            {isFailed && sp.duplicateSentences && sp.duplicateSentences.length > 0 ? (
+            {/* Danh sách các câu bị trùng lặp (Hiện cả khi Đạt chuẩn hoặc Bị từ chối nếu có câu trùng) */}
+            {sp.duplicateSentences && sp.duplicateSentences.length > 0 ? (
               <div style={{ marginBottom: '18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#f87171', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🔴</span> DANH SÁCH {sp.duplicateSentences.length} CÂU TRÙNG LẶP CẦN VIẾT LẠI:
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: isFailed ? '#f87171' : '#f59e0b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{isFailed ? '🔴' : '⚠️'}</span> DANH SÁCH {sp.duplicateSentences.length} CÂU TRÙNG LẶP {isFailed ? 'BẮT BUỘC CẦN SỬA' : 'PHÁT HIỆN ĐƯỢC'}:
                   </div>
-                  <button 
-                    type="button" 
-                    className="btn-secondary" 
-                    style={{ fontSize: '11.5px', padding: '5px 12px', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.4)' }}
-                    onClick={handleCopyDuplicateSentences}
-                  >
-                    {copiedSentences ? '✓ Đã Copy Toàn Bộ Câu Trùng' : '📋 Copy Danh Sách Câu Trùng'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ fontSize: '11.5px', padding: '5px 10px', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                      onClick={handleCopyDuplicateSentences}
+                    >
+                      {copiedSentences ? '✓ Đã Copy' : '📋 Copy Câu Trùng'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ fontSize: '11.5px', padding: '5px 10px', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.4)' }}
+                      onClick={handleDownloadDuplicateFile}
+                      title="Tải danh sách câu trùng về máy (.txt) để writer sửa"
+                    >
+                      <span>📥</span> Xuất File (.txt)
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
