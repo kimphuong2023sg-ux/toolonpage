@@ -297,7 +297,8 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
   const totalCount = queue.length;
   const passedCount = queue.filter(q => q.spineditor?.status === 'passed').length;
   const failedCount = queue.filter(q => q.spineditor?.status === 'failed').length;
-  const pendingCount = totalCount - passedCount - failedCount;
+  const inProgressCount = queue.filter(q => q.spineditor?.status === 'in_progress').length;
+  const pendingCount = Math.max(0, totalCount - passedCount - failedCount - inProgressCount);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -621,7 +622,12 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
                         </div>
                       </td>
                       <td style={{ padding: '10px 14px', fontWeight: 600, color: item.word_count > 0 ? '#e2e8f0' : '#f87171' }}>
-                        {item.word_count ? item.word_count.toLocaleString() : 0} từ
+                        <div>{item.word_count ? item.word_count.toLocaleString() : 0} từ</div>
+                        {item.word_count > 1000 && (
+                          <div style={{ fontSize: '10.5px', color: '#facc15', marginTop: '2px', display: 'inline-flex', alignItems: 'center', gap: '3px', background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.3)', padding: '1px 5px', borderRadius: '3px' }}>
+                            <span>⚡</span> Chia 2 lần check
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '10px 14px' }}>
                         {sp ? (
@@ -644,8 +650,26 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
                               }}
                               title="Bấm để xem chi tiết độ Unique"
                             >
-                              <span>🛡️</span> {sp.uniqueScore}% Unique 🟢
+                              <span>🛡️</span> {sp.uniqueScore}% Unique 🟢 {sp.isSplit && <span style={{ fontSize: '10px', opacity: 0.8 }}>(2 phần)</span>}
                             </button>
+                          ) : sp.status === 'in_progress' ? (
+                            <span
+                              style={{
+                                border: '1px solid rgba(234, 179, 8, 0.5)',
+                                background: 'rgba(234, 179, 8, 0.15)',
+                                color: '#facc15',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '11px',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontWeight: 600
+                              }}
+                              title={sp.summary || 'Đang kiểm tra từng phần...'}
+                            >
+                              <span>⏳</span> Đang check ({sp.completedParts || 1}/{sp.totalParts || 2})
+                            </span>
                           ) : (
                             <button
                               type="button"
@@ -665,7 +689,7 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
                               }}
                               title="BỊ TỪ CHỐI: Trùng lặp > 10%! Bấm để xem và copy các câu bị trùng"
                             >
-                              <span>⛔</span> Trùng {sp.duplicateScore}% 🔴
+                              <span>⛔</span> Trùng {sp.duplicateScore}% 🔴 {sp.isSplit && <span style={{ fontSize: '10px', opacity: 0.8 }}>(2 phần)</span>}
                             </button>
                           )
                         ) : (

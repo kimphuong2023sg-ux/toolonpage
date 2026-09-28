@@ -159,7 +159,37 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
               </div>
             </div>
 
-            {/* Danh sách các câu bị trùng lặp (Hiện cả khi Đạt chuẩn hoặc Bị từ chối nếu có câu trùng) */}
+            {/* Hiển thị chi tiết các phần nếu bài > 1000 từ được chia 2 lần check */}
+            {sp.isSplit && sp.parts && (
+              <div style={{
+                background: '#070b14',
+                border: '1px solid #1e293b',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '18px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#facc15', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>⚡</span> CHI TIẾT 2 LẦN CHECK (BÀI &gt; 1000 TỪ ĐƯỢC CHIA ĐÔI ĐỂ TRÁNH NGHẼN SPINEDITOR):
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {Object.keys(sp.parts).sort().map(k => {
+                    const p = sp.parts[k];
+                    return (
+                      <div key={k} style={{ background: '#0b1329', border: '1px solid #1e293b', borderRadius: '6px', padding: '8px 12px' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>Phần {p.partIndex || k}/{sp.totalParts || 2}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: p.duplicateScore <= 10 ? '#34d399' : '#f87171', marginTop: '2px' }}>
+                          {p.uniqueScore}% Unique | Trùng {p.duplicateScore}% ({(p.duplicateSentences || []).length} câu)
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {sp.duplicateSentences && sp.duplicateSentences.length > 0 ? (
               <div style={{ marginBottom: '18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>

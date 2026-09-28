@@ -1,32 +1,308 @@
 {
-  "03-guia-fortune-rabbit": {
-    "key": "03-guia-fortune-rabbit",
-    "articleId": "docx_1790581366575_1",
-    "slug": "03-guia-fortune-rabbit",
-    "title": "Guía Completa de Fortune Rabbit en Mexboss: Secretos, Multiplicadores y Giros Gratis",
-    "uniqueScore": 100,
-    "duplicateScore": 0,
+  "07-guia-apuestas-liga-mx": {
+    "key": "07-guia-apuestas-liga-mx",
+    "articleId": "docx_1790608135000_1",
+    "slug": "07-guia-apuestas-liga-mx",
+    "title": "Guía de Apuestas de Fútbol Liga MX en Mexboss: Pronósticos, Momios y Consejos Clave",
+    "uniqueScore": 94.5,
+    "duplicateScore": 5.5,
     "status": "passed",
     "isPassed": true,
-    "duplicateSentences": [],
-    "duplicateCount": 0,
-    "checkedAt": "2026-09-28T07:45:57.797Z",
+    "duplicateSentences": [
+      {
+        "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+        "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+      },
+      {
+        "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "• Hándicap Asiático y Europeo (+0.",
+        "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+      },
+      {
+        "sentence": "Preguntas Frecuentes sobre Apuestas Liga MX",
+        "source_url": "https://jugabet.com/football/unknown/1?tournaments=ec048669c38c453eb6eb734421134361"
+      }
+    ],
+    "duplicateCount": 5,
+    "checkedAt": "2026-09-28T15:17:18.872Z",
     "checkedBy": "ToolOnpage Chrome Extension",
-    "summary": "Đạt chuẩn Unique (100% - Trùng 0%)"
+    "totalParts": 2,
+    "completedParts": 2,
+    "isSplit": true,
+    "parts": {
+      "1": {
+        "partIndex": 1,
+        "articleId": "docx_1790608135000_1_part1",
+        "uniqueScore": 91,
+        "duplicateScore": 9,
+        "duplicateSentences": [
+          {
+            "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+            "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+          },
+          {
+            "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "• Hándicap Asiático y Europeo (+0.",
+            "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+          }
+        ],
+        "duplicateCount": 4,
+        "checkedAt": "2026-09-28T15:13:07.523Z"
+      },
+      "2": {
+        "partIndex": 2,
+        "articleId": "docx_1790608135000_1_part2",
+        "uniqueScore": 98,
+        "duplicateScore": 2,
+        "duplicateSentences": [
+          {
+            "sentence": "Preguntas Frecuentes sobre Apuestas Liga MX",
+            "source_url": "https://jugabet.com/football/unknown/1?tournaments=ec048669c38c453eb6eb734421134361"
+          }
+        ],
+        "duplicateCount": 1,
+        "checkedAt": "2026-09-28T15:17:18.872Z"
+      }
+    },
+    "summary": "Đạt chuẩn Unique (94.5% - Trùng 5.5% | Gộp 2 phần)"
   },
-  "id_docx_1790581366575_1": {
-    "key": "03-guia-fortune-rabbit",
-    "articleId": "docx_1790581366575_1",
-    "slug": "03-guia-fortune-rabbit",
-    "title": "Guía Completa de Fortune Rabbit en Mexboss: Secretos, Multiplicadores y Giros Gratis",
-    "uniqueScore": 100,
-    "duplicateScore": 0,
+  "id_docx_1790608135000_1": {
+    "key": "07-guia-apuestas-liga-mx",
+    "articleId": "docx_1790608135000_1",
+    "slug": "07-guia-apuestas-liga-mx",
+    "title": "Guía de Apuestas de Fútbol Liga MX en Mexboss: Pronósticos, Momios y Consejos Clave",
+    "uniqueScore": 94.5,
+    "duplicateScore": 5.5,
     "status": "passed",
     "isPassed": true,
-    "duplicateSentences": [],
-    "duplicateCount": 0,
-    "checkedAt": "2026-09-28T07:45:57.797Z",
+    "duplicateSentences": [
+      {
+        "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+        "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+      },
+      {
+        "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "• Hándicap Asiático y Europeo (+0.",
+        "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+      },
+      {
+        "sentence": "Preguntas Frecuentes sobre Apuestas Liga MX",
+        "source_url": "https://jugabet.com/football/unknown/1?tournaments=ec048669c38c453eb6eb734421134361"
+      }
+    ],
+    "duplicateCount": 5,
+    "checkedAt": "2026-09-28T15:17:18.872Z",
     "checkedBy": "ToolOnpage Chrome Extension",
-    "summary": "Đạt chuẩn Unique (100% - Trùng 0%)"
+    "totalParts": 2,
+    "completedParts": 2,
+    "isSplit": true,
+    "parts": {
+      "1": {
+        "partIndex": 1,
+        "articleId": "docx_1790608135000_1_part1",
+        "uniqueScore": 91,
+        "duplicateScore": 9,
+        "duplicateSentences": [
+          {
+            "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+            "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+          },
+          {
+            "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "• Hándicap Asiático y Europeo (+0.",
+            "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+          }
+        ],
+        "duplicateCount": 4,
+        "checkedAt": "2026-09-28T15:13:07.523Z"
+      },
+      "2": {
+        "partIndex": 2,
+        "articleId": "docx_1790608135000_1_part2",
+        "uniqueScore": 98,
+        "duplicateScore": 2,
+        "duplicateSentences": [
+          {
+            "sentence": "Preguntas Frecuentes sobre Apuestas Liga MX",
+            "source_url": "https://jugabet.com/football/unknown/1?tournaments=ec048669c38c453eb6eb734421134361"
+          }
+        ],
+        "duplicateCount": 1,
+        "checkedAt": "2026-09-28T15:17:18.872Z"
+      }
+    },
+    "summary": "Đạt chuẩn Unique (94.5% - Trùng 5.5% | Gộp 2 phần)"
+  },
+  "id_docx_1790608135000_1_part1": {
+    "key": "07-guia-apuestas-liga-mx",
+    "articleId": "docx_1790608135000_1",
+    "slug": "07-guia-apuestas-liga-mx",
+    "title": "Guía de Apuestas de Fútbol Liga MX en Mexboss: Pronósticos, Momios y Consejos Clave",
+    "uniqueScore": 91,
+    "duplicateScore": 9,
+    "status": "in_progress",
+    "isPassed": false,
+    "duplicateSentences": [
+      {
+        "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+        "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+      },
+      {
+        "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "• Hándicap Asiático y Europeo (+0.",
+        "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+      }
+    ],
+    "duplicateCount": 4,
+    "checkedAt": "2026-09-28T15:13:07.524Z",
+    "checkedBy": "ToolOnpage Chrome Extension",
+    "totalParts": 2,
+    "completedParts": 1,
+    "isSplit": true,
+    "parts": {
+      "1": {
+        "partIndex": 1,
+        "articleId": "docx_1790608135000_1_part1",
+        "uniqueScore": 91,
+        "duplicateScore": 9,
+        "duplicateSentences": [
+          {
+            "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+            "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+          },
+          {
+            "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "• Hándicap Asiático y Europeo (+0.",
+            "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+          }
+        ],
+        "duplicateCount": 4,
+        "checkedAt": "2026-09-28T15:13:07.523Z"
+      }
+    },
+    "summary": "⏳ Đang kiểm tra: Đã xong Phần 1/2 (Trùng 9%). Đang chờ Phần tiếp theo..."
+  },
+  "id_docx_1790608135000_1_part2": {
+    "key": "07-guia-apuestas-liga-mx",
+    "articleId": "docx_1790608135000_1",
+    "slug": "07-guia-apuestas-liga-mx",
+    "title": "Guía de Apuestas de Fútbol Liga MX en Mexboss: Pronósticos, Momios y Consejos Clave",
+    "uniqueScore": 94.5,
+    "duplicateScore": 5.5,
+    "status": "passed",
+    "isPassed": true,
+    "duplicateSentences": [
+      {
+        "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+        "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+      },
+      {
+        "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+        "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+      },
+      {
+        "sentence": "• Hándicap Asiático y Europeo (+0.",
+        "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+      },
+      {
+        "sentence": "Preguntas Frecuentes sobre Apuestas Liga MX",
+        "source_url": "https://jugabet.com/football/unknown/1?tournaments=ec048669c38c453eb6eb734421134361"
+      }
+    ],
+    "duplicateCount": 5,
+    "checkedAt": "2026-09-28T15:17:18.872Z",
+    "checkedBy": "ToolOnpage Chrome Extension",
+    "totalParts": 2,
+    "completedParts": 2,
+    "isSplit": true,
+    "parts": {
+      "1": {
+        "partIndex": 1,
+        "articleId": "docx_1790608135000_1_part1",
+        "uniqueScore": 91,
+        "duplicateScore": 9,
+        "duplicateSentences": [
+          {
+            "sentence": "La Pasión del Fútbol Mexicano en Mexboss Deportes",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "El fútbol en México no es simplemente una disciplina deportiva; representa una auténtica devoción cultural que paraliza ciudades enteras cada fin de semana.",
+            "source_url": "https://www.unotv.com/deportes/el-futbol-en-mexico-la-identidad-cultural-que-une-a-todo-un-pais/"
+          },
+          {
+            "sentence": "Las Apuestas Liga MX en Mexboss te permiten experimentar cada jornada del Torneo Apertura y del",
+            "source_url": "https://www-mexboss.com.mx/mexboss-liga-mx/"
+          },
+          {
+            "sentence": "• Hándicap Asiático y Europeo (+0.",
+            "source_url": "https://macman-pro.com/diferencia-entre-handicap-asiatico-y-europeo/"
+          }
+        ],
+        "duplicateCount": 4,
+        "checkedAt": "2026-09-28T15:13:07.523Z"
+      },
+      "2": {
+        "partIndex": 2,
+        "articleId": "docx_1790608135000_1_part2",
+        "uniqueScore": 98,
+        "duplicateScore": 2,
+        "duplicateSentences": [
+          {
+            "sentence": "Preguntas Frecuentes sobre Apuestas Liga MX",
+            "source_url": "https://jugabet.com/football/unknown/1?tournaments=ec048669c38c453eb6eb734421134361"
+          }
+        ],
+        "duplicateCount": 1,
+        "checkedAt": "2026-09-28T15:17:18.872Z"
+      }
+    },
+    "summary": "Đạt chuẩn Unique (94.5% - Trùng 5.5% | Gộp 2 phần)"
   }
 }

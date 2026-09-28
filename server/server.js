@@ -747,13 +747,67 @@ app.get('/api/spineditor/articles', async (req, res) => {
     const { source } = req.query; // 'docx' | 'wp' | 'all'
     const docxQueue = spineditorService.getDocxQueue();
 
+    // Hàm chuẩn bị danh sách bài cho bot, tự động áp dụng rule: nếu bài > 1000 từ thì chia 2 lần check để tránh nghẽn Spineditor
+    function prepareArticlesForCheck(items) {
+      const result = [];
+      for (const item of items) {
+        const text = item.clean_text || '';
+        const words = text.split(/\s+/).filter(Boolean);
+        const wCount = item.word_count || words.length;
+
+        if (wCount > 1000) {
+          const [part1, part2] = spineditorService.splitTextIntoTwoParts(text);
+          const p1Words = part1.split(/\s+/).filter(Boolean).length;
+          const p2Words = part2.split(/\s+/).filter(Boolean).length;
+
+          result.push({
+            ...item,
+            id: `${item.id}_part1`,
+            parent_id: item.id,
+            slug: item.slug,
+            title: `${item.title} (Phần 1/2)`,
+            clean_text: part1,
+            word_count: p1Words,
+            original_word_count: wCount,
+            part_index: 1,
+            total_parts: 2,
+            is_split_part: true
+          });
+
+          result.push({
+            ...item,
+            id: `${item.id}_part2`,
+            parent_id: item.id,
+            slug: item.slug,
+            title: `${item.title} (Phần 2/2)`,
+            clean_text: part2,
+            word_count: p2Words,
+            original_word_count: wCount,
+            part_index: 2,
+            total_parts: 2,
+            is_split_part: true
+          });
+        } else {
+          result.push({
+            ...item,
+            part_index: 1,
+            total_parts: 1,
+            is_split_part: false
+          });
+        }
+      }
+      return result;
+    }
+
     // Nếu yêu cầu rõ ràng nguồn docx HOẶC đang có bài trong hàng đợi docx (và client không ép buộc lấy wp)
     if (source === 'docx' || (docxQueue.length > 0 && source !== 'wp')) {
+      const preparedDocx = prepareArticlesForCheck(docxQueue);
       return res.json({
         success: true,
         source: 'docx',
-        total: docxQueue.length,
-        articles: docxQueue
+        total: preparedDocx.length,
+        original_total: docxQueue.length,
+        articles: preparedDocx
       });
     }
 
@@ -778,11 +832,13 @@ app.get('/api/spineditor/articles', async (req, res) => {
       });
     }
 
+    const preparedWp = prepareArticlesForCheck(articles);
     res.json({
       success: true,
       source: 'wp',
-      total: articles.length,
-      articles
+      total: preparedWp.length,
+      original_total: articles.length,
+      articles: preparedWp
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -950,15 +1006,18 @@ app.post('/api/spineditor/remove-docx-item', (req, res) => {
 // Cập nhật kết quả kiểm tra từ Spineditor Bot (Tampermonkey / Client)
 app.post('/api/spineditor/update-result', async (req, res) => {
   try {
-    const { articleId, slug, title, uniqueScore, duplicateScore, duplicateSentences, checkedBy } = req.body;
-    if (!slug && !articleId) {
+    const { articleId, parentId, slug, title, partIndex, totalParts, uniqueScore, duplicateScore, duplicateSentences, checkedBy } = req.body;
+    if (!slug && !articleId && !parentId) {
       return res.status(400).json({ success: false, error: 'Thiếu thông tin slug hoặc articleId!' });
     }
 
     const saved = spineditorService.recordCheckResult({
       articleId,
+      parentId,
       slug,
       title,
+      partIndex,
+      totalParts,
       uniqueScore,
       duplicateScore,
       duplicateSentences,

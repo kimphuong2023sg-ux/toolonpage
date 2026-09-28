@@ -23,7 +23,7 @@
     apiUrl: 'https://api.toolseo.uk',
     excludedDomain: 'mexboss.sh',
     delaySeconds: 5,
-    maxWaitSeconds: 180
+    maxWaitSeconds: 240
   };
 
   function getConfig() {
@@ -231,6 +231,66 @@
   // ==========================================
   // 2. LOGIC TỰ ĐỘNG HÓA KIỂM TRA BÀI VIẾT
   // ==========================================
+
+  // Chia đôi văn bản bài viết nếu vượt quá 1000 từ để tránh làm nghẽn Spineditor SCheckPro
+  function splitTextIntoTwoParts(text = '') {
+    if (!text) return [text, ''];
+    const words = text.split(/\s+/).filter(Boolean);
+    if (words.length <= 1000) {
+      return [text];
+    }
+
+    const targetWordCount = Math.floor(words.length / 2);
+    const paragraphs = text.split(/\n+/);
+    let currentWords = 0;
+    let splitIndex = -1;
+    let minDiff = Infinity;
+
+    // Tìm điểm ngắt giữa các đoạn văn
+    for (let i = 0; i < paragraphs.length - 1; i++) {
+      const pWords = paragraphs[i].split(/\s+/).filter(Boolean).length;
+      currentWords += pWords;
+      const diff = Math.abs(currentWords - targetWordCount);
+      if (diff < minDiff) {
+        minDiff = diff;
+        splitIndex = i;
+      }
+    }
+
+    // Nếu chia theo đoạn hợp lý (lệch không quá 35% so với nửa bài)
+    if (splitIndex !== -1 && minDiff < words.length * 0.35) {
+      const part1 = paragraphs.slice(0, splitIndex + 1).join('\n\n').trim();
+      const part2 = paragraphs.slice(splitIndex + 1).join('\n\n').trim();
+      return [part1, part2];
+    }
+
+    // Fallback: Tìm ngắt câu gần mốc 50%
+    const sentences = text.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [text];
+    currentWords = 0;
+    splitIndex = -1;
+    minDiff = Infinity;
+    for (let i = 0; i < sentences.length - 1; i++) {
+      const sWords = sentences[i].split(/\s+/).filter(Boolean).length;
+      currentWords += sWords;
+      const diff = Math.abs(currentWords - targetWordCount);
+      if (diff < minDiff) {
+        minDiff = diff;
+        splitIndex = i;
+      }
+    }
+
+    if (splitIndex !== -1) {
+      const part1 = sentences.slice(0, splitIndex + 1).join('').trim();
+      const part2 = sentences.slice(splitIndex + 1).join('').trim();
+      return [part1, part2];
+    }
+
+    // Fallback cuối cùng: ngắt theo số từ
+    const part1 = words.slice(0, targetWordCount).join(' ');
+    const part2 = words.slice(targetWordCount).join(' ');
+    return [part1, part2];
+  }
+
   async function startAutomation() {
     if (isRunning) return;
     isRunning = true;
@@ -256,9 +316,53 @@
         return;
       }
 
-      articlesQueue = articles;
+      // Chuẩn hóa hàng đợi: nếu bài > 1000 từ mà chưa chia phần, tự động chia 2 lần check để Spineditor không bị nghẽn
+      const expandedQueue = [];
+      for (const it of articles) {
+        const txt = it.clean_text || '';
+        const wCount = it.word_count || txt.split(/\s+/).filter(Boolean).length;
+        if (wCount > 1000 && !it.is_split_part) {
+          const [p1, p2] = splitTextIntoTwoParts(txt);
+          const p1Words = p1.split(/\s+/).filter(Boolean).length;
+          const p2Words = p2.split(/\s+/).filter(Boolean).length;
+
+          logMessage(`⚡ Bài "${it.title || it.slug}" (${wCount} từ > 1000 từ) được chia làm 2 lần check để tránh nghẽn Spineditor!`, 'warning');
+
+          expandedQueue.push({
+            ...it,
+            id: `${it.id}_part1`,
+            parent_id: it.id,
+            slug: it.slug,
+            title: `${it.title} (Phần 1/2)`,
+            clean_text: p1,
+            word_count: p1Words,
+            original_word_count: wCount,
+            part_index: 1,
+            total_parts: 2,
+            is_split_part: true
+          });
+
+          expandedQueue.push({
+            ...it,
+            id: `${it.id}_part2`,
+            parent_id: it.id,
+            slug: it.slug,
+            title: `${it.title} (Phần 2/2)`,
+            clean_text: p2,
+            word_count: p2Words,
+            original_word_count: wCount,
+            part_index: 2,
+            total_parts: 2,
+            is_split_part: true
+          });
+        } else {
+          expandedQueue.push(it);
+        }
+      }
+
+      articlesQueue = expandedQueue;
       currentIndex = 0;
-      logMessage(`Đã nạp thành công ${articlesQueue.length} bài viết từ Tool!`, 'success');
+      logMessage(`Đã nạp thành công ${articlesQueue.length} lượt kiểm tra từ Tool!`, 'success');
 
       processNextArticle();
     } catch (err) {
@@ -273,7 +377,7 @@
     try {
       GM_setValue('top_queue_running', false);
       GM_setValue('top_queue_data', '');
-    } catch (e) {}
+    } catch (e) { }
 
     const btnStart = document.getElementById('top-btn-start');
     const btnStop = document.getElementById('top-btn-stop');
@@ -325,7 +429,7 @@
       GM_xmlhttpRequest({
         method: 'POST',
         url: targetUrl,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
@@ -397,24 +501,28 @@
         throw new Error('Không tìm thấy nút bấm Start!');
       }
 
-      // 4. Chờ SCheckPro quét xong: Tối đa 3 phút (180s), bài ngắn kết thúc sớm
-      logMessage(`Đang chờ SCheckPro quét Google (Quy tắc: tối đa 3 phút, bài ngắn tự xong sớm)...`);
-      const result = await waitForCheckComplete(baseline, config.maxWaitSeconds || 180);
+      // 4. Chờ SCheckPro quét xong: Tối đa 4 phút (240s), bài ngắn kết thúc sớm
+      logMessage(`Đang chờ SCheckPro quét Google (Quy tắc: tối đa 4 phút, bài ngắn tự xong sớm)...`);
+      const result = await waitForCheckComplete(baseline, config.maxWaitSeconds || 240);
 
-      logMessage(`✅ Chốt kết quả bài ${itemNum}: Unique: ${result.uniqueScore}% | Trùng lặp: ${result.duplicateScore}% (${result.duplicateSentences.length} câu trùng)`, result.duplicateScore <= 10 ? 'success' : 'error');
+      const partTag = item.is_split_part ? `(Phần ${item.part_index}/${item.total_parts}) ` : '';
+      logMessage(`✅ Chốt kết quả bài ${itemNum} ${partTag}: Unique: ${result.uniqueScore}% | Trùng lặp: ${result.duplicateScore}% (${result.duplicateSentences.length} câu trùng)`, result.duplicateScore <= 10 ? 'success' : 'error');
 
       // 5. Gửi kết quả về ToolOnpage
       await sendResultToTool(config.apiUrl, {
         articleId: item.id,
+        parentId: item.parent_id || null,
         slug: item.slug,
         title: item.title,
+        partIndex: item.part_index || null,
+        totalParts: item.total_parts || null,
         uniqueScore: result.uniqueScore,
         duplicateScore: result.duplicateScore,
         duplicateSentences: result.duplicateSentences,
         checkedBy: 'Spineditor Extension Bot'
       });
 
-      logMessage(`Đã đồng bộ kết quả bài ${itemNum} về ToolOnpage!`, 'success');
+      logMessage(`Đã đồng bộ kết quả bài ${itemNum} ${partTag}về ToolOnpage!`, 'success');
 
       // 6. Lưu trạng thái và RELOAD TRANG SPINEDITOR để chạy bài tiếp theo
       currentIndex++;
@@ -527,7 +635,7 @@
           const hasText = lastCell.textContent.trim().length > 0;
 
           // Kiểm tra xem dòng này có bị đánh dấu trùng lặp không (chấm than đỏ, fa-exclamation, style đỏ)
-          const isDup = 
+          const isDup =
             lastCell.querySelector('.fa-exclamation, .fa-exclamation-circle, .fa-warning, .fa-times, [class*="danger"], [class*="error"], [class*="alert"]') ||
             lastCell.querySelector('[style*="red"], [style*="#f00"], [style*="rgb(255, 0, 0)"]') ||
             lastCell.innerHTML.toLowerCase().includes('red') ||
@@ -592,16 +700,16 @@
 
   function setExcludedDomain(domain) {
     try {
-      const input = document.querySelector('input#domain') || 
-                    document.querySelector('input[name="domain"]') || 
-                    document.querySelector('input[placeholder*="domain"]') ||
-                    document.querySelector('input[placeholder*="tên miền"]');
+      const input = document.querySelector('input#domain') ||
+        document.querySelector('input[name="domain"]') ||
+        document.querySelector('input[placeholder*="domain"]') ||
+        document.querySelector('input[placeholder*="tên miền"]');
       if (input) {
         input.value = domain;
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function clickCheckButton() {
@@ -668,8 +776,8 @@
     return false;
   }
 
-  // Đợi SCheckPro quét xong: Tối đa 3 phút (180s), bài ngắn kết thúc sớm
-  function waitForCheckComplete(baseline, maxWaitSec = 180) {
+  // Đợi SCheckPro quét xong: Tối đa 4 phút (240s), bài ngắn kết thúc sớm
+  function waitForCheckComplete(baseline, maxWaitSec = 240) {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       let lastProgressLog = 0;
@@ -681,7 +789,7 @@
         return `${s.dup ?? 'null'}|${s.uniq ?? 'null'}|${s.sentences}`;
       }
 
-      logMessage(`⏳ Bắt đầu quét SCheckPro (Tối đa 3 phút / 180s. Bài ngắn sẽ kết thúc sớm)...`, 'info');
+      logMessage(`⏳ Bắt đầu quét SCheckPro (Tối đa 4 phút / ${maxWaitSec}s. Bài ngắn sẽ kết thúc sớm)...`, 'info');
 
       const timer = setInterval(() => {
         const elapsed = Date.now() - startTime;
@@ -694,18 +802,18 @@
           lastProgressLog = elapsed;
           if (snap.totalRows > 0) {
             const pct = Math.round((snap.completedRows / snap.totalRows) * 100);
-            logMessage(`⏳ Đang quét: ${snap.completedRows}/${snap.totalRows} câu (${pct}%) [${elapsedSec}s/180s] - Trùng: ${snap.dup !== null ? snap.dup + '%' : (snap.sentences > 0 ? snap.sentences + ' câu đỏ' : 'Đang dò...')}`, 'info');
+            logMessage(`⏳ Đang quét: ${snap.completedRows}/${snap.totalRows} câu (${pct}%) [${elapsedSec}s/${maxWaitSec}s] - Trùng: ${snap.dup !== null ? snap.dup + '%' : (snap.sentences > 0 ? snap.sentences + ' câu đỏ' : 'Đang dò...')}`, 'info');
           } else {
-            logMessage(`⏳ SCheckPro đang phân tích bài viết [${elapsedSec}s/180s]...`, 'info');
+            logMessage(`⏳ SCheckPro đang phân tích bài viết [${elapsedSec}s/${maxWaitSec}s]...`, 'info');
           }
         }
 
         // ==============================================================
-        // ĐIỀU KIỆN 1: HẾT 3 PHÚT (180 GIÂY) → CHỐT KẾT QUẢ VÀ KẾT THÚC
+        // ĐIỀU KIỆN 1: HẾT 4 PHÚT (240 GIÂY) → CHỐT KẾT QUẢ VÀ KẾT THÚC
         // ==============================================================
         if (elapsed >= maxWaitSec * 1000) {
           clearInterval(timer);
-          logMessage(`⏰ ĐÃ HẾT 3 PHÚT (180s)! Chốt kết quả Spineditor và chuẩn bị chuyển bài...`, 'warning');
+          logMessage(`⏰ ĐÃ HẾT 4 PHÚT (${maxWaitSec}s)! Chốt kết quả Spineditor và chuẩn bị chuyển bài...`, 'warning');
 
           // Đọc kết quả cuối cùng
           if (snap.dup === null && snap.totalRows > 0) {
@@ -723,7 +831,7 @@
         if (elapsed < MIN_SCAN_MS) return;
 
         // ==============================================================
-        // ĐIỀU KIỆN 2: BÀI NGẮN KẾT THÚC SỚM (XONG TRƯỚC 3 PHÚT)
+        // ĐIỀU KIỆN 2: BÀI NGẮN KẾT THÚC SỚM (XONG TRƯỚC 4 PHÚT)
         // ==============================================================
         const hasScore = snap.dup !== null;
         const tableFinished = snap.totalRows > 0 ? (snap.completedRows >= snap.totalRows) : false;
@@ -741,7 +849,7 @@
             // Ổn định 2 giây là chốt kết thúc sớm!
             if (stableCount >= 2) {
               clearInterval(timer);
-              logMessage(`⚡ KẾT THÚC SỚM (${elapsedSec}s < 180s)! Kết quả: Trùng lặp ${snap.dup}% | Unique ${snap.uniq}%`, 'success');
+              logMessage(`⚡ KẾT THÚC SỚM (${elapsedSec}s < ${maxWaitSec}s)! Kết quả: Trùng lặp ${snap.dup}% | Unique ${snap.uniq}%`, 'success');
               resolve(buildResult(snap));
               return;
             }
@@ -787,7 +895,7 @@
 
         const statusCell = cells[cells.length - 1];
         // Dấu hiệu câu trùng: icon chấm than đỏ, fa-exclamation, fa-warning, fa-times, text/style đỏ
-        const isDuplicate = 
+        const isDuplicate =
           statusCell.querySelector('.fa-exclamation, .fa-exclamation-circle, .fa-warning, .fa-times, [class*="danger"], [class*="error"], [class*="alert"]') ||
           statusCell.querySelector('[style*="red"], [style*="#f00"], [style*="rgb(255, 0, 0)"]') ||
           statusCell.innerHTML.toLowerCase().includes('red') ||
@@ -830,7 +938,7 @@
           duplicateSentences.push({ sentence: text, source_url: sourceUrl });
         }
       });
-    } catch (e) {}
+    } catch (e) { }
 
     return duplicateSentences;
   }

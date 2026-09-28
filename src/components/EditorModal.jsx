@@ -642,16 +642,18 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: item.spineditor.status === 'passed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.2)',
-                  borderColor: item.spineditor.status === 'passed' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.5)',
-                  color: item.spineditor.status === 'passed' ? '#34d399' : '#f87171',
+                  background: item.spineditor.status === 'passed' ? 'rgba(16, 185, 129, 0.15)' : item.spineditor.status === 'in_progress' ? 'rgba(234, 179, 8, 0.15)' : 'rgba(239, 68, 68, 0.2)',
+                  borderColor: item.spineditor.status === 'passed' ? 'rgba(16, 185, 129, 0.4)' : item.spineditor.status === 'in_progress' ? 'rgba(234, 179, 8, 0.5)' : 'rgba(239, 68, 68, 0.5)',
+                  color: item.spineditor.status === 'passed' ? '#34d399' : item.spineditor.status === 'in_progress' ? '#facc15' : '#f87171',
                   border: '1px solid'
                 }}
                 title="Bấm để xem chi tiết đối soát trùng lặp Spineditor"
               >
-                <span>{item.spineditor.status === 'passed' ? '🛡️' : '⛔'}</span>
+                <span>{item.spineditor.status === 'passed' ? '🛡️' : item.spineditor.status === 'in_progress' ? '⏳' : '⛔'}</span>
                 {item.spineditor.status === 'passed' 
                   ? `${item.spineditor.uniqueScore}% Unique 🟢` 
+                  : item.spineditor.status === 'in_progress'
+                  ? `Đang check (${item.spineditor.completedParts || 1}/${item.spineditor.totalParts || 2}) 🟡`
                   : `Trùng ${item.spineditor.duplicateScore}% (Từ chối) 🔴`}
               </button>
             ) : (

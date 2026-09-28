@@ -124,10 +124,74 @@ class SpineditorService {
   }
 
   /**
-   * Lưu kết quả kiểm tra từ Spineditor Bot vào cơ sở dữ liệu
+   * Chia đôi văn bản bài viết nếu vượt quá 1000 từ để tránh làm nghẽn Spineditor SCheckPro
+   * Tách khéo léo theo đoạn văn (\n\n) hoặc câu (.!?) gần mốc 50% số từ nhất
    */
-  recordCheckResult({ articleId, slug, title, uniqueScore, duplicateScore, duplicateSentences = [], checkedBy = 'system' }) {
-    const key = (slug || articleId || '').toString().toLowerCase().replace(/(^\/|\/$)/g, '');
+  splitTextIntoTwoParts(text = '') {
+    if (!text) return [text, ''];
+    const words = text.split(/\s+/).filter(Boolean);
+    if (words.length <= 1000) {
+      return [text];
+    }
+
+    const targetWordCount = Math.floor(words.length / 2);
+    const paragraphs = text.split(/\n+/);
+    let currentWords = 0;
+    let splitIndex = -1;
+    let minDiff = Infinity;
+
+    // Tìm điểm ngắt giữa các đoạn
+    for (let i = 0; i < paragraphs.length - 1; i++) {
+      const pWords = paragraphs[i].split(/\s+/).filter(Boolean).length;
+      currentWords += pWords;
+      const diff = Math.abs(currentWords - targetWordCount);
+      if (diff < minDiff) {
+        minDiff = diff;
+        splitIndex = i;
+      }
+    }
+
+    // Nếu chia theo đoạn hợp lý (lệch không quá 35% so với nửa bài)
+    if (splitIndex !== -1 && minDiff < words.length * 0.35) {
+      const part1 = paragraphs.slice(0, splitIndex + 1).join('\n\n').trim();
+      const part2 = paragraphs.slice(splitIndex + 1).join('\n\n').trim();
+      return [part1, part2];
+    }
+
+    // Fallback: Tìm ngắt câu gần mốc 50%
+    const sentences = text.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [text];
+    currentWords = 0;
+    splitIndex = -1;
+    minDiff = Infinity;
+    for (let i = 0; i < sentences.length - 1; i++) {
+      const sWords = sentences[i].split(/\s+/).filter(Boolean).length;
+      currentWords += sWords;
+      const diff = Math.abs(currentWords - targetWordCount);
+      if (diff < minDiff) {
+        minDiff = diff;
+        splitIndex = i;
+      }
+    }
+
+    if (splitIndex !== -1) {
+      const part1 = sentences.slice(0, splitIndex + 1).join('').trim();
+      const part2 = sentences.slice(splitIndex + 1).join('').trim();
+      return [part1, part2];
+    }
+
+    // Fallback cuối cùng: ngắt theo số từ
+    const part1 = words.slice(0, targetWordCount).join(' ');
+    const part2 = words.slice(targetWordCount).join(' ');
+    return [part1, part2];
+  }
+
+  /**
+   * Lưu kết quả kiểm tra từ Spineditor Bot vào cơ sở dữ liệu
+   * Hỗ trợ lưu từng phần và tổng hợp tự động khi bài > 1000 từ chia 2 lần check
+   */
+  recordCheckResult({ articleId, parentId, slug, title, partIndex, totalParts, uniqueScore, duplicateScore, duplicateSentences = [], checkedBy = 'system' }) {
+    const primaryKey = slug || parentId || articleId || '';
+    const key = primaryKey.toString().toLowerCase().replace(/(^\/|\/$)/g, '');
     if (!key) return null;
 
     const uScore = Math.max(0, Math.min(100, parseFloat(uniqueScore) || 0));
@@ -138,7 +202,82 @@ class SpineditorService {
     dScore = Math.round(dScore * 10) / 10;
     const finalUniqueScore = Math.round((100 - dScore) * 10) / 10;
 
-    // Quy tắc: Nếu trùng lặp > 10% -> TỪ CHỐI (Failed)
+    // Nếu bài viết được chia làm nhiều phần (VD: > 1000 từ chia 2 lần check)
+    if (totalParts && parseInt(totalParts, 10) > 1) {
+      const pIdx = parseInt(partIndex, 10) || 1;
+      const tParts = parseInt(totalParts, 10);
+      
+      const existing = this.results[key] || {};
+      const parts = existing.parts || {};
+
+      parts[pIdx] = {
+        partIndex: pIdx,
+        articleId,
+        uniqueScore: finalUniqueScore,
+        duplicateScore: dScore,
+        duplicateSentences: Array.isArray(duplicateSentences) ? duplicateSentences : [],
+        duplicateCount: (duplicateSentences || []).length,
+        checkedAt: new Date().toISOString()
+      };
+
+      const completedPartKeys = Object.keys(parts);
+      const isAllPartsDone = completedPartKeys.length >= tParts;
+
+      // Gom tất cả câu trùng lặp từ các phần (loại trừ câu trùng nhau)
+      const allDupSentences = [];
+      let totalDupScore = 0;
+      completedPartKeys.forEach(k => {
+        const p = parts[k];
+        totalDupScore += p.duplicateScore;
+        if (Array.isArray(p.duplicateSentences)) {
+          p.duplicateSentences.forEach(s => {
+            const txt = typeof s === 'string' ? s : (s.sentence || s.text || '');
+            if (txt && !allDupSentences.some(existing => (existing.sentence || existing.text || existing) === txt)) {
+              allDupSentences.push(s);
+            }
+          });
+        }
+      });
+
+      const avgDupScore = Math.round((totalDupScore / completedPartKeys.length) * 10) / 10;
+      const avgUniqueScore = Math.round((100 - avgDupScore) * 10) / 10;
+      const isPassed = avgDupScore <= 10.0;
+
+      const cleanTitle = (title || existing.title || '').replace(/\s*\([Pp]hần\s*\d+\/\d+\)\s*$/, '');
+
+      const entry = {
+        key,
+        articleId: parentId || articleId || null,
+        slug: key,
+        title: cleanTitle,
+        uniqueScore: avgUniqueScore,
+        duplicateScore: avgDupScore,
+        status: isAllPartsDone ? (isPassed ? 'passed' : 'failed') : 'in_progress',
+        isPassed: isAllPartsDone ? isPassed : false,
+        duplicateSentences: allDupSentences,
+        duplicateCount: allDupSentences.length,
+        checkedAt: new Date().toISOString(),
+        checkedBy,
+        totalParts: tParts,
+        completedParts: completedPartKeys.length,
+        isSplit: true,
+        parts,
+        summary: !isAllPartsDone
+          ? `⏳ Đang kiểm tra: Đã xong Phần ${completedPartKeys.length}/${tParts} (Trùng ${avgDupScore}%). Đang chờ Phần tiếp theo...`
+          : isPassed 
+            ? `Đạt chuẩn Unique (${avgUniqueScore}% - Trùng ${avgDupScore}% | Gộp ${tParts} phần)` 
+            : `TỪ CHỐI: Trùng lặp ${avgDupScore}% (Vượt quá quy định 10% | Gộp ${tParts} phần)`
+      };
+
+      this.results[key] = entry;
+      if (parentId) this.results[`id_${parentId}`] = entry;
+      if (articleId) this.results[`id_${articleId}`] = entry;
+
+      this.saveResults();
+      return entry;
+    }
+
+    // Quy tắc bài bình thường: Nếu trùng lặp > 10% -> TỪ CHỐI (Failed)
     const isPassed = dScore <= 10.0;
 
     const entry = {
