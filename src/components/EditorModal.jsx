@@ -323,15 +323,30 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
     featuredImageAlt: featuredImage.alt
   });
 
-  // Tự động Upload toàn bộ ảnh lên WordPress Media Library
+  // Đối soát & Verify thông minh: Chỉ upload ảnh THỰC SỰ mới, nếu đã có trên WP thì chỉ verify lấy URL
   const handleBatchUploadImages = async () => {
     setUploadingImages(true);
-    setStatusMessage({ type: 'info', text: 'Đang upload bộ ảnh lên WordPress Media và gán thẻ Alt/Caption chuẩn...' });
+    setStatusMessage({ type: 'info', text: '🔍 Đang đối soát kho ảnh WordPress và xác thực các ảnh đã có...' });
 
     try {
-      const allToUpload = [];
+      // 1. Quét đồng bộ danh bạ Media mới nhất từ WordPress
+      let currentMap = {};
+      try {
+        const syncRes = await authFetch('/api/wp/sync-media', { method: 'POST' });
+        const syncData = await syncRes.json();
+        if (syncData.success && syncData.mediaMap) {
+          currentMap = syncData.mediaMap;
+          setMediaMap(currentMap);
+        } else {
+          currentMap = await fetchMediaMap();
+        }
+      } catch (e) {
+        currentMap = await fetchMediaMap();
+      }
+
+      const allToProcess = [];
       if (featuredImage.filename) {
-        allToUpload.push({
+        allToProcess.push({
           filename: featuredImage.filename,
           alt: featuredImage.alt,
           title: featuredImage.title,
@@ -340,8 +355,8 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
       }
 
       bodyImages.forEach(img => {
-        if (!allToUpload.some(u => u.filename === img.filename)) {
-          allToUpload.push({
+        if (!allToProcess.some(u => u.filename === img.filename)) {
+          allToProcess.push({
             filename: img.filename,
             alt: img.alt,
             title: img.title,
@@ -350,18 +365,24 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
         }
       });
 
+      // 2. Gửi đối soát và chỉ upload nếu thực sự chưa có
       const res = await authFetch('/api/wp/batch-upload-images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: allToUpload })
+        body: JSON.stringify({ images: allToProcess })
       });
       const data = await res.json();
 
       if (data.success && data.uploads) {
         const uploadMap = {};
+        let verifiedCount = 0;
+        let newUploadedCount = 0;
+
         data.uploads.forEach(u => {
           if (u.success) {
             uploadMap[u.original_filename] = { url: u.url, id: u.id };
+            if (u.verified) verifiedCount++;
+            else newUploadedCount++;
           }
         });
 
@@ -381,10 +402,32 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
           wpId: uploadMap[img.filename]?.id || img.wpId
         })));
 
-        setStatusMessage({ type: 'success', text: `✅ Đã upload thành công ${data.uploads.filter(u => u.success).length}/${allToUpload.length} hình ảnh vào WordPress!` });
+        // CẬP NHẬT TRỰC TIẾP URL ẢNH ONLINE VÀO NỘI DUNG BÀI VIẾT (contentHtml)
+        setContentHtml(prevHtml => {
+          let updated = prevHtml;
+          for (const [filename, item] of Object.entries(uploadMap)) {
+            if (item && item.url) {
+              const clean = filename.replace(/^\d+_[a-z0-9]+_/i, '');
+              const escClean = clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const escFull = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const regex = new RegExp(`src=["'][^"']*?(?:${escClean}|${escFull})["']`, 'gi');
+              updated = updated.replace(regex, `src="${item.url}"`);
+            }
+          }
+          return updated;
+        });
+
+        await fetchMediaMap();
+
+        let msg = `✅ Hoàn tất kiểm tra bộ ảnh: `;
+        if (verifiedCount > 0) msg += `🛡️ Đã xác thực ${verifiedCount} ảnh có sẵn trên WordPress (không upload trùng lặp). `;
+        if (newUploadedCount > 0) msg += `📤 Đã tải lên ${newUploadedCount} ảnh mới. `;
+        if (verifiedCount === 0 && newUploadedCount === 0) msg += `Tất cả ảnh đã sẵn sàng trên WordPress mexboss.sh!`;
+
+        setStatusMessage({ type: 'success', text: msg });
       }
     } catch (err) {
-      setStatusMessage({ type: 'error', text: `Lỗi upload ảnh: ${err.message}` });
+      setStatusMessage({ type: 'error', text: `Lỗi xử lý ảnh: ${err.message}` });
     } finally {
       setUploadingImages(false);
     }
@@ -458,13 +501,25 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
         console.log('⚡ Toàn bộ ảnh đã có sẵn trên WordPress! Không cần upload lại.');
       }
 
-      // 2. Gửi lệnh Lưu / Cập nhật bài viết lên WordPress
+      // 2. Gửi lệnh Lưu / Cập nhật bài viết lên WordPress (Đảm bảo thay thế toàn bộ src sang online)
+      let finalContentToPublish = contentHtml;
+      for (const [filename, wpUrl] of Object.entries(imageMapping)) {
+        if (wpUrl) {
+          const clean = filename.replace(/^\d+_[a-z0-9]+_/i, '');
+          const escClean = clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const escFull = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`src=["'][^"']*?(?:${escClean}|${escFull})["']`, 'gi');
+          finalContentToPublish = finalContentToPublish.replace(regex, `src="${wpUrl}"`);
+        }
+      }
+      setContentHtml(finalContentToPublish);
+
       const payload = {
         id: item?.id || 0,
         type: targetType,
         title: seoTitle || item?.title,
         slug: slug,
-        content: contentHtml,
+        content: finalContentToPublish,
         status: status,
         featured_media: featMediaId,
         image_mapping: imageMapping,
@@ -1108,6 +1163,27 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
                         color: var(--mex-gold) !important;
                         text-decoration: underline !important;
                       }
+                      /* BẢN XEM TRƯỚC: TOÀN BỘ HÌNH ẢNH LUÔN NẰM RA CHÍNH GIỮA */
+                      .preview-content-box figure {
+                        text-align: center !important;
+                        margin: 28px auto !important;
+                        display: block !important;
+                      }
+                      .preview-content-box img {
+                        display: block !important;
+                        margin: 0 auto !important;
+                        max-width: 100% !important;
+                        height: auto !important;
+                        border-radius: 8px !important;
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                      }
+                      .preview-content-box figcaption {
+                        text-align: center !important;
+                        font-size: 13px !important;
+                        color: #94a3b8 !important;
+                        margin-top: 8px !important;
+                        display: block !important;
+                      }
                     `}</style>
                     <div dangerouslySetInnerHTML={{ 
                       __html: contentHtml.replace(/src=["']([^"']+)["']/g, (match, src) => {
@@ -1133,17 +1209,43 @@ export default function EditorModal({ item, siteItems = [], onClose, onSaveSucce
 
               {activeViewTab === 'images' && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
                     <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                      Danh sách các vị trí ảnh kèm Thẻ Alt chuẩn SEO theo tài liệu:
+                      🛡️ Hệ thống tự động đối soát: Nếu ảnh <strong>đã có trên WordPress Media</strong> thì chỉ verify lại, <strong>tuyệt đối không upload trùng lặp</strong>.
                     </div>
-                    <button 
-                      className="btn-action-post" 
-                      onClick={handleBatchUploadImages}
-                      disabled={uploadingImages}
-                    >
-                      {uploadingImages ? '⏳ Đang upload...' : '⚡ Upload Ngay Lên WP Media Library'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        type="button"
+                        className="btn-secondary"
+                        onClick={handleCleanDuplicates}
+                        title="Quét toàn bộ WordPress Media Library, giữ lại 1 bản chuẩn và xóa sạch các bản copy -1, -2, -3 thừa"
+                        style={{
+                          fontSize: '12px',
+                          padding: '6px 12px',
+                          color: '#f87171',
+                          borderColor: 'rgba(239, 68, 68, 0.4)',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span>🧹</span> Dọn Dẹp Ảnh Trùng Lặp Trên WP
+                      </button>
+                      <button 
+                        type="button"
+                        className="btn-action-post" 
+                        onClick={handleBatchUploadImages}
+                        disabled={uploadingImages}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        {uploadingImages ? (
+                          <><span>⏳</span> Đang đối soát & verify...</>
+                        ) : (
+                          <><span>🔍</span> Verify & Chỉ Upload Ảnh Chưa Có</>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {bodyImages.map((img, idx) => (

@@ -208,470 +208,470 @@
       "lastLoginAt": "2026-09-27T03:59:15.238Z",
       "lastLoginIp": "127.0.0.1",
       "createdAt": "2026-09-25T02:20:26.339Z",
-      "lastActiveAt": "2026-09-27T03:59:15.241Z",
-      "lastHeartbeatAt": "2026-09-27T03:59:15.241Z",
+      "lastActiveAt": "2026-10-01T08:08:04.692Z",
+      "lastHeartbeatAt": "2026-10-01T08:08:04.692Z",
       "currentSite": {
         "id": "https://mexboss.sh",
         "name": "Mexboss Mexico",
         "url": "https://mexboss.sh"
       },
       "currentAction": {
-        "type": "login",
-        "title": "Đăng nhập vào hệ thống",
-        "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+        "type": "publish_success",
+        "title": "Vừa xuất bản: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (Xuất bản)",
+        "detail": "ID: 56 | SEO: 100/100 | Lúc 15:08:04",
         "siteName": "Mexboss Mexico",
-        "timestamp": "2026-09-27T03:59:15.241Z"
+        "timestamp": "2026-10-01T08:08:04.692Z"
       },
       "activityHistory": [
         {
-          "id": "act_1790481555241_ij5e",
-          "type": "login",
-          "title": "Đăng nhập vào hệ thống",
-          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-27T03:59:15.241Z"
-        },
-        {
-          "id": "act_1790481346730_57hf",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-27T03:55:46.730Z"
-        },
-        {
-          "id": "act_1790481345352_noqe",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (0 bài)",
-          "detail": "Trang chủ Tool",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-27T03:55:45.352Z"
-        },
-        {
-          "id": "act_1790481345256_7s58",
-          "type": "login",
-          "title": "Đăng nhập vào hệ thống",
-          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-27T03:55:45.256Z"
-        },
-        {
-          "id": "act_1790480740159_84br",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-27T03:45:40.159Z"
-        },
-        {
-          "id": "act_1790480735085_clrf",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (0 bài)",
-          "detail": "Trang chủ Tool",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-27T03:45:35.084Z"
-        },
-        {
-          "id": "act_1790408009817_wkxl",
+          "id": "act_1790842084692_lwzc",
           "type": "publish_success",
-          "title": "Vừa xuất bản: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (Xuất bản)",
-          "detail": "ID: 67 | SEO: 95/100 | Lúc 14:33:29",
+          "title": "Vừa xuất bản: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (Xuất bản)",
+          "detail": "ID: 56 | SEO: 100/100 | Lúc 15:08:04",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:29.817Z"
+          "timestamp": "2026-10-01T08:08:04.692Z"
         },
         {
-          "id": "act_1790408009811_xoof",
+          "id": "act_1790842084683_0ja5",
           "type": "publish_success",
           "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (/guia-fortune-rabbit) | SEO Rank Math: 0/100",
+          "detail": "Bài: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (/soporte-en-mexboss) | SEO Rank Math: 0/100",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:29.811Z"
+          "timestamp": "2026-10-01T08:08:04.683Z"
         },
         {
-          "id": "act_1790408006814_gjta",
+          "id": "act_1790842082617_o0fx",
           "type": "publishing",
-          "title": "Đang đăng bài: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (Xuất bản)",
+          "title": "Đang đăng bài: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (Xuất bản)",
           "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:26.814Z"
+          "timestamp": "2026-10-01T08:08:02.617Z"
         },
         {
-          "id": "act_1790408002391_1ff6",
+          "id": "act_1790842068385_ve1q",
           "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:22.391Z"
-        },
-        {
-          "id": "act_1790408000307_9fpo",
-          "type": "upload_content",
-          "title": "Nạp file bài viết / thư mục content",
-          "detail": "Đã nạp 9 file tài liệu & ảnh vào hệ thống",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:20.307Z"
-        },
-        {
-          "id": "act_1790407988957_4kax",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:08.957Z"
-        },
-        {
-          "id": "act_1790407988895_5147",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:33:08.895Z"
-        },
-        {
-          "id": "act_1790407970694_4mwc",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:32:50.694Z"
-        },
-        {
-          "id": "act_1790407966085_i8tc",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (0 bài)",
-          "detail": "Trang chủ Tool",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:32:46.085Z"
-        },
-        {
-          "id": "act_1790407544287_6zd5",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T07:25:44.286Z"
-        },
-        {
-          "id": "act_1790396917030_itla",
-          "type": "upload_content",
-          "title": "Nạp file bài viết / thư mục content",
-          "detail": "Đã nạp 8 file tài liệu & ảnh vào hệ thống",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:28:37.030Z"
-        },
-        {
-          "id": "act_1790396910468_po7r",
-          "type": "editing",
-          "title": "Đang biên tập: \"Casino en Línea en Vivo: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:28:30.468Z"
-        },
-        {
-          "id": "act_1790396910459_k7af",
-          "type": "editing",
-          "title": "Đang biên tập: \"Casino en Línea en Vivo\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:28:30.458Z"
-        },
-        {
-          "id": "act_1790396893622_1uen",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:28:13.622Z"
-        },
-        {
-          "id": "act_1790396882119_gwqn",
-          "type": "editing",
-          "title": "Đang biên tập: \"Lucky Jaguar 2 Slot en Mexboss: Tesoros de la Selva y Jackpot\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:28:02.119Z"
-        },
-        {
-          "id": "act_1790396881062_o9je",
-          "type": "editing",
-          "title": "Đang biên tập: \"Lucky Jaguar 2 Slot: Descubre los Tesoros de la Selva en Mexboss: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:28:01.062Z"
-        },
-        {
-          "id": "act_1790396879288_rs3c",
-          "type": "upload_content",
-          "title": "Nạp file bài viết / thư mục content",
-          "detail": "Đã nạp 9 file tài liệu & ảnh vào hệ thống",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:27:59.288Z"
-        },
-        {
-          "id": "act_1790396861388_w7ut",
-          "type": "editing",
-          "title": "Đang biên tập: \"Lucky Jaguar 2 Slot: Descubre los Tesoros de la Selva en Mexboss: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:27:41.388Z"
-        },
-        {
-          "id": "act_1790396861378_1jzw",
-          "type": "editing",
-          "title": "Đang biên tập: \"Lucky Jaguar 2 Slot: Descubre los Tesoros de la Selva en Mexboss\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:27:41.378Z"
-        },
-        {
-          "id": "act_1790396823576_j4ef",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:27:03.576Z"
-        },
-        {
-          "id": "act_1790396815784_15xa",
-          "type": "editing",
-          "title": "Đang biên tập: \"Los Mejores Juegos de Casino para Principiantes en Mexboss: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:26:55.784Z"
-        },
-        {
-          "id": "act_1790396815770_u7cp",
-          "type": "editing",
-          "title": "Đang biên tập: \"Los Mejores Juegos de Casino para Principiantes en Mexboss\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:26:55.770Z"
-        },
-        {
-          "id": "act_1790396772465_40he",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:26:12.465Z"
-        },
-        {
-          "id": "act_1790396760665_f85j",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\"",
-          "detail": "Slug: /guia-fortune-rabbit (Bài viết)",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:26:00.665Z"
-        },
-        {
-          "id": "act_1790396760653_8nb6",
-          "type": "publish_success",
-          "title": "Vừa xuất bản: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (Xuất bản)",
-          "detail": "ID: 67 | SEO: 85/100 | Lúc 11:26:00",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:26:00.653Z"
-        },
-        {
-          "id": "act_1790396760646_ci0c",
-          "type": "publish_success",
-          "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (/guia-fortune-rabbit) | SEO Rank Math: 0/100",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:26:00.646Z"
-        },
-        {
-          "id": "act_1790396757032_slkz",
-          "type": "publishing",
-          "title": "Đang đăng bài: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\" (Xuất bản)",
-          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:25:57.032Z"
-        },
-        {
-          "id": "act_1790396719695_ucmj",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:25:19.695Z"
-        },
-        {
-          "id": "act_1790396716064_pjd0",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:25:16.064Z"
-        },
-        {
-          "id": "act_1790396715625_0dni",
-          "type": "upload_content",
-          "title": "Nạp file bài viết / thư mục content",
-          "detail": "Đã nạp 9 file tài liệu & ảnh vào hệ thống",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:25:15.625Z"
-        },
-        {
-          "id": "act_1790396704015_6lh3",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026: Sitio Oficial en México 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:25:04.015Z"
-        },
-        {
-          "id": "act_1790396703800_tqa7",
-          "type": "editing",
-          "title": "Đang biên tập: \"Guía Completa de Fortune Rabbit en Mexboss: Multiplicadores 2026\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:25:03.800Z"
-        },
-        {
-          "id": "act_1790396695939_24qc",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (22 bài)",
-          "detail": "Website: Mexboss Mexico",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:24:55.939Z"
-        },
-        {
-          "id": "act_1790396557437_foyv",
-          "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\"",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\"",
           "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:37.437Z"
+          "timestamp": "2026-10-01T08:07:48.385Z"
         },
         {
-          "id": "act_1790396536188_td3b",
+          "id": "act_1790842067033_7y1r",
+          "type": "upload_media",
+          "title": "Xác thực & Upload ảnh WP Media",
+          "detail": "Đã đối soát 8/8 ảnh (0 đã có trên WP, 8 upload mới)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:07:47.033Z"
+        },
+        {
+          "id": "act_1790842054930_b2fl",
           "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%: Sitio Oficial en México 2026\"",
-          "detail": "Slug: /slots (Trang)",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\"",
+          "detail": "Tab: Soạn thảo trực quan",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:16.188Z"
+          "timestamp": "2026-10-01T08:07:34.930Z"
         },
         {
-          "id": "act_1790396536163_5z8c",
+          "id": "act_1790842053394_y8p8",
+          "type": "editing",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:07:33.394Z"
+        },
+        {
+          "id": "act_1790842052572_e7fy",
+          "type": "upload_content",
+          "title": "Nạp file bài viết / thư mục content",
+          "detail": "Đã nạp 9 file tài liệu & ảnh vào hệ thống",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:07:32.572Z"
+        },
+        {
+          "id": "act_1790842041144_gzyo",
+          "type": "editing",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:07:21.144Z"
+        },
+        {
+          "id": "act_1790842041119_dtbq",
+          "type": "editing",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:07:21.119Z"
+        },
+        {
+          "id": "act_1790841988354_65sz",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:06:28.354Z"
+        },
+        {
+          "id": "act_1790841894456_pvnz",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo\"",
+          "detail": "Slug: /soporte (Trang)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:04:54.456Z"
+        },
+        {
+          "id": "act_1790841894432_ll41",
           "type": "publish_success",
-          "title": "Vừa xuất bản: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (Xuất bản)",
-          "detail": "ID: 27 | SEO: 98/100 | Lúc 11:22:16",
+          "title": "Vừa xuất bản: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (Xuất bản)",
+          "detail": "ID: 56 | SEO: 100/100 | Lúc 15:04:54",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:16.163Z"
+          "timestamp": "2026-10-01T08:04:54.432Z"
         },
         {
-          "id": "act_1790396536156_13lo",
+          "id": "act_1790841894423_n5uv",
           "type": "publish_success",
           "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (/slots) | SEO Rank Math: 0/100",
+          "detail": "Bài: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (/soporte-en-mexboss) | SEO Rank Math: 0/100",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:16.156Z"
+          "timestamp": "2026-10-01T08:04:54.423Z"
         },
         {
-          "id": "act_1790396530528_j2bp",
+          "id": "act_1790841891674_d3eq",
           "type": "publishing",
-          "title": "Đang đăng bài: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (Xuất bản)",
+          "title": "Đang đăng bài: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\" (Xuất bản)",
           "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:10.528Z"
+          "timestamp": "2026-10-01T08:04:51.674Z"
         },
         {
-          "id": "act_1790396524060_opyf",
+          "id": "act_1790841882389_2nu9",
           "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\"",
-          "detail": "Tab: Điều hướng Internal Link",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:04.060Z"
+          "timestamp": "2026-10-01T08:04:42.389Z"
         },
         {
-          "id": "act_1790396521446_e5cy",
+          "id": "act_1790841880075_oayr",
+          "type": "upload_media",
+          "title": "Xác thực & Upload ảnh WP Media",
+          "detail": "Đã đối soát 8/8 ảnh (0 đã có trên WP, 8 upload mới)",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:04:40.075Z"
+        },
+        {
+          "id": "act_1790841858088_pkmd",
+          "type": "editing",
+          "title": "Đang biên tập: \"Soporte en Mexboss 2026: Atención al Cliente 24/7 en Vivo\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:04:18.088Z"
+        },
+        {
+          "id": "act_1790841855385_lygc",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:04:15.385Z"
+        },
+        {
+          "id": "act_1790841855354_rwdt",
+          "type": "upload_content",
+          "title": "Nạp file bài viết / thư mục content",
+          "detail": "Đã nạp 9 file tài liệu & ảnh vào hệ thống",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T08:04:15.354Z"
+        },
+        {
+          "id": "act_1790841550279_v762",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:59:10.279Z"
+        },
+        {
+          "id": "act_1790841516398_0w7s",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:58:36.397Z"
+        },
+        {
+          "id": "act_1790841347555_3h7y",
+          "type": "upload_media",
+          "title": "Upload ảnh lên WP Media Library",
+          "detail": "Đã upload thành công 8/8 hình ảnh",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:55:47.555Z"
+        },
+        {
+          "id": "act_1790841300387_05ln",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:55:00.387Z"
+        },
+        {
+          "id": "act_1790841299170_ie7r",
+          "type": "upload_media",
+          "title": "Upload ảnh lên WP Media Library",
+          "detail": "Đã upload thành công 8/8 hình ảnh",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:54:59.170Z"
+        },
+        {
+          "id": "act_1790841261245_1oea",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:54:21.245Z"
+        },
+        {
+          "id": "act_1790841255392_kgmi",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:54:15.392Z"
+        },
+        {
+          "id": "act_1790841255108_dp3z",
+          "type": "upload_content",
+          "title": "Nạp file bài viết / thư mục content",
+          "detail": "Đã nạp 9 file tài liệu & ảnh vào hệ thống",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:54:15.108Z"
+        },
+        {
+          "id": "act_1790841183386_ryik",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Tối ưu hình ảnh & Thẻ Alt",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:53:03.386Z"
+        },
+        {
+          "id": "act_1790841180976_zsoj",
+          "type": "upload_media",
+          "title": "Upload ảnh lên WP Media Library",
+          "detail": "Đã upload thành công 3/5 hình ảnh",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:53:00.976Z"
+        },
+        {
+          "id": "act_1790841169227_di7g",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:52:49.227Z"
+        },
+        {
+          "id": "act_1790841169157_hhoh",
+          "type": "editing",
+          "title": "Đang biên tập: \"Atención al Cliente y Soporte en Mexboss 2026: Ayuda 24/7 en Vivo\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:52:49.157Z"
+        },
+        {
+          "id": "act_1790841166233_cnbz",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:52:46.233Z"
+        },
+        {
+          "id": "act_1790841160941_y6in",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-10-01T07:52:40.941Z"
+        },
+        {
+          "id": "act_1790673127452_elpx",
+          "type": "publish_success",
+          "title": "Vừa xuất bản: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026\" (Xuất bản)",
+          "detail": "ID: 61 | SEO: 98/100 | Lúc 16:12:07",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:12:07.452Z"
+        },
+        {
+          "id": "act_1790673127444_j47w",
+          "type": "publish_success",
+          "title": "Xuất bản thành công lên WordPress",
+          "detail": "Bài: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026\" (/fortune-gems-500-mexboss) | SEO Rank Math: 0/100",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:12:07.444Z"
+        },
+        {
+          "id": "act_1790673126522_uvih",
+          "type": "publishing",
+          "title": "Đang đăng bài: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026\" (Xuất bản)",
+          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:12:06.522Z"
+        },
+        {
+          "id": "act_1790673125166_zxs1",
+          "type": "upload_media",
+          "title": "Upload ảnh lên WP Media Library",
+          "detail": "Đã upload thành công 6/6 hình ảnh",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:12:05.166Z"
+        },
+        {
+          "id": "act_1790673105439_xpz6",
+          "type": "publishing",
+          "title": "Đang đăng bài: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026\" (Xuất bản)",
+          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:11:45.439Z"
+        },
+        {
+          "id": "act_1790672963904_aumd",
+          "type": "editing",
+          "title": "Đang biên tập: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:09:23.904Z"
+        },
+        {
+          "id": "act_1790672946523_d4un",
+          "type": "editing",
+          "title": "Đang biên tập: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:09:06.523Z"
+        },
+        {
+          "id": "act_1790672946416_eglv",
+          "type": "upload_content",
+          "title": "Nạp file bài viết / thư mục content",
+          "detail": "Đã nạp 11 file tài liệu & ảnh vào hệ thống",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:09:06.416Z"
+        },
+        {
+          "id": "act_1790672931743_5g15",
+          "type": "editing",
+          "title": "Đang biên tập: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:08:51.743Z"
+        },
+        {
+          "id": "act_1790672931663_ohen",
+          "type": "editing",
+          "title": "Đang biên tập: \"Fortune Gems 500 en Mexboss: Guía y Consejos para Ganar 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:08:51.663Z"
+        },
+        {
+          "id": "act_1790672878120_88ti",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:07:58.120Z"
+        },
+        {
+          "id": "act_1790672859525_adwk",
+          "type": "editing",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "Mexboss Mexico",
+          "ip": "127.0.0.1",
+          "timestamp": "2026-09-29T09:07:39.525Z"
+        },
+        {
+          "id": "act_1790672857329_0d0f",
           "type": "upload_content",
           "title": "Nạp file bài viết / thư mục content",
           "detail": "Đã nạp 8 file tài liệu & ảnh vào hệ thống",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:22:01.446Z"
+          "timestamp": "2026-09-29T09:07:37.329Z"
         },
         {
-          "id": "act_1790396324286_3i08",
+          "id": "act_1790672838863_jqmy",
           "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\"",
-          "detail": "Tab: Điều hướng Internal Link",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión: Sitio Oficial en México 2026\"",
+          "detail": "Tab: Soạn thảo trực quan",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:18:44.285Z"
+          "timestamp": "2026-09-29T09:07:18.863Z"
         },
         {
-          "id": "act_1790395501047_fmcc",
-          "type": "publish_success",
-          "title": "Vừa xuất bản: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (Xuất bản)",
-          "detail": "ID: 27 | SEO: 98/100 | Lúc 11:05:01",
+          "id": "act_1790672838757_4rti",
+          "type": "editing",
+          "title": "Đang biên tập: \"Cómo Registrarse e Iniciar Sesión\"",
+          "detail": "Tab: Soạn thảo trực quan",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:05:01.047Z"
+          "timestamp": "2026-09-29T09:07:18.757Z"
         },
         {
-          "id": "act_1790395501041_47r4",
-          "type": "publish_success",
-          "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (/slots) | SEO Rank Math: 0/100",
+          "id": "act_1790662044225_9kgv",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (22 bài)",
+          "detail": "Website: Mexboss Mexico",
           "siteName": "Mexboss Mexico",
           "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:05:01.041Z"
-        },
-        {
-          "id": "act_1790395497829_d8l1",
-          "type": "publishing",
-          "title": "Đang đăng bài: \"Tragamonedas y Slots en Mexboss 2026: Catálogo #1 con RTP +98%\" (Xuất bản)",
-          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
-          "siteName": "Mexboss Mexico",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-09-26T04:04:57.829Z"
+          "timestamp": "2026-09-29T06:07:24.225Z"
         }
       ]
     },

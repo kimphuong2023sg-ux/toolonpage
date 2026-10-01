@@ -52,53 +52,140 @@ class WordPressService {
     return this.mediaCache[this.baseUrl] || {};
   }
 
-  // Tìm kiếm ảnh đã có trên WordPress (để tránh upload trùng lặp)
-  async findExistingMedia(filename) {
-    if (!this.mediaCache) this.loadMediaCache();
-    const siteCache = this.mediaCache[this.baseUrl] || {};
-    
-    // 1. Kiểm tra trong local cache trước
-    if (siteCache[filename]) {
-      return siteCache[filename];
+  // Quét và đồng bộ toàn bộ Media Library từ WordPress về lưu vào cache
+  async syncAllMediaLibrary(maxPages = 5) {
+    await this.authenticate();
+    if (!this.mediaCache[this.baseUrl]) this.mediaCache[this.baseUrl] = {};
+    const siteCache = this.mediaCache[this.baseUrl];
+    let page = 1;
+    let totalSynced = 0;
+
+    console.log(`🔄 Đang quét và đồng bộ Media Library từ ${this.baseUrl}...`);
+
+    while (page <= maxPages) {
+      try {
+        const res = await this.fetchWithAuth(`${this.baseUrl}/wp-json/wp/v2/media?per_page=100&page=${page}`);
+        if (!res.ok) break;
+        const items = await res.json();
+        if (!Array.isArray(items) || items.length === 0) break;
+
+        items.forEach(item => {
+          const url = item.source_url || '';
+          if (!url) return;
+          const fn = url.split('/').pop().toLowerCase();
+          const cleanFn = fn.replace(/-\d+(\.[a-z0-9]+)$/i, '$1');
+          const ext = path.extname(fn);
+          const baseName = path.basename(fn, ext);
+          const cleanBase = path.basename(cleanFn, ext);
+
+          const mediaInfo = {
+            id: item.id,
+            source_url: item.source_url,
+            filename: fn,
+            alt_text: item.alt_text || '',
+            title: item.title?.rendered || ''
+          };
+
+          siteCache[fn] = mediaInfo;
+          siteCache[cleanFn] = mediaInfo;
+          siteCache[baseName] = mediaInfo;
+          siteCache[cleanBase] = mediaInfo;
+          if (item.slug) siteCache[item.slug.toLowerCase()] = mediaInfo;
+
+          totalSynced++;
+        });
+
+        if (items.length < 100) break;
+        page++;
+      } catch (e) {
+        console.warn('Lỗi khi đồng bộ Media page', page, e.message);
+        break;
+      }
     }
 
-    // 2. Tìm kiếm trên WordPress API theo slug / tên file
+    this.saveMediaCache();
+    console.log(`✅ Đã đồng bộ thành công ${totalSynced} ảnh từ WordPress Media Library vào bộ nhớ đệm.`);
+    return siteCache;
+  }
+
+  // Tìm kiếm ảnh đã có trên WordPress (để tránh upload trùng lặp, chỉ verify)
+  async findExistingMedia(filename) {
+    if (!filename) return null;
+    if (!this.mediaCache) this.loadMediaCache();
+    let siteCache = this.mediaCache[this.baseUrl] || {};
+
+    const rawFn = path.basename(filename.replace(/\\/g, '/')).trim().toLowerCase();
+    const cleanFn = rawFn.replace(/^\d+_[a-z0-9]+_/i, '');
+    const ext = path.extname(cleanFn);
+    const baseName = path.basename(cleanFn, ext);
+    const baseWithoutDuplicate = baseName.replace(/-\d+$/i, '');
+
+    // 1. Kiểm tra đối soát trong bộ nhớ đệm cục bộ
+    const checkCache = () => {
+      if (siteCache[rawFn]) return siteCache[rawFn];
+      if (siteCache[cleanFn]) return siteCache[cleanFn];
+      if (siteCache[baseName]) return siteCache[baseName];
+      if (siteCache[baseWithoutDuplicate]) return siteCache[baseWithoutDuplicate];
+
+      return Object.values(siteCache).find(m => {
+        if (!m || !m.source_url) return false;
+        const mFn = m.source_url.split('/').pop().toLowerCase();
+        return mFn === rawFn ||
+               mFn === cleanFn ||
+               mFn.replace(/-\d+(\.[a-z0-9]+)$/i, '$1') === cleanFn ||
+               (baseWithoutDuplicate.length > 5 && mFn.includes(baseWithoutDuplicate));
+      });
+    };
+
+    let matched = checkCache();
+    if (matched) {
+      return matched;
+    }
+
+    // 2. Nếu chưa có trong cache, quét đồng bộ nhanh Media Library từ WordPress
+    try {
+      await this.syncAllMediaLibrary(3);
+      siteCache = this.mediaCache[this.baseUrl] || {};
+      matched = checkCache();
+      if (matched) {
+        return matched;
+      }
+    } catch (e) {
+      console.warn('Không thể đồng bộ Media Library:', e.message);
+    }
+
+    // 3. Tìm kiếm trực tiếp trên WordPress API theo slug cơ sở
     try {
       await this.authenticate();
-      const ext = path.extname(filename);
-      const cleanSlug = path.basename(filename, ext).toLowerCase();
-
-      const res = await this.fetchWithAuth(`${this.baseUrl}/wp-json/wp/v2/media?search=${encodeURIComponent(cleanSlug)}&per_page=20`);
+      const res = await this.fetchWithAuth(`${this.baseUrl}/wp-json/wp/v2/media?search=${encodeURIComponent(baseWithoutDuplicate)}&per_page=10`);
       if (res.ok) {
         const items = await res.json();
         if (Array.isArray(items) && items.length > 0) {
-          // Ưu tiên khớp chính xác tên file hoặc slug
-          const matched = items.find(m => {
+          const exact = items.find(m => {
             const mUrl = m.source_url || '';
-            const mFilename = mUrl.split('/').pop().toLowerCase();
-            return mFilename === filename.toLowerCase() ||
-                   mFilename.startsWith(cleanSlug) ||
-                   m.slug === cleanSlug ||
-                   m.slug.startsWith(cleanSlug);
-          }) || items[0];
+            const mFn = mUrl.split('/').pop().toLowerCase();
+            return mFn === cleanFn ||
+                   mFn.startsWith(baseWithoutDuplicate) ||
+                   (m.slug && m.slug.toLowerCase().includes(baseWithoutDuplicate));
+          });
 
-          if (matched) {
+          if (exact) {
             const result = {
-              id: matched.id,
-              source_url: matched.source_url,
-              filename: filename,
-              alt_text: matched.alt_text || '',
-              title: matched.title?.rendered || ''
+              id: exact.id,
+              source_url: exact.source_url,
+              filename: cleanFn,
+              alt_text: exact.alt_text || '',
+              title: exact.title?.rendered || ''
             };
-            if (!this.mediaCache[this.baseUrl]) this.mediaCache[this.baseUrl] = {};
-            this.mediaCache[this.baseUrl][filename] = result;
+            siteCache[cleanFn] = result;
+            siteCache[rawFn] = result;
             this.saveMediaCache();
             return result;
           }
         }
       }
     } catch (e) {
-      console.warn('Không thể tìm kiếm ảnh cũ trên WP:', e.message);
+      console.warn('Lỗi search media trên WP:', e.message);
     }
 
     return null;
@@ -443,11 +530,13 @@ class WordPressService {
 
   // Upload file ảnh cục bộ lên WordPress Media Library (KÈM CHỐNG TRÙNG LẶP THÔNG MINH)
   async uploadMedia(filePath, customAlt = '', customTitle = '', customCaption = '', forceUpload = false) {
-    const filename = path.basename(filePath);
+    const rawFilename = path.basename(filePath);
+    // Làm sạch tên file nếu dính tiền tố Multer để đưa tên file chuẩn SEO lên WordPress
+    const filename = rawFilename.replace(/^\d+_[a-z0-9]+_/i, '');
 
     // KIỂM TRA TRÙNG LẶP: Nếu chưa bật forceUpload, kiểm tra xem ảnh đã có trên WP chưa
     if (!forceUpload) {
-      const existing = await this.findExistingMedia(filename);
+      const existing = await this.findExistingMedia(filename) || await this.findExistingMedia(rawFilename);
       if (existing) {
         console.log(`⚡ TÁI SỬ DỤNG ẢNH: "${filename}" đã có trên WordPress (ID: ${existing.id}, URL: ${existing.source_url}). Không upload mới!`);
         
@@ -523,9 +612,10 @@ class WordPressService {
       caption: customCaption
     };
 
-    // Lưu vào cache
+    // Lưu vào cache cả tên gốc và tên raw
     if (!this.mediaCache[this.baseUrl]) this.mediaCache[this.baseUrl] = {};
     this.mediaCache[this.baseUrl][filename] = savedResult;
+    this.mediaCache[this.baseUrl][rawFilename] = savedResult;
     this.saveMediaCache();
 
     return savedResult;

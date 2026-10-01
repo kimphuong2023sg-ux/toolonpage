@@ -640,9 +640,9 @@ export class ContentParser {
         if (featuredImage && featuredImage.filename) {
           const hasBanner = enhancedHtml.includes(featuredImage.filename);
           if (!hasBanner) {
-            const bannerFig = `\n\n<figure style="margin: 24px 0; text-align: center;">
-  <img src="${featuredImage.filename}" alt="${featuredImage.alt}" title="${featuredImage.title}" style="max-width: 100%; border-radius: 8px;">
-  <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 6px;">${featuredImage.caption}</figcaption>
+            const bannerFig = `\n\n<figure class="wp-block-image aligncenter" style="margin: 28px auto; text-align: center; display: block;">
+  <img src="${featuredImage.filename}" alt="${featuredImage.alt}" title="${featuredImage.title}" style="display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 8px;">
+  <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 8px; text-align: center; display: block;">${featuredImage.caption}</figcaption>
 </figure>\n\n`;
 
             const h1Match = enhancedHtml.match(/<\/h1>/i);
@@ -674,9 +674,9 @@ export class ContentParser {
           if (h2Matches.length <= 1) h2Index = 0;
 
           missingBodyImages.forEach((img) => {
-            const fig = `\n\n<figure style="margin: 24px 0; text-align: center;">
-  <img src="${img.filename}" alt="${img.alt}" title="${img.title}" style="max-width: 100%; border-radius: 8px;">
-  <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 6px;">${img.caption}</figcaption>
+            const fig = `\n\n<figure class="wp-block-image aligncenter" style="margin: 28px auto; text-align: center; display: block;">
+  <img src="${img.filename}" alt="${img.alt}" title="${img.title}" style="display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 8px;">
+  <figcaption style="font-size: 13px; color: #94a3b8; margin-top: 8px; text-align: center; display: block;">${img.caption}</figcaption>
 </figure>\n\n`;
 
             if (h2Matches.length > 0 && h2Index < h2Matches.length) {

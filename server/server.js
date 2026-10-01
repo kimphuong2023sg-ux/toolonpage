@@ -130,8 +130,52 @@ const upload = multer({
   }
 });
 
-// Phục vụ ảnh từ thư mục content/ để xem trước trên giao diện React
-app.use('/local-media', express.static(path.resolve('content')));
+// Hàm tìm kiếm file thông minh trong thư mục content/ (hỗ trợ cả tên gốc và tên có tiền tố Multer)
+export function findContentFile(filename) {
+  if (!filename) return null;
+  const cleanName = path.basename(filename.replace(/\\/g, '/')).trim();
+  const contentDir = path.resolve('content');
+  if (!fs.existsSync(contentDir)) return null;
+
+  // 1. Kiểm tra trực tiếp đường dẫn
+  const directPath = path.join(contentDir, cleanName);
+  if (fs.existsSync(directPath)) return directPath;
+
+  // 2. Tìm kiếm trong content/
+  try {
+    const allFiles = fs.readdirSync(contentDir);
+    const cleanLower = cleanName.toLowerCase();
+
+    // Khớp chính xác không phân biệt hoa thường
+    let matched = allFiles.find(f => f.toLowerCase() === cleanLower);
+    if (matched) return path.join(contentDir, matched);
+
+    // Khớp hậu tố (ví dụ: timestamp_random_name.webp khớp với name.webp)
+    matched = allFiles.find(f => {
+      const fLower = f.toLowerCase();
+      return fLower.endsWith(`_${cleanLower}`) || fLower === cleanLower;
+    });
+    if (matched) return path.join(contentDir, matched);
+
+    // Khớp chứa tên file
+    matched = allFiles.find(f => f.toLowerCase().includes(cleanLower));
+    if (matched) return path.join(contentDir, matched);
+  } catch (e) {
+    console.error('Lỗi khi tìm file trong content/:', e);
+  }
+
+  return null;
+}
+
+// Phục vụ ảnh từ thư mục content/ để xem trước trên giao diện React (kèm tìm kiếm thông minh chống 404)
+app.use('/local-media', (req, res, next) => {
+  const reqFile = decodeURIComponent(req.path.replace(/^\/+/, ''));
+  const found = findContentFile(reqFile);
+  if (found) {
+    return res.sendFile(found);
+  }
+  next();
+}, express.static(path.resolve('content')));
 
 // ==========================================
 // 0. HỆ THỐNG XÁC THỰC, PHIÊN LÀM VIỆC & IP
@@ -508,6 +552,15 @@ app.post('/api/local/upload-package', requireAuth, (req, res, next) => {
         } catch (copyErr) {
           console.error(`Không thể copy file ${file.filename} vào content/:`, copyErr.message);
         }
+
+        // Đồng thời lưu thêm bản tên gốc chuẩn SEO (không có tiền tố) để tài liệu bài viết tham chiếu chính xác
+        const cleanOrig = path.basename((file.originalname || '').replace(/\\/g, '/')).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim();
+        if (cleanOrig && cleanOrig !== file.filename) {
+          const origDestPath = path.join(contentDir, cleanOrig);
+          try {
+            fs.copyFileSync(file.path, origDestPath);
+          } catch (e) {}
+        }
       }
       try { fs.unlinkSync(file.path); } catch (e) {}
     }
@@ -577,13 +630,90 @@ app.post('/api/local/scan-folder-path', requireAuth, async (req, res) => {
 
 
 
+// Chuẩn hóa 100% hình ảnh trong bài viết ra chính giữa chuẩn WordPress Gutenberg & Classic
+export function ensureImagesCentered(html) {
+  if (!html) return '';
+  let updated = html;
+
+  // 1. Nếu thẻ <img> nằm trong <figure>
+  updated = updated.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, (match, figureAttrs, inner) => {
+    let newAttrs = figureAttrs;
+    
+    // Thêm class wp-block-image aligncenter nếu chưa có
+    if (!newAttrs.includes('aligncenter')) {
+      if (/class=["']/i.test(newAttrs)) {
+        newAttrs = newAttrs.replace(/class=["']([^"']*)["']/i, 'class="$1 wp-block-image aligncenter"');
+      } else {
+        newAttrs += ' class="wp-block-image aligncenter"';
+      }
+    }
+    
+    // Đảm bảo style figure có text-align: center; margin: 28px auto; display: block;
+    if (/style=["']/i.test(newAttrs)) {
+      newAttrs = newAttrs.replace(/style=["']([^"']*)["']/i, (m, s) => {
+        let style = s;
+        if (!style.includes('text-align')) style += '; text-align: center;';
+        if (!style.includes('margin')) style += '; margin: 28px auto;';
+        if (!style.includes('display')) style += '; display: block;';
+        return `style="${style.replace(/^;\s*/, '')}"`;
+      });
+    } else {
+      newAttrs += ' style="text-align: center; margin: 28px auto; display: block;"';
+    }
+
+    // Đảm bảo thẻ <img> bên trong có style căn giữa
+    const centeredInner = inner.replace(/<img([^>]*)>/gi, (imgMatch, imgAttrs) => {
+      let newImgAttrs = imgAttrs;
+      if (/style=["']/i.test(newImgAttrs)) {
+        newImgAttrs = newImgAttrs.replace(/style=["']([^"']*)["']/i, (m, s) => {
+          let style = s;
+          if (!style.includes('margin')) style += '; margin: 0 auto;';
+          if (!style.includes('display')) style += '; display: block;';
+          if (!style.includes('max-width')) style += '; max-width: 100%;';
+          if (!style.includes('height')) style += '; height: auto;';
+          return `style="${style.replace(/^;\s*/, '')}"`;
+        });
+      } else {
+        newImgAttrs += ' style="display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 8px;"';
+      }
+      return `<img${newImgAttrs}>`;
+    });
+
+    return `<figure${newAttrs}>${centeredInner}</figure>`;
+  });
+
+  // 2. Với các thẻ <img> độc lập hoặc nằm trong <p> (chưa nằm trong <figure>)
+  // Tự động bọc lại trong <figure class="wp-block-image aligncenter" ...>
+  updated = updated.replace(/(?:<p[^>]*>\s*)?<img([^>]+)>(?:\s*<\/p>)?/gi, (match, imgAttrs) => {
+    if (match.includes('wp-block-image') || match.includes('<figure')) {
+      return match;
+    }
+    let newImgAttrs = imgAttrs;
+    if (/style=["']/i.test(newImgAttrs)) {
+      newImgAttrs = newImgAttrs.replace(/style=["']([^"']*)["']/i, (m, s) => {
+        let style = s;
+        if (!style.includes('margin')) style += '; margin: 0 auto;';
+        if (!style.includes('display')) style += '; display: block;';
+        if (!style.includes('max-width')) style += '; max-width: 100%;';
+        if (!style.includes('height')) style += '; height: auto;';
+        return `style="${style.replace(/^;\s*/, '')}"`;
+      });
+    } else {
+      newImgAttrs += ' style="display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 8px;"';
+    }
+    return `\n<figure class="wp-block-image aligncenter" style="text-align: center; margin: 28px auto; display: block;"><img${newImgAttrs}></figure>\n`;
+  });
+
+  return updated;
+}
+
 // 5. Upload 1 ảnh lên WordPress
 app.post('/api/wp/upload-media', requireAuth, async (req, res) => {
   try {
     const { filename, alt, title, caption } = req.body;
-    const filePath = path.resolve('content', filename);
+    const filePath = findContentFile(filename);
 
-    if (!fs.existsSync(filePath)) {
+    if (!filePath || !fs.existsSync(filePath)) {
       return res.status(404).json({ success: false, error: `File ảnh không tìm thấy: ${filename}` });
     }
 
@@ -601,15 +731,16 @@ app.post('/api/wp/batch-upload-images', requireAuth, async (req, res) => {
     const results = [];
 
     for (const img of images) {
-      const filePath = path.resolve('content', img.filename);
-      if (fs.existsSync(filePath)) {
+      const filePath = findContentFile(img.filename);
+      if (filePath && fs.existsSync(filePath)) {
         try {
           const uploaded = await wpService.uploadMedia(filePath, img.alt, img.title, img.caption);
           results.push({
             original_filename: img.filename,
             success: true,
             id: uploaded.id,
-            url: uploaded.source_url
+            url: uploaded.source_url,
+            verified: !!uploaded.verified
           });
         } catch (uploadErr) {
           results.push({
@@ -622,18 +753,21 @@ app.post('/api/wp/batch-upload-images', requireAuth, async (req, res) => {
         results.push({
           original_filename: img.filename,
           success: false,
-          error: 'File không tồn tại trên ổ cứng'
+          error: `File không tồn tại trên ổ cứng: ${img.filename}`
         });
       }
     }
 
     // Ghi nhận hoạt động tracking upload ảnh WP
     const successCount = results.filter(r => r.success).length;
+    const verifiedCount = results.filter(r => r.verified).length;
+    const newUploadCount = successCount - verifiedCount;
+
     if (successCount > 0) {
       authService.recordUserAction(req.user.id, {
         type: 'upload_media',
-        title: 'Upload ảnh lên WP Media Library',
-        detail: `Đã upload thành công ${successCount}/${images.length} hình ảnh`,
+        title: 'Xác thực & Upload ảnh WP Media',
+        detail: `Đã đối soát ${successCount}/${images.length} ảnh (${verifiedCount} đã có trên WP, ${newUploadCount} upload mới)`,
         siteName: wpService.currentSite?.name || '',
         isMilestone: true
       }, req.clientIp);
@@ -662,11 +796,21 @@ app.post('/api/wp/clean-duplicates', requireAuth, async (req, res) => {
     authService.recordUserAction(req.user.id, {
       type: 'clean_duplicates',
       title: 'Dọn dẹp ảnh trùng lặp trên WordPress',
-      detail: `Đã dọn dẹp các ảnh nhân bản thừa trên WP Media`,
+      detail: `Đã xóa ${result.totalDuplicatesDeleted || 0} ảnh nhân bản thừa trên WP Media`,
       siteName: wpService.currentSite?.name || '',
       isMilestone: true
     }, req.clientIp);
     res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 6.3. Quét & Đồng bộ toàn bộ Media Library từ WordPress về cache
+app.post('/api/wp/sync-media', requireAuth, async (req, res) => {
+  try {
+    const map = await wpService.syncAllMediaLibrary(5);
+    res.json({ success: true, mediaMap: map });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -688,17 +832,41 @@ app.post('/api/wp/publish', requireAuth, async (req, res) => {
       image_mapping = {} // mapping từ filename cục bộ sang URL wordpress
     } = req.body;
 
-    let finalContent = content;
+    let finalContent = content || '';
 
-    // Thay thế toàn bộ đường dẫn ảnh local sang URL online trên WordPress
+    // 1. Thay thế toàn bộ đường dẫn ảnh local sang URL online trên WordPress
     if (image_mapping && typeof image_mapping === 'object') {
       for (const [filename, wpUrl] of Object.entries(image_mapping)) {
         if (wpUrl) {
-          const regex = new RegExp(`src=["'](?:[^"']*/)?${filename}["']`, 'gi');
+          const cleanName = path.basename(filename).replace(/^\d+_[a-z0-9]+_/i, '');
+          const escClean = cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const escFull = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // Khớp mọi dạng src="tên", src="/local-media/tên", src="http://.../local-media/tên"
+          const regex = new RegExp(`src=["'][^"']*?(?:${escClean}|${escFull})["']`, 'gi');
           finalContent = finalContent.replace(regex, `src="${wpUrl}"`);
         }
       }
     }
+
+    // 2. Đảm bảo bài viết có ảnh Banner mở đầu (ảnh nền đại diện cho cả Page và Post)
+    let bannerUrl = null;
+    const mediaUrls = Object.values(image_mapping || {}).filter(Boolean);
+    if (mediaUrls.length > 0) {
+      bannerUrl = mediaUrls[0];
+    }
+    if (bannerUrl && !finalContent.includes(bannerUrl)) {
+      const bannerFig = `\n<figure class="wp-block-image aligncenter" style="text-align: center; margin: 24px auto; display: block;">\n  <img src="${bannerUrl}" alt="${title || ''}" title="${title || ''}" style="display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 8px;">\n</figure>\n`;
+      const h1Match = finalContent.match(/<\/h1>/i);
+      if (h1Match) {
+        const pos = finalContent.indexOf(h1Match[0]) + h1Match[0].length;
+        finalContent = finalContent.slice(0, pos) + bannerFig + finalContent.slice(pos);
+      } else {
+        finalContent = bannerFig + finalContent;
+      }
+    }
+
+    // 3. Chuẩn hóa 100% hình ảnh trong bài viết ra chính giữa
+    finalContent = ensureImagesCentered(finalContent);
 
     // Kiểm tra quy tắc trùng lặp Spineditor (Không cho phép xuất bản nếu trùng > 10% trừ khi force_publish)
     const spineditorCheck = spineditorService.getResult(slug || id);
