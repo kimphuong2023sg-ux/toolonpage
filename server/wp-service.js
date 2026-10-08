@@ -8,55 +8,35 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 const SITES_CONFIG_PATH = path.resolve(DATA_DIR, 'sites-config.json');
 const MEDIA_CACHE_PATH = path.resolve(DATA_DIR, 'media-cache.json');
 
-class WordPressService {
-  constructor() {
-    this.sites = [];
-    this.currentSite = null;
-    this.baseUrl = '';
-    this.username = '';
-    this.password = '';
+/**
+ * Quản lý kết nối, bộ nhớ đệm và thao tác WordPress cho TỪNG WEBSITE RIÊNG BIỆT
+ */
+export class WordPressSiteClient {
+  constructor(site, getMediaCache, saveMediaCache) {
+    this.site = site;
+    this.baseUrl = (site.url || '').trim().replace(/\/+$/, '');
+    this.username = (site.username || '').trim();
+    this.password = (site.password || '').trim();
     this.cookies = null;
     this.nonce = null;
     this.lastLogin = 0;
-    this.mediaCache = {};
-
-    this.loadSites();
-    this.loadMediaCache();
+    this._authInProgress = false;
+    this.getMediaCache = getMediaCache;
+    this.saveMediaCache = saveMediaCache;
   }
 
-  // Tải bộ nhớ đệm Media Mapping của các website
-  loadMediaCache() {
-    try {
-      if (fs.existsSync(MEDIA_CACHE_PATH)) {
-        this.mediaCache = JSON.parse(fs.readFileSync(MEDIA_CACHE_PATH, 'utf8'));
-      } else {
-        this.mediaCache = {};
-      }
-    } catch (e) {
-      this.mediaCache = {};
-    }
-  }
-
-  // Lưu bộ nhớ đệm Media Mapping
-  saveMediaCache() {
-    try {
-      fs.writeFileSync(MEDIA_CACHE_PATH, JSON.stringify(this.mediaCache, null, 2), 'utf8');
-    } catch (e) {
-      console.error('Lỗi khi ghi media-cache.json:', e.message);
-    }
-  }
-
-  // Lấy media mapping cho website hiện tại
+  // Lấy media mapping cho website này
   getMediaMap() {
-    if (!this.mediaCache) this.loadMediaCache();
-    return this.mediaCache[this.baseUrl] || {};
+    const cache = this.getMediaCache();
+    return cache[this.baseUrl] || {};
   }
 
-  // Quét và đồng bộ toàn bộ Media Library từ WordPress về lưu vào cache
+  // Quét và đồng bộ toàn bộ Media Library từ website này về bộ nhớ đệm
   async syncAllMediaLibrary(maxPages = 5) {
     await this.authenticate();
-    if (!this.mediaCache[this.baseUrl]) this.mediaCache[this.baseUrl] = {};
-    const siteCache = this.mediaCache[this.baseUrl];
+    const mediaCache = this.getMediaCache();
+    if (!mediaCache[this.baseUrl]) mediaCache[this.baseUrl] = {};
+    const siteCache = mediaCache[this.baseUrl];
     let page = 1;
     let totalSynced = 0;
 
@@ -104,15 +84,15 @@ class WordPressService {
     }
 
     this.saveMediaCache();
-    console.log(`✅ Đã đồng bộ thành công ${totalSynced} ảnh từ WordPress Media Library vào bộ nhớ đệm.`);
+    console.log(`✅ Đã đồng bộ thành công ${totalSynced} ảnh từ WordPress (${this.baseUrl}) vào bộ nhớ đệm.`);
     return siteCache;
   }
 
   // Tìm kiếm ảnh đã có trên WordPress (để tránh upload trùng lặp, chỉ verify)
   async findExistingMedia(filename) {
     if (!filename) return null;
-    if (!this.mediaCache) this.loadMediaCache();
-    let siteCache = this.mediaCache[this.baseUrl] || {};
+    const mediaCache = this.getMediaCache();
+    let siteCache = mediaCache[this.baseUrl] || {};
 
     const rawFn = path.basename(filename.replace(/\\/g, '/')).trim().toLowerCase();
     const cleanFn = rawFn.replace(/^\d+_[a-z0-9]+_/i, '');
@@ -138,18 +118,14 @@ class WordPressService {
     };
 
     let matched = checkCache();
-    if (matched) {
-      return matched;
-    }
+    if (matched) return matched;
 
     // 2. Nếu chưa có trong cache, quét đồng bộ nhanh Media Library từ WordPress
     try {
       await this.syncAllMediaLibrary(3);
-      siteCache = this.mediaCache[this.baseUrl] || {};
+      siteCache = this.getMediaCache()[this.baseUrl] || {};
       matched = checkCache();
-      if (matched) {
-        return matched;
-      }
+      if (matched) return matched;
     } catch (e) {
       console.warn('Không thể đồng bộ Media Library:', e.message);
     }
@@ -191,171 +167,22 @@ class WordPressService {
     return null;
   }
 
-  // Tải danh sách các trang web đã lưu
-  loadSites() {
-    try {
-      if (fs.existsSync(SITES_CONFIG_PATH)) {
-        const raw = fs.readFileSync(SITES_CONFIG_PATH, 'utf8');
-        this.sites = JSON.parse(raw);
-      } else {
-        this.sites = [
-          {
-            id: 'mexboss-sh',
-            name: 'Mexboss Mexico',
-            url: 'https://mexboss.sh',
-            username: '99a1b5',
-            password: 'xCAzTfk#7YDB@SEK',
-            isCurrent: true
-          }
-        ];
-        this.saveSites();
-      }
-
-      const active = this.sites.find(s => s.isCurrent) || this.sites[0];
-      if (active) {
-        this.setActiveSite(active);
-      }
-    } catch (err) {
-      console.error('Lỗi khi tải sites-config.json:', err.message);
-    }
-  }
-
-  // Lưu danh sách website
-  saveSites() {
-    try {
-      fs.writeFileSync(SITES_CONFIG_PATH, JSON.stringify(this.sites, null, 2), 'utf8');
-    } catch (err) {
-      console.error('Lỗi khi ghi sites-config.json:', err.message);
-    }
-  }
-
-  // Thiết lập website hoạt động hiện tại
-  setActiveSite(site) {
-    this.currentSite = site;
-    this.baseUrl = site.url.replace(/\/+$/, ''); // bỏ dấu gạch chéo cuối
-    this.username = site.username;
-    this.password = site.password;
-    this.cookies = null;
-    this.nonce = null;
-    this.lastLogin = 0;
-  }
-
-  // Chuyển đổi sang website khác
-  async switchSite(siteId) {
-    const target = this.sites.find(s => s.id === siteId);
-    if (!target) {
-      throw new Error(`Không tìm thấy website với ID: ${siteId}`);
-    }
-
-    this.sites.forEach(s => {
-      s.isCurrent = (s.id === siteId);
-    });
-    this.saveSites();
-    this.setActiveSite(target);
-
-    // Xác thực ngay với website mới
-    console.log(`🌐 Đang chuyển sang website: ${target.name} (${target.url})...`);
-    return await this.authenticate(true);
-  }
-
-  // Thêm hoặc Cập nhật website mới
-  async addOrUpdateSite({ id, name, url, username, password, makeActive = true }) {
-    let cleanUrl = url.trim().replace(/\/+$/, '');
-    // Bỏ /wp-admin nếu người dùng dán cả đường dẫn admin
-    cleanUrl = cleanUrl.replace(/\/wp-admin.*$/, '');
-
-    const siteId = id || cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
-
-    // Thử xác thực với tài khoản mới trước khi lưu
-    const tempService = new WordPressService();
-    tempService.baseUrl = cleanUrl;
-    tempService.username = username.trim();
-    tempService.password = password.trim();
-
-    console.log(`🔍 Đang kiểm tra kết nối tới website mới: ${cleanUrl} (${username})...`);
-    await tempService.authenticate(true);
-    console.log(`✅ Kết nối thành công tới ${cleanUrl}!`);
-
-    // Lưu vào danh sách
-    const existingIndex = this.sites.findIndex(s => s.id === siteId);
-    const siteData = {
-      id: siteId,
-      name: name.trim() || cleanUrl.replace(/^https?:\/\//, ''),
-      url: cleanUrl,
-      username: username.trim(),
-      password: password.trim(),
-      isCurrent: makeActive
-    };
-
-    if (makeActive) {
-      this.sites.forEach(s => { s.isCurrent = false; });
-    }
-
-    if (existingIndex >= 0) {
-      this.sites[existingIndex] = siteData;
-    } else {
-      this.sites.push(siteData);
-    }
-
-    this.saveSites();
-
-    if (makeActive) {
-      this.setActiveSite(siteData);
-      this.cookies = tempService.cookies;
-      this.nonce = tempService.nonce;
-      this.lastLogin = Date.now();
-    }
-
-    return siteData;
-  }
-
-  // Xóa một website khỏi danh sách
-  deleteSite(siteId) {
-    const index = this.sites.findIndex(s => s.id === siteId);
-    if (index === -1) return false;
-
-    const wasCurrent = this.sites[index].isCurrent;
-    this.sites.splice(index, 1);
-
-    if (wasCurrent && this.sites.length > 0) {
-      this.sites[0].isCurrent = true;
-      this.setActiveSite(this.sites[0]);
-    }
-
-    this.saveSites();
-    return true;
-  }
-
-  // Lấy danh sách website để trả về giao diện
-  getSites() {
-    return this.sites.map(s => ({
-      id: s.id,
-      name: s.name,
-      url: s.url,
-      username: s.username,
-      isCurrent: !!s.isCurrent
-    }));
-  }
-
-  // Đăng nhập và lấy session cookies + nonce bảo mật
+  // Đăng nhập và lấy session cookies + nonce bảo mật cho website này
   async authenticate(force = false) {
     const now = Date.now();
-    // Giảm TTL xuống 25 phút để tránh dùng session sắp hết hạn (WP mặc định 30ph)
     const SESSION_TTL = 25 * 60 * 1000;
 
     if (!force && this.cookies && this.nonce && (now - this.lastLogin < SESSION_TTL)) {
-      return { cookies: this.cookies, nonce: this.nonce, site: this.currentSite };
+      return { cookies: this.cookies, nonce: this.nonce, site: this.site };
     }
 
-    // Chống các request song song cùng authenticate — dùng lock flag
     if (this._authInProgress) {
-      // Chờ authenticate đang chạy hoàn tất (polling nhẹ)
       for (let i = 0; i < 30; i++) {
         await new Promise(r => setTimeout(r, 300));
         if (!this._authInProgress) break;
       }
       if (this.cookies && this.nonce) {
-        return { cookies: this.cookies, nonce: this.nonce, site: this.currentSite };
+        return { cookies: this.cookies, nonce: this.nonce, site: this.site };
       }
     }
 
@@ -400,10 +227,9 @@ class WordPressService {
 
       this.nonce = nonceMatch[1];
       this.lastLogin = Date.now();
-      console.log(`✅ WordPress Service: Đã kết nối thành công tới ${this.baseUrl}! Nonce: ${this.nonce}`);
-      return { cookies: this.cookies, nonce: this.nonce, site: this.currentSite };
+      console.log(`✅ WordPress Site Client [${this.site.name}]: Kết nối thành công tới ${this.baseUrl}! Nonce: ${this.nonce}`);
+      return { cookies: this.cookies, nonce: this.nonce, site: this.site };
     } catch (err) {
-      // Reset session khi authenticate thất bại
       this.cookies = null;
       this.nonce = null;
       this.lastLogin = 0;
@@ -433,7 +259,6 @@ class WordPressService {
     try {
       res = await fetch(url, { ...options, headers });
     } catch (networkErr) {
-      // Retry khi bị lỗi mạng (ECONNRESET, tímất, v.v.)
       if (retryCount < 2) {
         console.warn(`⚠️ Lỗi mạng, thử lại lần ${retryCount + 1}/2 sau 1 giây...`, networkErr.message);
         await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
@@ -442,11 +267,10 @@ class WordPressService {
       throw networkErr;
     }
 
-    // Nếu bị 401/403, buộc lấy lại token mới và thử lại 1 lần
     if ((res.status === 401 || res.status === 403) && retryCount === 0) {
-      console.warn('⚠️ Token hết hạn (401/403), đang đăng nhập lại...');
+      console.warn(`⚠️ Token hết hạn (${res.status}), đang đăng nhập lại ${this.baseUrl}...`);
       try {
-        auth = await this.authenticate(true); // force refresh
+        auth = await this.authenticate(true);
         headers['Cookie'] = auth.cookies;
         headers['X-WP-Nonce'] = auth.nonce;
         res = await fetch(url, { ...options, headers });
@@ -520,7 +344,7 @@ class WordPressService {
 
     return {
       success: true,
-      site: this.currentSite,
+      site: this.site,
       totalPages: formattedPages.length,
       totalPosts: formattedPosts.length,
       categories: categories.map(c => ({ id: c.id, name: c.name, slug: c.slug, count: c.count })),
@@ -531,16 +355,13 @@ class WordPressService {
   // Upload file ảnh cục bộ lên WordPress Media Library (KÈM CHỐNG TRÙNG LẶP THÔNG MINH)
   async uploadMedia(filePath, customAlt = '', customTitle = '', customCaption = '', forceUpload = false) {
     const rawFilename = path.basename(filePath);
-    // Làm sạch tên file nếu dính tiền tố Multer để đưa tên file chuẩn SEO lên WordPress
     const filename = rawFilename.replace(/^\d+_[a-z0-9]+_/i, '');
 
-    // KIỂM TRA TRÙNG LẶP: Nếu chưa bật forceUpload, kiểm tra xem ảnh đã có trên WP chưa
     if (!forceUpload) {
       const existing = await this.findExistingMedia(filename) || await this.findExistingMedia(rawFilename);
       if (existing) {
-        console.log(`⚡ TÁI SỬ DỤNG ẢNH: "${filename}" đã có trên WordPress (ID: ${existing.id}, URL: ${existing.source_url}). Không upload mới!`);
+        console.log(`⚡ TÁI SỬ DỤNG ẢNH: "${filename}" đã có trên WordPress (${this.baseUrl}, ID: ${existing.id}, URL: ${existing.source_url}). Không upload mới!`);
         
-        // Cập nhật thẻ Alt / Title nếu người dùng có chỉnh sửa
         if (customAlt || customTitle || customCaption) {
           try {
             await this.fetchWithAuth(`${this.baseUrl}/wp-json/wp/v2/media/${existing.id}`, {
@@ -552,19 +373,14 @@ class WordPressService {
                 caption: customCaption || ''
               })
             });
-          } catch (updateErr) {
-            // Không ảnh hưởng nếu update metadata thất bại
-          }
+          } catch (updateErr) {}
         }
 
         return existing;
       }
     }
 
-    // Nếu thực sự chưa có trên WordPress, tiến hành upload buffer mới
-    const auth = await this.authenticate();
     const ext = path.extname(filePath).toLowerCase();
-    
     let mimeType = 'image/jpeg';
     if (ext === '.webp') mimeType = 'image/webp';
     if (ext === '.png') mimeType = 'image/png';
@@ -612,10 +428,10 @@ class WordPressService {
       caption: customCaption
     };
 
-    // Lưu vào cache cả tên gốc và tên raw
-    if (!this.mediaCache[this.baseUrl]) this.mediaCache[this.baseUrl] = {};
-    this.mediaCache[this.baseUrl][filename] = savedResult;
-    this.mediaCache[this.baseUrl][rawFilename] = savedResult;
+    const mediaCache = this.getMediaCache();
+    if (!mediaCache[this.baseUrl]) mediaCache[this.baseUrl] = {};
+    mediaCache[this.baseUrl][filename] = savedResult;
+    mediaCache[this.baseUrl][rawFilename] = savedResult;
     this.saveMediaCache();
 
     return savedResult;
@@ -636,7 +452,6 @@ class WordPressService {
       page++;
     }
 
-    // Nhóm theo tên gốc (loại bỏ -1, -2, -3)
     const groups = {};
     allMedia.forEach(item => {
       const fn = (item.source_url || '').split('/').pop();
@@ -650,7 +465,6 @@ class WordPressService {
 
     for (const [base, items] of Object.entries(groups)) {
       if (items.length > 1) {
-        // Ưu tiên giữ lại bản đầu tiên (ID nhỏ nhất hoặc tên gốc không có hậu tố số)
         items.sort((a, b) => a.id - b.id);
         const toKeep = items[0];
         const toDelete = items.slice(1);
@@ -671,10 +485,10 @@ class WordPressService {
       }
     }
 
-    // Làm mới lại media cache
-    this.mediaCache[this.baseUrl] = {};
+    const mediaCache = this.getMediaCache();
+    mediaCache[this.baseUrl] = {};
     for (const k of kept) {
-      this.mediaCache[this.baseUrl][k.fn] = {
+      mediaCache[this.baseUrl][k.fn] = {
         id: k.id,
         source_url: k.url,
         filename: k.fn
@@ -743,7 +557,8 @@ class WordPressService {
               rank_math_focus_keyword: rank_math.focus_keyword || '',
               rank_math_title: rank_math.seo_title || title,
               rank_math_description: rank_math.seo_description || '',
-              rank_math_permalink: slug
+              rank_math_permalink: slug,
+              rank_math_pillar_content: (rank_math.is_essential || rank_math.pillar_content) ? 'on' : 'off'
             }
           })
         });
@@ -751,6 +566,23 @@ class WordPressService {
         console.log(`✅ Cập nhật Rank Math thành công:`, rankMathResult);
       } catch (rmErr) {
         console.warn(`⚠️ Cảnh báo lỗi Rank Math:`, rmErr.message);
+      }
+
+      if (rank_math.seo_score) {
+        try {
+          await this.fetchWithAuth(`${this.baseUrl}/wp-json/rankmath/v1/updateSeoScore`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              postScores: {
+                [savedId]: rank_math.seo_score,
+              },
+            }),
+          });
+          console.log(`✅ Đồng bộ điểm Rank Math SEO (${rank_math.seo_score}/100) lên WordPress thành công!`);
+        } catch (scoreErr) {
+          console.warn(`⚠️ Lỗi khi cập nhật updateSeoScore:`, scoreErr.message);
+        }
       }
     }
 
@@ -763,6 +595,215 @@ class WordPressService {
       title: savedItem.title?.rendered,
       rank_math: rankMathResult
     };
+  }
+}
+
+/**
+ * Quản lý đa Website tập trung, cung cấp WordPressSiteClient riêng biệt cho từng website
+ */
+export class WordPressService {
+  constructor() {
+    this.sites = [];
+    this.clients = new Map();
+    this.mediaCache = {};
+
+    this.loadSites();
+    this.loadMediaCache();
+  }
+
+  // Tải bộ nhớ đệm Media Mapping của các website
+  loadMediaCache() {
+    try {
+      if (fs.existsSync(MEDIA_CACHE_PATH)) {
+        this.mediaCache = JSON.parse(fs.readFileSync(MEDIA_CACHE_PATH, 'utf8'));
+      } else {
+        this.mediaCache = {};
+      }
+    } catch (e) {
+      this.mediaCache = {};
+    }
+  }
+
+  // Lưu bộ nhớ đệm Media Mapping
+  saveMediaCache() {
+    try {
+      fs.writeFileSync(MEDIA_CACHE_PATH, JSON.stringify(this.mediaCache, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Lỗi khi ghi media-cache.json:', e.message);
+    }
+  }
+
+  // Tải danh sách các trang web đã lưu
+  loadSites() {
+    try {
+      if (fs.existsSync(SITES_CONFIG_PATH)) {
+        const raw = fs.readFileSync(SITES_CONFIG_PATH, 'utf8');
+        this.sites = JSON.parse(raw);
+      } else {
+        this.sites = [
+          {
+            id: 'mexboss-sh',
+            name: 'Mexboss Mexico',
+            url: 'https://mexboss.sh',
+            username: '99a1b5',
+            password: 'xCAzTfk#7YDB@SEK'
+          }
+        ];
+        this.saveSites();
+      }
+    } catch (err) {
+      console.error('Lỗi khi tải sites-config.json:', err.message);
+    }
+  }
+
+  // Lưu danh sách website
+  saveSites() {
+    try {
+      fs.writeFileSync(SITES_CONFIG_PATH, JSON.stringify(this.sites, null, 2), 'utf8');
+    } catch (err) {
+      console.error('Lỗi khi ghi sites-config.json:', err.message);
+    }
+  }
+
+  // Lấy cấu hình website theo siteId
+  getSite(siteId) {
+    if (!siteId) return null;
+    return this.sites.find(s => s.id === siteId) || null;
+  }
+
+  // Lấy website mặc định của hệ thống
+  getDefaultSite() {
+    return this.sites.find(s => s.isDefault || s.isCurrent) || this.sites[0] || null;
+  }
+
+  // Lấy client kết nối cho một website cụ thể (tự động tạo hoặc lấy từ bộ nhớ đệm)
+  getClient(siteId) {
+    const site = this.getSite(siteId) || this.getDefaultSite();
+    if (!site) {
+      throw new Error(`Không tìm thấy cấu hình website khả dụng!`);
+    }
+
+    if (!this.clients.has(site.id)) {
+      this.clients.set(
+        site.id,
+        new WordPressSiteClient(
+          site,
+          () => {
+            if (!this.mediaCache) this.loadMediaCache();
+            return this.mediaCache;
+          },
+          () => this.saveMediaCache()
+        )
+      );
+    }
+
+    return this.clients.get(site.id);
+  }
+
+  // Lấy client mặc định
+  getDefaultClient() {
+    const def = this.getDefaultSite();
+    return this.getClient(def?.id);
+  }
+
+  // Lấy danh sách website để trả về giao diện theo ngữ cảnh người dùng đang đăng nhập
+  getSites(userActiveSiteId = null) {
+    const currentId = userActiveSiteId || this.getDefaultSite()?.id;
+    return this.sites.map(s => ({
+      id: s.id,
+      name: s.name,
+      url: s.url,
+      username: s.username,
+      isCurrent: s.id === currentId
+    }));
+  }
+
+  // Thêm hoặc Cập nhật website mới
+  async addOrUpdateSite({ id, name, url, username, password }) {
+    let cleanUrl = url.trim().replace(/\/+$/, '');
+    cleanUrl = cleanUrl.replace(/\/wp-admin.*$/, '');
+
+    const siteId = id || cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+
+    const siteData = {
+      id: siteId,
+      name: (name || '').trim() || cleanUrl.replace(/^https?:\/\//, ''),
+      url: cleanUrl,
+      username: username.trim(),
+      password: password.trim()
+    };
+
+    console.log(`🔍 Đang kiểm tra kết nối tới website mới: ${cleanUrl} (${username})...`);
+    const tempClient = new WordPressSiteClient(
+      siteData,
+      () => {
+        if (!this.mediaCache) this.loadMediaCache();
+        return this.mediaCache;
+      },
+      () => this.saveMediaCache()
+    );
+    await tempClient.authenticate(true);
+    console.log(`✅ Kết nối thành công tới ${cleanUrl}!`);
+
+    const existingIndex = this.sites.findIndex(s => s.id === siteId);
+    if (existingIndex >= 0) {
+      this.sites[existingIndex] = siteData;
+    } else {
+      this.sites.push(siteData);
+    }
+
+    this.saveSites();
+    this.clients.set(siteId, tempClient);
+
+    return siteData;
+  }
+
+  // Xóa một website khỏi danh sách
+  deleteSite(siteId) {
+    const index = this.sites.findIndex(s => s.id === siteId);
+    if (index === -1) return false;
+
+    this.sites.splice(index, 1);
+    this.clients.delete(siteId);
+    this.saveSites();
+    return true;
+  }
+
+  // Tương thích ngược (Backward compatibility) cho các tập lệnh cũ
+  get currentSite() { return this.getDefaultClient()?.site; }
+  get baseUrl() { return this.getDefaultClient()?.baseUrl; }
+  get username() { return this.getDefaultClient()?.username; }
+
+  async authenticate(force = false) {
+    return this.getDefaultClient().authenticate(force);
+  }
+
+  async fetchWithAuth(url, options = {}, retryCount = 0) {
+    return this.getDefaultClient().fetchWithAuth(url, options, retryCount);
+  }
+
+  async getAllContent(siteId = null) {
+    return this.getClient(siteId).getAllContent();
+  }
+
+  async uploadMedia(filePath, customAlt = '', customTitle = '', customCaption = '', forceUpload = false, siteId = null) {
+    return this.getClient(siteId).uploadMedia(filePath, customAlt, customTitle, customCaption, forceUpload);
+  }
+
+  async cleanDuplicateMedia(siteId = null) {
+    return this.getClient(siteId).cleanDuplicateMedia();
+  }
+
+  async syncAllMediaLibrary(maxPages = 5, siteId = null) {
+    return this.getClient(siteId).syncAllMediaLibrary(maxPages);
+  }
+
+  async saveContent(payload, siteId = null) {
+    return this.getClient(siteId).saveContent(payload);
+  }
+
+  getMediaMap(siteId = null) {
+    return this.getClient(siteId).getMediaMap();
   }
 }
 

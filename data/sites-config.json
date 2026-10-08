@@ -1,18 +1,29 @@
 [
   {
-    "id": "mexboss-sh",
-    "name": "Mexboss Mexico",
-    "url": "https://mexboss.sh",
-    "username": "99a1b5",
-    "password": "xCAzTfk#7YDB@SEK",
-    "isCurrent": true
+    "id": "juegalotto365-com",
+    "name": "juegalotto365.com",
+    "url": "https://juegalotto365.com",
+    "username": "0414b6",
+    "password": "$fp^Js#111",
+    "userId": "usr_1790302826339_29sv",
+    "apiKey": "LilJZfRLs44jijqhcNA0uLDsBj5rGzHQDtjUFt4l"
   },
   {
-    "id": "loco777-sh",
-    "name": "loco777.sh",
+    "id": "loco777-sh_3_3ywv",
+    "userId": "usr_1790996059113_3ywv",
+    "name": "loco777",
     "url": "https://loco777.sh",
     "username": "3d16dc",
     "password": "rbzr7XWEmDCbmnfP",
-    "isCurrent": false
+    "apiKey": "nt7iXFQ8bUkHvEh1btLaJUGcvc8qRDSBr168ZoCr"
+  },
+  {
+    "id": "mexwin-sh_9_29sv",
+    "userId": "usr_1790302826339_29sv",
+    "name": "mexwin.sh",
+    "url": "https://mexwin.sh",
+    "username": "06e423",
+    "password": "#iatYpYray76Sah^",
+    "apiKey": "GPr61RuPJCJQSZUlQxDr1BAfJXTpbTEjbkVNL9Jt"
   }
 ]

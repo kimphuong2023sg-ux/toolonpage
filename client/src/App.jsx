@@ -1,0 +1,557 @@
+// src/App.jsx
+import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import StatsCards from './components/StatsCards';
+import ContentTable from './components/ContentTable';
+import EditorModal from './components/EditorModal';
+import SiteModal from './components/SiteModal';
+import LoginPage from './components/LoginPage';
+import AdminPage from './components/AdminPage';
+import KickoutModal from './components/KickoutModal';
+import BotGuideModal from './components/BotGuideModal';
+import DocxBatchModal from './components/DocxBatchModal';
+import ReportModal from './components/ReportModal';
+import { getToken, setToken, getUser, setUser, clearAuth, authFetch } from './utils/auth';
+import { setTrackerSite, setTrackerAction, sendHeartbeatWithTracking } from './utils/activityTracker';
+
+export default function App() {
+  // Điều hướng đường dẫn (Hỗ trợ URL /admin và /)
+  const getInitialRoute = () => {
+    const path = window.location.pathname.toLowerCase();
+    if (path === '/admin' || path.startsWith('/admin/') || window.location.hash === '#/admin') {
+      return '/admin';
+    }
+    return '/';
+  };
+  const [currentRoute, setCurrentRoute] = useState(getInitialRoute);
+
+  // TÁCH BIỆT 100% TRẠNG THÁI ĐĂNG NHẬP CỦA TOOL USER (/) VÀ ROOT ADMIN (/admin)
+  // Giúp thao tác đăng xuất ở tool không bao giờ làm out tài khoản quản trị viên và ngược lại
+  const [toolUser, setToolUser] = useState(() => getUser('user'));
+  const [isToolLoggedIn, setIsToolLoggedIn] = useState(() => !!getToken('user'));
+
+  const [adminUser, setAdminUser] = useState(() => getUser('admin'));
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    const token = getToken('admin');
+    const user = getUser('admin');
+    return !!token && user?.role === 'admin';
+  });
+
+  const [kickoutMessage, setKickoutMessage] = useState(null);
+
+  const [wpStatus, setWpStatus] = useState(null);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [editorInitialTab, setEditorInitialTab] = useState('visual');
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isSiteModalOpen, setIsSiteModalOpen] = useState(false);
+  const [isBotGuideOpen, setIsBotGuideOpen] = useState(false);
+  const [isDocxBatchOpen, setIsDocxBatchOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportItems, setReportItems] = useState([]);
+  const [docxQueueCount, setDocxQueueCount] = useState(0);
+
+  const handleOpenReport = (itemsToReport) => {
+    setReportItems(itemsToReport && itemsToReport.length > 0 ? itemsToReport : items);
+    setIsReportModalOpen(true);
+  };
+
+  // Lắng nghe sự kiện thay đổi URL từ trình duyệt (nút Back/Forward)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/admin' || path.startsWith('/admin/') || window.location.hash === '#/admin') {
+        setCurrentRoute('/admin');
+      } else {
+        setCurrentRoute('/');
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  const navigate = (path) => {
+    window.history.pushState({}, '', path);
+    setCurrentRoute(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Lắng nghe sự kiện bị đá phiên từ các API calls theo từng phân vùng scope
+  useEffect(() => {
+    const handleSessionKicked = (e) => {
+      const scope = e.detail?.scope || (currentRoute === '/admin' ? 'admin' : 'user');
+      if (scope === 'admin') {
+        clearAuth('admin');
+        setIsAdminLoggedIn(false);
+        setAdminUser(null);
+      } else {
+        clearAuth('user');
+        setIsToolLoggedIn(false);
+        setToolUser(null);
+      }
+      setKickoutMessage(e.detail?.message || 'Tài khoản của bạn đã được đăng nhập từ một thiết bị khác!');
+    };
+
+    const handleAuthExpired = (e) => {
+      const scope = e.detail?.scope || (currentRoute === '/admin' ? 'admin' : 'user');
+      if (scope === 'admin') {
+        clearAuth('admin');
+        setIsAdminLoggedIn(false);
+        setAdminUser(null);
+      } else {
+        clearAuth('user');
+        setIsToolLoggedIn(false);
+        setToolUser(null);
+      }
+    };
+
+    window.addEventListener('session_kicked', handleSessionKicked);
+    window.addEventListener('auth_expired', handleAuthExpired);
+
+    return () => {
+      window.removeEventListener('session_kicked', handleSessionKicked);
+      window.removeEventListener('auth_expired', handleAuthExpired);
+    };
+  }, [currentRoute]);
+
+  // DUY TRÌ HEARTBEAT VÀ XÁC THỰC CHO TOOL USER KHI ĐANG DÙNG TOOL
+  useEffect(() => {
+    if (!isToolLoggedIn) return;
+
+    // 1. Kiểm tra xác thực ban đầu của tool user
+    authFetch('/api/auth/me', {}, 'user')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.user) {
+          setUser(data.user, 'user');
+          setToolUser(data.user);
+        }
+      })
+      .catch(() => {});
+
+    // 2. Heartbeat định kỳ: Gửi kèm Realtime Tracking (Website đang chọn & hành động hiện tại)
+    const heartbeatTimer = setInterval(async () => {
+      try {
+        await sendHeartbeatWithTracking();
+      } catch (e) {}
+    }, 3000);
+
+    return () => clearInterval(heartbeatTimer);
+  }, [isToolLoggedIn]);
+
+  // DUY TRÌ XÁC MINH PHIÊN CHO ADMIN KHI ĐANG Ở TRANG ADMIN
+  useEffect(() => {
+    if (!isAdminLoggedIn) return;
+
+    authFetch('/api/auth/me', {}, 'admin')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.user) {
+          if (data.user.role === 'admin') {
+            setUser(data.user, 'admin');
+            setAdminUser(data.user);
+          } else {
+            // Không phải admin -> xóa quyền admin
+            clearAuth('admin');
+            setIsAdminLoggedIn(false);
+            setAdminUser(null);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [isAdminLoggedIn]);
+
+  // Cập nhật website đang kết nối vào Activity Tracker khi wpStatus thay đổi
+  useEffect(() => {
+    if (wpStatus?.site) {
+      setTrackerSite({
+        id: wpStatus.site,
+        name: wpStatus.siteName || wpStatus.site,
+        url: wpStatus.site
+      });
+    }
+  }, [wpStatus]);
+
+  // Cập nhật hành động theo ngữ cảnh giao diện (xem danh sách, mở editor, mở chuyển site)
+  useEffect(() => {
+    if (!isToolLoggedIn) return;
+
+    if (currentRoute === '/admin') {
+      // Đang xem admin không cần đẩy tracker tool
+    } else if (isEditorOpen && selectedItem) {
+      setTrackerAction({
+        type: 'editing',
+        title: `Đang biên tập: "${selectedItem.title || selectedItem.slug || 'Bài viết mới'}"`,
+        detail: `Slug: /${selectedItem.slug || ''} (${selectedItem.type === 'page' ? 'Trang' : 'Bài viết'})`
+      }, true);
+    } else if (isSiteModalOpen) {
+      setTrackerAction({
+        type: 'site_modal',
+        title: 'Đang mở Quản Lý & Chuyển Đổi Website WordPress',
+        detail: 'Xem danh sách website đã kết nối'
+      }, true);
+    } else {
+      setTrackerAction({
+        type: 'viewing_list',
+        title: `Đang xem danh sách bài viết & trang (${items.length} bài)`,
+        detail: wpStatus?.siteName ? `Website: ${wpStatus.siteName}` : 'Trang chủ Tool'
+      }, true);
+    }
+  }, [isToolLoggedIn, currentRoute, isEditorOpen, selectedItem, isSiteModalOpen, items.length, wpStatus]);
+
+  // Lấy dữ liệu từ WordPress của website đang chọn (chỉ chạy khi ở trang Tool '/')
+  const fetchAllData = async (forceRefresh = false) => {
+    if (!isToolLoggedIn) return;
+    setLoading(true);
+    try {
+      // 1. Kiểm tra status kết nối
+      const statusRes = await authFetch('/api/status', {}, 'user');
+      const statusData = await statusRes.json();
+      setWpStatus(statusData);
+
+      if (!statusData.connected) {
+        setItems([]);
+        return;
+      }
+
+      // 2. Lấy toàn bộ Pages và Posts (sử dụng cache RAM nếu forceRefresh !== true để tránh quét lại lặp đi lặp lại)
+      const isForce = forceRefresh === true;
+      const url = isForce ? '/api/content/all?refresh=true' : '/api/content/all';
+      const contentRes = await authFetch(url, {}, 'user');
+      const contentData = await contentRes.json();
+      if (contentData.success && Array.isArray(contentData.items)) {
+        setItems(contentData.items);
+      } else {
+        setItems([]);
+      }
+    } catch (err) {
+      console.error('Lỗi khi fetch dữ liệu:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isToolLoggedIn && currentRoute === '/') {
+      // Khi tải lại trang (F5) hoặc mở trang mới, làm sạch kết quả kiểm tra cũ (In-Memory session - không lưu dữ liệu)
+      authFetch('/api/spineditor/clear-results', { method: 'POST' }, 'user')
+        .catch(() => {})
+        .finally(() => {
+          fetchAllData();
+        });
+    }
+  }, [isToolLoggedIn, currentRoute]);
+
+  // TỰ ĐỘNG ĐỒNG BỘ KẾT QUẢ TỪ BOT SPINDITOR VỀ TOOLONPAGE THEO THỜI GIAN THỰC (REALTIME)
+  useEffect(() => {
+    if (!isToolLoggedIn || currentRoute !== '/') return;
+
+    const syncSpineditorResults = async () => {
+      try {
+        const res = await authFetch('/api/spineditor/results', {}, 'user');
+        const data = await res.json();
+        if (data.success && data.results) {
+          setItems(prevItems => {
+            if (!prevItems || prevItems.length === 0) return prevItems;
+            let changed = false;
+            const updated = prevItems.map(item => {
+              const key = (item.slug || item.id || '').toString().toLowerCase().replace(/(^\/|\/$)/g, '');
+              const latest = data.results[key] || data.results[`id_${item.id}`] || null;
+              if (latest && JSON.stringify(item.spineditor) !== JSON.stringify(latest)) {
+                changed = true;
+                return { ...item, spineditor: latest };
+              }
+              return item;
+            });
+            return changed ? updated : prevItems;
+          });
+        }
+
+        // Đồng bộ số lượng bài trong hàng đợi docx
+        const queueRes = await authFetch('/api/spineditor/docx-queue', {}, 'user');
+        const queueData = await queueRes.json();
+        if (queueData.success && Array.isArray(queueData.queue)) {
+          setDocxQueueCount(queueData.queue.length);
+        }
+      } catch (e) {}
+    };
+
+    const interval = setInterval(syncSpineditorResults, 3000);
+    return () => clearInterval(interval);
+  }, [isToolLoggedIn, currentRoute]);
+
+  // --- XỬ LÝ ĐĂNG NHẬP / ĐĂNG XUẤT TOOL USER ---
+  const handleToolLoginSuccess = (data) => {
+    setToken(data.token, 'user');
+    setUser(data.user, 'user');
+    setToolUser(data.user);
+    setIsToolLoggedIn(true);
+    setKickoutMessage(null);
+  };
+
+  const handleToolLogout = async () => {
+    try {
+      await authFetch('/api/auth/logout', { method: 'POST' }, 'user');
+    } catch (e) {}
+    clearAuth('user');
+    setIsToolLoggedIn(false);
+    setToolUser(null);
+    // Lưu ý: Không can thiệp hay xóa adminUser / isAdminLoggedIn!
+  };
+
+  // --- XỬ LÝ ĐĂNG NHẬP / ĐĂNG XUẤT ADMIN PORTAL ---
+  const handleAdminLoginSuccess = (data) => {
+    setToken(data.token, 'admin');
+    setUser(data.user, 'admin');
+    setAdminUser(data.user);
+    setIsAdminLoggedIn(true);
+    setKickoutMessage(null);
+  };
+
+  const handleAdminLogout = async () => {
+    try {
+      await authFetch('/api/auth/logout', { method: 'POST' }, 'admin');
+    } catch (e) {}
+    clearAuth('admin');
+    setIsAdminLoggedIn(false);
+    setAdminUser(null);
+    // Lưu ý: Không can thiệp hay xóa toolUser / isToolLoggedIn!
+  };
+
+  // Mở modal sửa nội dung chuẩn Rank Math
+  const handleSelectForEdit = (item, initialTab = 'visual') => {
+    setSelectedItem(item);
+    setEditorInitialTab(initialTab);
+    setIsEditorOpen(true);
+  };
+
+  // Mở modal tạo bài viết mới
+  const handleAddNew = () => {
+    setSelectedItem({
+      id: 0,
+      title: '',
+      slug: '',
+      type: 'post',
+      word_count: 0,
+      seo_status: 'yellow-empty',
+      content_html: ''
+    });
+    setEditorInitialTab('visual');
+    setIsEditorOpen(true);
+  };
+
+  // ============================================================
+  // NHÁNH 1: ĐƯỜNG DẪN /admin (TRANG QUẢN TRỊ VIÊN HỆ THỐNG)
+  // ============================================================
+  if (currentRoute === '/admin') {
+    // Nếu chưa đăng nhập Admin -> Hiển thị Màn hình Đăng Nhập Quản Trị Hệ Thống riêng biệt
+    if (!isAdminLoggedIn) {
+      return (
+        <>
+          <LoginPage
+            portal="admin"
+            onLoginSuccess={handleAdminLoginSuccess}
+            onNavigate={navigate}
+          />
+          {kickoutMessage && (
+            <KickoutModal
+              message={kickoutMessage}
+              onConfirm={() => setKickoutMessage(null)}
+            />
+          )}
+        </>
+      );
+    }
+
+    // Nếu đã đăng nhập Admin -> Hiển thị Trang Quản Trị Hệ Thống
+    return (
+      <>
+        <AdminPage
+          currentUser={adminUser}
+          onNavigate={navigate}
+          onLogout={handleAdminLogout}
+        />
+        {kickoutMessage && (
+          <KickoutModal
+            message={kickoutMessage}
+            onConfirm={() => setKickoutMessage(null)}
+          />
+        )}
+      </>
+    );
+  }
+
+  // ============================================================
+  // NHÁNH 2: ĐƯỜNG DẪN / (TRANG TOOL ĐĂNG BÀI NHÂN VIÊN)
+  // ============================================================
+  // Nếu chưa đăng nhập Tool -> Hiển thị Màn hình Đăng Nhập Nhân Viên Dùng Tool
+  if (!isToolLoggedIn) {
+    return (
+      <>
+        <LoginPage
+          portal="tool"
+          onLoginSuccess={handleToolLoginSuccess}
+          onNavigate={navigate}
+        />
+        {kickoutMessage && (
+          <KickoutModal
+            message={kickoutMessage}
+            onConfirm={() => setKickoutMessage(null)}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Nếu đã đăng nhập Tool -> Hiển thị Giao diện Tool Đăng Bài Chuẩn SEO
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header 
+        wpStatus={wpStatus} 
+        onRefresh={() => fetchAllData(true)} 
+        loading={loading}
+        onOpenSiteModal={() => setIsSiteModalOpen(true)}
+        onOpenBotGuide={() => setIsBotGuideOpen(true)}
+        onOpenDocxBatch={() => setIsDocxBatchOpen(true)}
+        onOpenReport={() => handleOpenReport(items)}
+        docxQueueCount={docxQueueCount}
+        currentUser={toolUser}
+        onNavigate={navigate}
+        onLogout={handleToolLogout}
+      />
+
+      {/* BANNER CẢNH BÁO BẮT BUỘC KÍCH HOẠT PLUGIN TRUNG GIAN */}
+      {wpStatus?.connected && !wpStatus?.hasPlugin && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.25) 100%)',
+          borderBottom: '1px solid rgba(239, 68, 68, 0.4)',
+          padding: '12px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <div>
+              <div style={{ fontWeight: 800, color: '#fca5a5', fontSize: '13.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>Website "{wpStatus.siteName || wpStatus.site}" CHƯA KÍCH HOẠT PLUGIN TRUNG GIAN!</span>
+                <span style={{ fontSize: '10px', background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>BẮT BUỘC</span>
+              </div>
+              <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
+                Hệ thống chỉ tracking dữ liệu bài viết, Media Library và đồng bộ SEO Rank Math 2 chiều thông qua <strong>Plugin Tool OnPage Connector</strong> để đạt độ chính xác 100%. Vui lòng kích hoạt Plugin để bắt đầu làm việc.
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn-action-post"
+            onClick={() => setIsSiteModalOpen(true)}
+            style={{
+              padding: '8px 18px',
+              fontSize: '12.5px',
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              boxShadow: '0 2px 12px rgba(16, 185, 129, 0.4)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            🚀 Mở Quản Lý & Tự Động Kích Hoạt Plugin
+          </button>
+        </div>
+      )}
+
+      <main style={{ flex: 1 }}>
+        <StatsCards items={items} />
+
+        <div className="main-wrapper">
+          <ContentTable 
+            items={items}
+            wpStatus={wpStatus}
+            onSelectForEdit={handleSelectForEdit}
+            onAddNew={handleAddNew}
+            onOpenReport={handleOpenReport}
+            onUpdateItem={(updatedItem) => {
+              setItems(prev => prev.map(i => (i.id === updatedItem.id && i.type === updatedItem.type) ? { ...i, ...updatedItem } : i));
+            }}
+            onRefresh={fetchAllData}
+          />
+        </div>
+      </main>
+
+      {/* MODAL BIÊN TẬP RANK MATH 100/100 */}
+      {isEditorOpen && (
+        <EditorModal 
+          item={selectedItem}
+          siteItems={items}
+          wpStatus={wpStatus}
+          initialTab={editorInitialTab}
+          onClose={() => setIsEditorOpen(false)}
+          onSaveSuccess={() => {
+            fetchAllData();
+          }}
+        />
+      )}
+
+      {/* MODAL QUẢN LÝ & CHUYỂN ĐỔI WEBSITE */}
+      <SiteModal 
+        isOpen={isSiteModalOpen}
+        onClose={() => setIsSiteModalOpen(false)}
+        onSiteChanged={() => {
+          fetchAllData();
+        }}
+      />
+
+      {/* MODAL HƯỚNG DẪN & BOT SPINETITOR */}
+      {isBotGuideOpen && (
+        <BotGuideModal 
+          onClose={() => setIsBotGuideOpen(false)} 
+          onResultsCleared={() => {
+            setItems(prev => prev.map(item => ({ ...item, spineditor: null })));
+          }}
+        />
+      )}
+
+      {/* MODAL KÉO THẢ QUÉT DOCX HÀNG LOẠT */}
+      {isDocxBatchOpen && (
+        <DocxBatchModal
+          onClose={() => setIsDocxBatchOpen(false)}
+        />
+      )}
+
+      {/* MODAL BÁO CÁO KIỂM ĐỊNH SEO RANK MATH & SPINDITOR */}
+      {isReportModalOpen && (
+        <ReportModal
+          items={reportItems}
+          wpStatus={wpStatus}
+          onClose={() => setIsReportModalOpen(false)}
+          onSelectForEdit={(item) => {
+            setIsReportModalOpen(false);
+            handleSelectForEdit(item);
+          }}
+        />
+      )}
+
+      {/* CẢNH BÁO BỊ ĐÁ PHIÊN KHI MÁY KHÁC ĐĂNG NHẬP */}
+      {kickoutMessage && (
+        <KickoutModal
+          message={kickoutMessage}
+          onConfirm={() => setKickoutMessage(null)}
+        />
+      )}
+    </div>
+  );
+}

@@ -2,12 +2,125 @@
 import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
+import AdmZip from 'adm-zip';
 import mammoth from 'mammoth';
 import { spineditorService } from './spineditor-service.js';
 
 const CONTENT_DIR = path.resolve('content');
 
+export const MAMMOTH_OPTIONS = {
+  styleMap: [
+    "u => u",
+    "b => strong",
+    "i => em",
+    "strike => s",
+    "highlight => mark",
+    "r[style-name='Strong'] => strong",
+    "r[style-name='Emphasis'] => em",
+    "r[style-name='Underline'] => u",
+    "r[style-name='underline'] => u",
+    "r[style-name='Intense Emphasis'] => strong > em",
+    "p[style-name='Heading 1'] => h1:fresh",
+    "p[style-name='Heading 2'] => h2:fresh",
+    "p[style-name='Heading 3'] => h3:fresh",
+    "p[style-name='Heading 4'] => h4:fresh",
+    "p[style-name='Title'] => h1:fresh",
+    "p[style-name='Subtitle'] => h2:fresh"
+  ]
+};
+
 export class ContentParser {
+  // Chuẩn hóa file docx trước khi đọc để bảo toàn 100% định dạng gạch dưới (u), in đậm (b), in nghiêng (i)
+  static normalizeDocxBuffer(buffer) {
+    try {
+      const zip = new AdmZip(buffer);
+      const docEntry = zip.getEntry('word/document.xml');
+      if (docEntry) {
+        let xml = zip.readAsText(docEntry);
+        const normalizedXml = xml.replace(/<w:u(\s*\/?>)/gi, (match, suffix) => {
+          if (!suffix.includes('w:val')) {
+            const isSelfClosing = suffix.trim().endsWith('/>');
+            return isSelfClosing ? '<w:u w:val="single"/>' : '<w:u w:val="single">';
+          }
+          return match;
+        });
+        if (normalizedXml !== xml) {
+          zip.updateFile('word/document.xml', Buffer.from(normalizedXml, 'utf8'));
+          return zip.toBuffer();
+        }
+      }
+    } catch (e) {
+      console.warn('Lỗi chuẩn hóa docx buffer:', e.message);
+    }
+    return buffer;
+  }
+
+  // Bảo vệ và gia cố định dạng HTML (bold, underline, inline styles) để không bị WordPress theme hoặc sanitizer triệt tiêu
+  static preserveFormattingHtml(html) {
+    if (!html) return '';
+    let res = html;
+    res = res.replace(/<u\b(?![^>]*style=)[^>]*>/gi, '<u style="text-decoration: underline;">');
+    res = res.replace(/<b\b(?![^>]*style=)[^>]*>/gi, '<b style="font-weight: 700;">');
+    return res;
+  }
+
+  // Bộ lọc làm sạch triệt để toàn bộ sạn tiếng Việt, note hướng dẫn, preview badge, checklist
+  static sanitizeArticleHtml(html) {
+    if (!html) return '';
+    let cleanHtml = html;
+
+    // Lớp 1: BÀI VIẾT CHÍNH THỨC LUÔN BẮT ĐẦU TỪ THẺ <h1>
+    // Cắt bỏ 100% phần tiêu đề docx, bảng Rank Math, ghi chú "Hãy bắt đầu copy...", metadata tiếng Việt phía trước
+    const h1Idx = cleanHtml.search(/<h1\b/i);
+    if (h1Idx !== -1) {
+      cleanHtml = cleanHtml.substring(h1Idx);
+    } else {
+      // Fallback nếu tài liệu không có <h1>: cắt bỏ phần trước Section 2/3
+      const section2Regex = /(?:<h[1-6]|<p|<div)[^>]*>(?:<strong[^>]*>)?\s*(?:2|3)\.\s*NỘI DUNG (?:CHI TIẾT|BÀI VIẾT)[\s\S]*?<\/(?:h[1-6]|p|div)>/i;
+      const matchSec2 = cleanHtml.match(section2Regex);
+      if (matchSec2 && matchSec2.index !== undefined) {
+        cleanHtml = cleanHtml.substring(matchSec2.index + matchSec2[0].length);
+      }
+    }
+
+    // Lớp 2: Xóa triệt để mọi bảng hướng dẫn metadata Rank Math trong nội dung bài viết
+    cleanHtml = cleanHtml.replace(/<table[^>]*>(?:(?!<\/table>)[\s\S])*?(?:Palabra clave objetivo|Focus Keyword|Mục trên Rank Math|Giá trị điền chính xác|THÔNG SỐ CÀI ĐẶT|THIẾT LẬP CÁC Ô|Tiêu chí Rank Math|Mục đích chấm điểm)(?:(?!<\/table>)[\s\S])*?<\/table>/gi, '');
+
+    // Lớp 3: Xóa sạch các badge preview, Google SERP Snippet và Rank Math Score Header còn sót lại
+    cleanHtml = cleanHtml.replace(/<div[^>]*class="[^"]*(?:seo-badge|google-preview)[^"]*"[\s\S]*?<\/div>/gi, '');
+    cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?(?:Rank Math Score|Score:\s*\d+\s*\/\s*100|●\s*Perfecto)(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Palabra clave:\s*<strong(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?Vista Previa en Google Snippet(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?https?:\/\/[^\s<]+\s*(?:›|>)[^<]*<\/p>/gi, '');
+
+    // Lớp 4: Xóa sạch toàn bộ các đoạn văn tiếng Việt chỉ dẫn / prompt / hướng dẫn copy dán
+    cleanHtml = cleanHtml.replace(/<(?:p|h[1-6]|div|li|blockquote)[^>]*>(?:(?!<\/(?:p|h[1-6]|div|li|blockquote)>)[\s\S])*?(?:Hãy bắt đầu copy|bắt đầu copy|dán vào WordPress|tiêu đề H1 bên dưới|THÔNG SỐ CÀI ĐẶT|NỘI DUNG CHI TIẾT|THIẾT LẬP CÁC Ô|TÀI LIỆU BÀI VIẾT|Cách dán để giữ trọn vẹn điểm|Trên màn hình soạn thảo WordPress|LƯU Ý QUAN TRỌNG|bảng thông số này|loại bỏ hoàn toàn liên kết|chuẩn XANH LÁ)(?:(?!<\/(?:p|h[1-6]|div|li|blockquote)>)[\s\S])*?<\/(?:p|h[1-6]|div|li|blockquote)>/gi, '');
+    cleanHtml = cleanHtml.replace(/<(?:p|h[1-6]|div|li)[^>]*>(?:(?!<\/(?:p|h[1-6]|div|li)>)[\s\S])*?Trang:\s*[^<]*<\/(?:p|h[1-6]|div|li)>/gi, '');
+
+    // Lớp 5: Xóa sạch toàn bộ đoạn <p> hoặc <div> chứa Chú thích ảnh hoặc Thẻ Alt
+    cleanHtml = cleanHtml.replace(/<(?:p|div)[^>]*>(?:(?!<\/(?:p|div)>)[\s\S])*?(?:Chú thích|Caption|Pie de foto|Thẻ Alt|Alt\s*\(SEO\)|Texto alt)[\s\S]*?<\/(?:p|div)>/gi, '');
+
+    // Lớp 6: Xóa chữ ký tài liệu cuối bài, divider lines và bảng checklist
+    cleanHtml = cleanHtml.replace(/<p[^>]*>(?:(?!<\/p>)[\s\S])*?(?:───+|---|Official\s*•|Oficial\s*•|Documento de Presentación|Contenido SEO \d{4}|MEXBOSS\.sh Oficial|BẢNG KIỂM TRA|CHECKLIST 100\/100)(?:(?!<\/p>)[\s\S])*?<\/p>/gi, '');
+    cleanHtml = cleanHtml.replace(/<table[^>]*>(?:(?!<\/table>)[\s\S])*?(?:BẢNG KIỂM TRA|CHECKLIST 100\/100|Tiêu chí Rank Math)(?:(?!<\/table>)[\s\S])*?<\/table>/gi, '');
+
+    // Lớp 7: Chuẩn hóa các từ tiếng Việt sót lại trong ngữ cảnh tiếng Tây Ban Nha
+    cleanHtml = cleanHtml.replace(/\bvà financiera\b/gi, 'y financiera');
+    cleanHtml = cleanHtml.replace(/sảnh de slots/gi, 'sala de slots');
+    cleanHtml = cleanHtml.replace(/nuestra sảnh/gi, 'nuestra sala');
+    cleanHtml = cleanHtml.replace(/Sảnh trò chơi/gi, 'Sala de juegos');
+    cleanHtml = cleanHtml.replace(/sảnh trò chơi/gi, 'sala de juegos');
+
+    // Lớp 8: Triệt tiêu toàn bộ ảnh base64 do Mammoth sinh ra (chống phình dữ liệu 1.6MB)
+    cleanHtml = cleanHtml.replace(/<p[^>]*>\s*<img[^>]+src=["']data:[^"']+["'][^>]*>\s*<\/p>/gi, '');
+    cleanHtml = cleanHtml.replace(/<img[^>]+src=["']data:[^"']+["'][^>]*>/gi, '');
+    cleanHtml = cleanHtml.replace(/<p>\s*<\/p>/gi, '');
+
+    // Lớp 9: Bảo toàn và gia cố định dạng HTML (bold, underline, inline styles)
+    cleanHtml = ContentParser.preserveFormattingHtml(cleanHtml);
+
+    return cleanHtml.trim();
+  }
   // Lấy danh sách các tài liệu và hình ảnh trong thư mục content/
   static getFolderContents() {
     if (!fs.existsSync(CONTENT_DIR)) {
@@ -151,8 +264,9 @@ export class ContentParser {
     // Nếu là file DOCX khác (sau này upload)
     if (!result.content_html && ext === '.docx') {
       const buffer = fs.readFileSync(filePath);
-      const docxResult = await mammoth.convertToHtml({ buffer });
-      result.content_html = docxResult.value;
+      const normalizedBuffer = ContentParser.normalizeDocxBuffer(buffer);
+      const docxResult = await mammoth.convertToHtml({ buffer: normalizedBuffer }, MAMMOTH_OPTIONS);
+      result.content_html = ContentParser.preserveFormattingHtml(docxResult.value);
       
       // Đoán Focus Keyword từ tên file
       const cleanName = path.basename(filename, ext).replace(/[_\-]+/g, ' ');
@@ -408,7 +522,8 @@ export class ContentParser {
             fullHtml = bodyContent.trim();
           } else if (ext === '.docx') {
             const buffer = fs.readFileSync(docPath);
-            const docxResult = await mammoth.convertToHtml({ buffer });
+            const normalizedBuffer = ContentParser.normalizeDocxBuffer(buffer);
+            const docxResult = await mammoth.convertToHtml({ buffer: normalizedBuffer }, MAMMOTH_OPTIONS);
             fullHtml = docxResult.value || '';
           } else {
             fullHtml = fs.readFileSync(docPath, 'utf8');
@@ -548,7 +663,8 @@ export class ContentParser {
         // Lớp 7: Triệt tiêu toàn bộ ảnh base64 do Mammoth sinh ra (chống phình dữ liệu 1.6MB)
         cleanHtml = cleanHtml.replace(/<p[^>]*>\s*<img[^>]+src="data:image\/[^">]+"[^>]*>\s*<\/p>/gi, '');
         cleanHtml = cleanHtml.replace(/<img[^>]+src="data:image\/[^">]+"[^>]*>/gi, '');
-        cleanHtml = cleanHtml.replace(/<p>\s*<\/p>/gi, '');
+        // Lớp 8: Bảo toàn và gia cố định dạng HTML (bold, underline, inline styles)
+        cleanHtml = ContentParser.preserveFormattingHtml(cleanHtml);
 
         docData.articleHtml = cleanHtml.trim();
 
