@@ -1,7 +1,7 @@
 {
   "secret": "df7add6ece713c8d3bd40772e0bf44615b97f45700972ee84e8080b09458ce6e",
   "settings": {
-    "ipWhitelistEnabled": false,
+    "ipWhitelistEnabled": true,
     "ipWhitelist": [
       {
         "id": "ip_1790303905514_619w",
@@ -43,20 +43,29 @@
       "role": "admin",
       "status": "active",
       "allowedIps": [],
-      "currentSessionId": "sess_5c96d546-e994-4458-b860-20e17735af3e",
-      "lastLoginAt": "2026-10-03T12:38:56.340Z",
+      "currentSessionId": "sess_1cc26eb4-6764-4819-a11b-351e15634ad0",
+      "lastLoginAt": "2026-10-13T03:06:04.842Z",
       "lastLoginIp": "127.0.0.1",
       "createdAt": "2026-09-25T02:05:34.438Z",
-      "lastActiveAt": "2026-10-03T12:38:56.340Z",
-      "lastHeartbeatAt": "2026-10-03T12:38:56.340Z",
+      "lastActiveAt": "2026-10-13T03:06:04.842Z",
+      "lastHeartbeatAt": "2026-10-13T03:06:04.842Z",
       "currentAction": {
         "type": "login",
         "title": "Đăng nhập vào hệ thống",
         "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
         "siteName": "Mexboss Mexico",
-        "timestamp": "2026-10-03T12:38:56.340Z"
+        "timestamp": "2026-10-13T03:06:04.842Z"
       },
       "activityHistory": [
+        {
+          "id": "act_1791860764842_m6lo",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+          "siteName": "Mexboss Mexico",
+          "timestamp": "2026-10-13T03:06:04.842Z",
+          "ip": "127.0.0.1"
+        },
         {
           "id": "act_1791031136340_0j93",
           "type": "login",
@@ -253,8 +262,8 @@
       "lastLoginAt": "2026-10-12T11:10:18.501Z",
       "lastLoginIp": "149.88.22.166",
       "createdAt": "2026-09-25T02:20:26.339Z",
-      "lastActiveAt": "2026-10-13T02:37:26.611Z",
-      "lastHeartbeatAt": "2026-10-13T02:37:26.611Z",
+      "lastActiveAt": "2026-10-13T03:04:26.593Z",
+      "lastHeartbeatAt": "2026-10-13T03:04:26.593Z",
       "currentSite": {
         "id": "https://juegalotto365.com",
         "name": "juegalotto365.com",
@@ -262,12 +271,21 @@
       },
       "currentAction": {
         "type": "viewing_list",
-        "title": "Đang xem danh sách bài viết & trang (20 bài)",
+        "title": "Đang xem danh sách bài viết & trang (0 bài)",
         "detail": "Website: juegalotto365.com",
         "siteName": "juegalotto365.com",
-        "timestamp": "2026-10-12T16:59:58.732Z"
+        "timestamp": "2026-10-13T02:45:32.099Z"
       },
       "activityHistory": [
+        {
+          "id": "act_1791859529690_0vxy",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-13T02:45:29.690Z",
+          "ip": "42.113.164.132"
+        },
         {
           "id": "act_1791824398732_0rpn",
           "type": "viewing_list",
@@ -707,15 +725,6 @@
           "detail": "Tab: Soạn thảo trực quan",
           "siteName": "juegalotto365.com",
           "timestamp": "2026-10-08T07:45:10.452Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791445440956_5meq",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-08T07:44:00.956Z",
           "ip": "127.0.0.1"
         }
       ],
@@ -1417,6 +1426,24 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_1791860776075_6uucr",
+      "timestamp": "2026-10-13T03:06:16.075Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "IP_WHITELIST_TOGGLE",
+      "detail": "Quản trị viên đã BẬT tính năng Whitelist IP toàn hệ thống",
+      "status": "success"
+    },
+    {
+      "id": "log_1791860764844_4hfa9",
+      "timestamp": "2026-10-13T03:06:04.844Z",
+      "username": "admin",
+      "ip": "127.0.0.1",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 127.0.0.1. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
     {
       "id": "log_1791803418502_etyh2",
       "timestamp": "2026-10-12T11:10:18.502Z",

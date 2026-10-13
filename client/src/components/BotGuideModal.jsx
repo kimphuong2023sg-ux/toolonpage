@@ -1,6 +1,6 @@
 // src/components/BotGuideModal.jsx
 import React, { useState } from 'react';
-import { authFetch } from '../utils/auth';
+import { authFetch, getApiUrl } from '../utils/auth';
 
 export default function BotGuideModal({ onClose, onResultsCleared }) {
   const [copiedScript, setCopiedScript] = useState(false);
@@ -24,7 +24,7 @@ export default function BotGuideModal({ onClose, onResultsCleared }) {
   };
 
   const handleDownloadZip = () => {
-    window.open('/api/spineditor/download-extension', '_blank');
+    window.open(getApiUrl('/api/spineditor/download-extension'), '_blank');
   };
 
   const scriptCode = `// ==UserScript==

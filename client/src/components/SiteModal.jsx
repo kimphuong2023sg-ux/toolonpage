@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authFetch } from '../utils/auth';
+import { authFetch, getApiUrl } from '../utils/auth';
 
 export default function SiteModal({ isOpen, onClose, onSiteChanged }) {
   const [sites, setSites] = useState([]);
@@ -358,7 +358,7 @@ export default function SiteModal({ isOpen, onClose, onSiteChanged }) {
               </button>
 
               <a 
-                href="/api/plugin/download" 
+                href={getApiUrl('/api/plugin/download')} 
                 download="toolonpage-connector.zip"
                 className="btn-action-post"
                 style={{

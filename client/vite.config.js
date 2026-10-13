@@ -8,7 +8,10 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: true, // Cho phép tất cả host (bao gồm 5173michael.kjctech.space, cloudflare tunnel...)
+    allowedHosts: [
+      '5173michael.kjctech.space',
+      '.kjctech.space'
+    ],
     watch: {
       ignored: ['**/content/**', '**/data/**', '**/.git/**']
     },

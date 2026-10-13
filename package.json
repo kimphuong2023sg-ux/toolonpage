@@ -1,29 +1,19 @@
 {
   "name": "wp-seo-autopost-tool",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "Tool tự động đăng bài và trang lên WordPress chuẩn SEO 100/100 Rank Math",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Tool tự động đăng bài và trang lên WordPress chuẩn SEO 100/100 Rank Math (Client React Vite + Server NestJS)",
   "scripts": {
-    "dev": "concurrently \"node --watch server/server.js\" \"vite\"",
-    "server": "node --watch server/server.js",
-    "start": "node server/server.js",
-    "client": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "adm-zip": "^0.5.16",
-    "cors": "^2.8.5",
-    "dotenv": "^18.0.4",
-    "express": "^4.21.2",
-    "mammoth": "^1.8.0",
-    "multer": "^1.4.5-lts.1"
+    "dev": "concurrently -k -n \"SERVER,CLIENT\" -c \"blue,green\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build:client": "npm run build --prefix client",
+    "start:server": "npm run start:prod --prefix server",
+    "preview": "npm run preview --prefix client"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "concurrently": "^9.1.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "vite": "^6.0.7"
+    "concurrently": "^9.1.2"
   }
 }
