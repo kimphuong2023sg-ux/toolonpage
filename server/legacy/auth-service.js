@@ -236,18 +236,21 @@ class AuthService {
   checkIpAllowed(clientIp, user = null) {
     const settings = this.db.settings || { ipWhitelistEnabled: false, ipWhitelist: [] };
 
-    // 1. Kiểm tra Whitelist toàn hệ thống nếu đang Bật
-    if (settings.ipWhitelistEnabled) {
-      const activeIps = (settings.ipWhitelist || []).filter(item => item.enabled !== false);
-      const isGlobalMatch = activeIps.some(item => this.matchIpPattern(clientIp, item.ip));
+    // Nếu tính năng Whitelist IP đang TẮT, mở khóa xác thực IP hoàn toàn cho tất cả người dùng
+    if (!settings.ipWhitelistEnabled) {
+      return { allowed: true };
+    }
 
-      if (!isGlobalMatch) {
-        return {
-          allowed: false,
-          code: 'IP_NOT_WHITELISTED',
-          message: `Địa chỉ IP của bạn (${clientIp}) chưa được cấp phép truy cập (IP Whitelist). Vui lòng liên hệ Quản trị viên để thêm IP này vào danh sách!`
-        };
-      }
+    // 1. Kiểm tra Whitelist toàn hệ thống nếu đang Bật
+    const activeIps = (settings.ipWhitelist || []).filter(item => item.enabled !== false);
+    const isGlobalMatch = activeIps.some(item => this.matchIpPattern(clientIp, item.ip));
+
+    if (!isGlobalMatch) {
+      return {
+        allowed: false,
+        code: 'IP_NOT_WHITELISTED',
+        message: `Địa chỉ IP của bạn (${clientIp}) chưa được cấp phép truy cập (IP Whitelist). Vui lòng liên hệ Quản trị viên để thêm IP này vào danh sách!`
+      };
     }
 
     // 2. Kiểm tra nếu tài khoản có danh sách IP giới hạn riêng

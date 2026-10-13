@@ -224,17 +224,20 @@ export class AuthService implements OnModuleInit {
   checkIpAllowed(clientIp: string, user: any = null): { allowed: boolean; code?: string; message?: string } {
     const settings = this.db.settings || { ipWhitelistEnabled: false, ipWhitelist: [] };
 
-    if (settings.ipWhitelistEnabled) {
-      const activeIps = (settings.ipWhitelist || []).filter((item: any) => item.enabled !== false);
-      const isGlobalMatch = activeIps.some((item: any) => this.matchIpPattern(clientIp, item.ip));
+    // Nếu tính năng Whitelist IP đang TẮT, mở khóa xác thực IP hoàn toàn cho tất cả người dùng
+    if (!settings.ipWhitelistEnabled) {
+      return { allowed: true };
+    }
 
-      if (!isGlobalMatch) {
-        return {
-          allowed: false,
-          code: 'IP_NOT_WHITELISTED',
-          message: `Địa chỉ IP của bạn (${clientIp}) chưa được cấp phép truy cập (IP Whitelist). Vui lòng liên hệ Quản trị viên để thêm IP này vào danh sách!`,
-        };
-      }
+    const activeIps = (settings.ipWhitelist || []).filter((item: any) => item.enabled !== false);
+    const isGlobalMatch = activeIps.some((item: any) => this.matchIpPattern(clientIp, item.ip));
+
+    if (!isGlobalMatch) {
+      return {
+        allowed: false,
+        code: 'IP_NOT_WHITELISTED',
+        message: `Địa chỉ IP của bạn (${clientIp}) chưa được cấp phép truy cập (IP Whitelist). Vui lòng liên hệ Quản trị viên để thêm IP này vào danh sách!`,
+      };
     }
 
     if (user && Array.isArray(user.allowedIps) && user.allowedIps.length > 0) {

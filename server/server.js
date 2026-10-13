@@ -42,6 +42,7 @@ app.use(cors({
     if (
       allowedOrigins.includes(origin) ||
       origin.endsWith('.toolseo.uk') ||
+      origin.endsWith('.kjctech.space') ||
       origin.includes('localhost') ||
       origin.includes('127.0.0.1')
     ) {

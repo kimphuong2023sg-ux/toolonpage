@@ -249,12 +249,12 @@
       "role": "member",
       "status": "active",
       "allowedIps": [],
-      "currentSessionId": "sess_890c9a36-89d9-4666-8c70-ec56ac9ace78",
-      "lastLoginAt": "2026-10-03T06:13:20.150Z",
-      "lastLoginIp": "127.0.0.1",
+      "currentSessionId": "sess_16974916-abff-49eb-9088-f3683c51f633",
+      "lastLoginAt": "2026-10-12T11:10:18.501Z",
+      "lastLoginIp": "149.88.22.166",
       "createdAt": "2026-09-25T02:20:26.339Z",
-      "lastActiveAt": "2026-10-08T06:22:52.213Z",
-      "lastHeartbeatAt": "2026-10-08T06:22:52.213Z",
+      "lastActiveAt": "2026-10-13T02:37:26.611Z",
+      "lastHeartbeatAt": "2026-10-13T02:37:26.611Z",
       "currentSite": {
         "id": "https://juegalotto365.com",
         "name": "juegalotto365.com",
@@ -265,457 +265,457 @@
         "title": "Đang xem danh sách bài viết & trang (20 bài)",
         "detail": "Website: juegalotto365.com",
         "siteName": "juegalotto365.com",
-        "timestamp": "2026-10-08T02:51:34.715Z"
+        "timestamp": "2026-10-12T16:59:58.732Z"
       },
       "activityHistory": [
         {
-          "id": "act_1791427894715_aiuz",
+          "id": "act_1791824398732_0rpn",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-08T02:51:34.715Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T16:59:58.732Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791427889707_2iwx",
+          "id": "act_1791824393179_bauo",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (0 bài)",
           "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-08T02:51:29.707Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T16:59:53.178Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791425004213_sbwd",
+          "id": "act_1791818914910_l4pu",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-08T02:03:24.213Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T15:28:34.910Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791424981865_f1t2",
+          "id": "act_1791818911546_w9tg",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (0 bài)",
           "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-08T02:03:01.865Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T15:28:31.546Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791361151604_xcu2",
+          "id": "act_1791818394003_b46o",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-07T08:19:11.604Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T15:19:54.003Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791361146591_2aj2",
+          "id": "act_1791818383867_cxzl",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (0 bài)",
           "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-07T08:19:06.591Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T15:19:43.867Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791341479633_x7hh",
+          "id": "act_1791812904393_f7qe",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-07T02:51:19.633Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T13:48:24.393Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791341474925_zy2v",
+          "id": "act_1791812900518_r96p",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (0 bài)",
           "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-07T02:51:14.925Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T13:48:20.518Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791201152851_aule",
+          "id": "act_1791812381513_rjmj",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:52:32.851Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T13:39:41.513Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791201151619_ssbe",
-          "type": "editing",
-          "title": "Đang biên tập: \"Loteria en Linea Mexico 2026: Sorteos y Resultados en JuegaLotto #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
+          "id": "act_1791812372630_yh7h",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:52:31.619Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T13:39:32.630Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791201099651_izqj",
+          "id": "act_1791808557762_zm8q",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:51:39.651Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T12:35:57.762Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791201078383_qx67",
-          "type": "editing",
-          "title": "Đang biên tập: \"Activar Bono Bienvenida JuegaLotto (2026): Hasta $2,000 MXN #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
+          "id": "act_1791808552396_uk59",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:51:18.383Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T12:35:52.396Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791201056944_bu1h",
+          "id": "act_1791806893439_02se",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:50:56.944Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T12:08:13.439Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791200996917_pe9v",
-          "type": "editing",
-          "title": "Đang biên tập: \"Apuestas Liga MX Consejos (2026): Momios y Pronósticos en JuegaLotto #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:49:56.917Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200923331_uq2v",
+          "id": "act_1791806888014_75ot",
           "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:48:43.331Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T12:08:08.014Z",
+          "ip": "42.113.164.132"
         },
         {
-          "id": "act_1791200915638_hthp",
-          "type": "editing",
-          "title": "Đang biên tập: \"Como Ganar Jokers Jewels (2026): Consejos y Trucos en JuegaLotto #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:48:35.638Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200913635_4a4l",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:48:33.635Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200901207_wdti",
-          "type": "editing",
-          "title": "Đang biên tập: \"Como Ganar Jokers Jewels (2026): Consejos y Trucos en JuegaLotto #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:48:21.207Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200865683_p51b",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:47:45.683Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200838427_pvnl",
-          "type": "editing",
-          "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
-          "detail": "Slug: /juegalotto-es-confiable-opiniones (Trang)",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:47:18.427Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200838397_zh1c",
-          "type": "publish_success",
-          "title": "Vừa xuất bản: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\" (Xuất bản)",
-          "detail": "ID: 431 | SEO: 88/100 | Lúc 18:47:18",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:47:18.397Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200838376_pcnc",
-          "type": "publish_success",
-          "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\" (/juegalotto-es-confiable-opiniones) | SEO Rank Math: 0/100",
-          "siteName": "juegalotto365.com",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-10-05T11:47:18.376Z"
-        },
-        {
-          "id": "act_1791200834830_nrk6",
-          "type": "publishing",
-          "title": "Đang đăng bài: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\" (Xuất bản)",
-          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:47:14.830Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200814550_gqmd",
-          "type": "editing",
-          "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:46:54.550Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200813289_wlqe",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:46:53.289Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200807190_bgcg",
-          "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas Online Mexico 2026: Slots y Casino en JuegaLotto #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:46:47.190Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200806542_uluv",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:46:46.542Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200637148_jc3l",
-          "type": "editing",
-          "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:43:57.148Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200629168_hkh9",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:43:49.168Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200622635_aj0b",
-          "type": "editing",
-          "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
-          "detail": "Tab: Soạn thảo trực quan",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:43:42.635Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200607462_elul",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:43:27.462Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200599685_2mi2",
+          "id": "act_1791803423282_iu1c",
           "type": "site_modal",
           "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
           "detail": "Xem danh sách website đã kết nối",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:43:19.685Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T11:10:23.282Z",
+          "ip": "149.88.22.166"
         },
         {
-          "id": "act_1791200529096_gl8y",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:42:09.096Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791200527377_wubo",
+          "id": "act_1791803419047_vx2k",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (0 bài)",
           "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:42:07.377Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T11:10:19.047Z",
+          "ip": "149.88.22.166"
         },
         {
-          "id": "act_1791200196565_g3g6",
+          "id": "act_1791803418501_6db6",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 149.88.22.166",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T11:10:18.501Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802692942_2j2s",
+          "type": "logout",
+          "title": "Đăng xuất khỏi hệ thống",
+          "detail": "Người dùng đã chủ động thoát phiên làm việc",
+          "siteName": "juegalotto365.com",
+          "ip": "149.88.22.166",
+          "timestamp": "2026-10-12T10:58:12.942Z"
+        },
+        {
+          "id": "act_1791802660134_lceo",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:36:36.565Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T10:57:40.134Z",
+          "ip": "149.88.22.166"
         },
         {
-          "id": "act_1791200192438_eus0",
+          "id": "act_1791802652225_na49",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:57:32.225Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802644326_h1rp",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:57:24.326Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802642678_15ar",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (0 bài)",
           "detail": "Trang chủ Tool",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T11:36:32.437Z",
-          "ip": "127.0.0.1"
+          "timestamp": "2026-10-12T10:57:22.678Z",
+          "ip": "149.88.22.166"
         },
         {
-          "id": "act_1791197337210_368f",
+          "id": "act_1791802595242_zyzz",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T10:48:57.210Z",
+          "timestamp": "2026-10-12T10:56:35.242Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802594324_juku",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:56:34.324Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802576584_tqgv",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:56:16.584Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802572396_jtss",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:56:12.396Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802554952_0ylf",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:55:54.952Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802552181_w955",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:55:52.181Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802549385_achu",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:55:49.385Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802547024_5rhm",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:55:47.024Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802546386_mayn",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 149.88.22.166 (Đã đá phiên cũ)",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:55:46.386Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802087701_tbmt",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:48:07.701Z",
           "ip": "127.0.0.1"
         },
         {
-          "id": "act_1791187334687_f2hq",
+          "id": "act_1791802080915_aaik",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T10:48:00.914Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791778778593_3s6o",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:19:38.593Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791778776764_f7qa",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:19:36.764Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791777980124_h9ee",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:06:20.124Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791777972956_3hqa",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:06:12.956Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791777969426_b7sp",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:06:09.426Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791777968105_r5tk",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:06:08.105Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791777957807_849g",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:05:57.807Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791777948878_ngd4",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-12T04:05:48.878Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791522870917_cxzy",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-09T05:14:30.917Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791522865994_0urv",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-09T05:14:25.994Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791445584303_au0q",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-08T07:46:24.303Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1791445578058_nguk",
           "type": "editing",
-          "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
-          "detail": "Slug: /juegalotto-es-confiable-opiniones (Trang)",
+          "title": "Đang biên tập: \"Wild Bounty Showdown Guia (2026): Multiplicador 1024x en JuegaLotto #1\"",
+          "detail": "Tab: Soạn thảo trực quan",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:02:14.687Z",
+          "timestamp": "2026-10-08T07:46:18.058Z",
           "ip": "127.0.0.1"
         },
         {
-          "id": "act_1791187334663_gfh3",
-          "type": "publish_success",
-          "title": "Vừa xuất bản: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\" (Xuất bản)",
-          "detail": "ID: 431 | SEO: 88/100 | Lúc 15:02:14",
+          "id": "act_1791445551726_vdwl",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (20 bài)",
+          "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:02:14.663Z",
+          "timestamp": "2026-10-08T07:45:51.726Z",
           "ip": "127.0.0.1"
         },
         {
-          "id": "act_1791187334655_zddl",
-          "type": "publish_success",
-          "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\" (/juegalotto-es-confiable-opiniones) | SEO Rank Math: 0/100",
-          "siteName": "juegalotto365.com",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-10-05T08:02:14.655Z"
-        },
-        {
-          "id": "act_1791187329999_9ro7",
-          "type": "publishing",
-          "title": "Đang đăng bài: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\" (Xuất bản)",
-          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:02:09.999Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791187323405_8dg6",
+          "id": "act_1791445547851_y2ca",
           "type": "editing",
           "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
           "detail": "Tab: Soạn thảo trực quan",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:02:03.405Z",
+          "timestamp": "2026-10-08T07:45:47.851Z",
           "ip": "127.0.0.1"
         },
         {
-          "id": "act_1791187322063_31lj",
+          "id": "act_1791445530624_r5th",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:02:02.063Z",
+          "timestamp": "2026-10-08T07:45:30.624Z",
           "ip": "127.0.0.1"
         },
         {
-          "id": "act_1791187315648_ptn5",
+          "id": "act_1791445510452_4rvw",
           "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas Online Mexico 2026: Slots y Casino en JuegaLotto #1\"",
-          "detail": "Slug: /casino-online-mexico (Trang)",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:01:55.648Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791187315627_xmro",
-          "type": "publish_success",
-          "title": "Vừa xuất bản: \"Tragamonedas Online Mexico 2026: Slots y Casino en JuegaLotto #1\" (Xuất bản)",
-          "detail": "ID: 413 | SEO: 82/100 | Lúc 15:01:55",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:01:55.627Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791187315616_lg91",
-          "type": "publish_success",
-          "title": "Xuất bản thành công lên WordPress",
-          "detail": "Bài: \"Tragamonedas Online Mexico 2026: Slots y Casino en JuegaLotto #1\" (/casino-online-mexico) | SEO Rank Math: 0/100",
-          "siteName": "juegalotto365.com",
-          "ip": "127.0.0.1",
-          "timestamp": "2026-10-05T08:01:55.616Z"
-        },
-        {
-          "id": "act_1791187311199_d030",
-          "type": "publishing",
-          "title": "Đang đăng bài: \"Tragamonedas Online Mexico 2026: Slots y Casino en JuegaLotto #1\" (Xuất bản)",
-          "detail": "Đang chuẩn bị ảnh và kết nối tới WordPress...",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:01:51.199Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791187305203_g1bo",
-          "type": "editing",
-          "title": "Đang biên tập: \"Tragamonedas Online Mexico 2026: Slots y Casino en JuegaLotto #1\"",
+          "title": "Đang biên tập: \"JuegaLotto es Confiable Opiniones: Seguridad, Licencia SEGOB y Pagos 2026 #1\"",
           "detail": "Tab: Soạn thảo trực quan",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:01:45.203Z",
+          "timestamp": "2026-10-08T07:45:10.452Z",
           "ip": "127.0.0.1"
         },
         {
-          "id": "act_1791187303832_boku",
+          "id": "act_1791445440956_5meq",
           "type": "viewing_list",
           "title": "Đang xem danh sách bài viết & trang (20 bài)",
           "detail": "Website: juegalotto365.com",
           "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:01:43.832Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791187299331_cxi3",
-          "type": "editing",
-          "title": "Đang biên tập: \"Bonos de Casino Mexico 2026: Hasta $2,000 MXN en JuegaLotto #1\"",
-          "detail": "Slug: /bonos-y-promociones (Trang)",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-05T08:01:39.331Z",
+          "timestamp": "2026-10-08T07:44:00.956Z",
           "ip": "127.0.0.1"
         }
       ],
@@ -729,13 +729,58 @@
       "salt": "cdba34d68de28d6aa82c260bb6833132",
       "role": "member",
       "status": "active",
-      "allowedIps": [
-        "10.151.79.109"
-      ],
-      "currentSessionId": null,
-      "lastLoginAt": null,
-      "lastLoginIp": null,
-      "createdAt": "2026-09-25T02:40:38.476Z"
+      "allowedIps": [],
+      "currentSessionId": "sess_d3a0adbc-29de-4911-a51e-233e820b63d4",
+      "lastLoginAt": "2026-10-12T11:03:17.797Z",
+      "lastLoginIp": "149.88.22.164",
+      "createdAt": "2026-09-25T02:40:38.476Z",
+      "lastActiveAt": "2026-10-12T11:43:03.571Z",
+      "lastHeartbeatAt": "2026-10-12T11:43:03.571Z",
+      "currentAction": {
+        "type": "viewing_list",
+        "title": "Đang xem danh sách bài viết & trang (0 bài)",
+        "detail": "Website: Chưa kết nối website",
+        "siteName": "",
+        "timestamp": "2026-10-12T11:03:20.510Z"
+      },
+      "activityHistory": [
+        {
+          "id": "act_1791802999038_obdf",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "",
+          "timestamp": "2026-10-12T11:03:19.038Z",
+          "ip": "149.88.22.164"
+        },
+        {
+          "id": "act_1791802997797_le8y",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 149.88.22.164 (Đã đá phiên cũ)",
+          "siteName": "",
+          "timestamp": "2026-10-12T11:03:17.797Z",
+          "ip": "149.88.22.164"
+        },
+        {
+          "id": "act_1791802949229_3uij",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "",
+          "timestamp": "2026-10-12T11:02:29.229Z",
+          "ip": "149.88.22.166"
+        },
+        {
+          "id": "act_1791802948613_fmeg",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 149.88.22.166",
+          "siteName": "",
+          "timestamp": "2026-10-12T11:02:28.613Z",
+          "ip": "149.88.22.166"
+        }
+      ]
     },
     {
       "id": "usr_1790306552657_cfov",
@@ -746,20 +791,29 @@
       "role": "admin",
       "status": "active",
       "allowedIps": [],
-      "currentSessionId": "sess_ae7c7e12-1758-42c6-973c-8c1e06955ec5",
-      "lastLoginAt": "2026-09-25T03:26:55.352Z",
-      "lastLoginIp": "127.0.0.1",
+      "currentSessionId": "sess_247aa119-35ef-46fe-9a79-8cb9ba219c2d",
+      "lastLoginAt": "2026-10-12T10:55:27.796Z",
+      "lastLoginIp": "149.88.22.166",
       "createdAt": "2026-09-25T03:22:32.657Z",
-      "lastActiveAt": "2026-09-25T03:26:55.357Z",
-      "lastHeartbeatAt": "2026-09-25T03:26:55.357Z",
+      "lastActiveAt": "2026-10-12T10:55:27.796Z",
+      "lastHeartbeatAt": "2026-10-12T10:55:27.796Z",
       "currentAction": {
         "type": "login",
         "title": "Đăng nhập vào hệ thống",
-        "detail": "Đăng nhập từ IP 127.0.0.1 (Đã đá phiên cũ)",
+        "detail": "Đăng nhập từ IP 149.88.22.166 (Đã đá phiên cũ)",
         "siteName": "",
-        "timestamp": "2026-09-25T03:26:55.357Z"
+        "timestamp": "2026-10-12T10:55:27.796Z"
       },
       "activityHistory": [
+        {
+          "id": "act_1791802527796_izpb",
+          "type": "login",
+          "title": "Đăng nhập vào hệ thống",
+          "detail": "Đăng nhập từ IP 149.88.22.166 (Đã đá phiên cũ)",
+          "siteName": "",
+          "timestamp": "2026-10-12T10:55:27.796Z",
+          "ip": "149.88.22.166"
+        },
         {
           "id": "act_1790306815357_ltl3",
           "type": "login",
@@ -1363,6 +1417,96 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_1791803418502_etyh2",
+      "timestamp": "2026-10-12T11:10:18.502Z",
+      "username": "michael",
+      "ip": "149.88.22.166",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 149.88.22.166",
+      "status": "success"
+    },
+    {
+      "id": "log_1791802997799_y20cz",
+      "timestamp": "2026-10-12T11:03:17.799Z",
+      "username": "cuiyang",
+      "ip": "149.88.22.164",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 149.88.22.164. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1791802948615_rit80",
+      "timestamp": "2026-10-12T11:02:28.615Z",
+      "username": "cuiyang",
+      "ip": "149.88.22.166",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 149.88.22.166",
+      "status": "success"
+    },
+    {
+      "id": "log_1791802859389_5swas",
+      "timestamp": "2026-10-12T11:00:59.389Z",
+      "username": "cuiyang",
+      "ip": "149.88.22.164",
+      "action": "LOGIN_BLOCKED_USER_IP",
+      "detail": "Từ chối do tài khoản chỉ cho phép IP riêng: 149.88.22.164",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1791802791312_pgr1i",
+      "timestamp": "2026-10-12T10:59:51.312Z",
+      "username": "cuiyang",
+      "ip": "149.88.22.164",
+      "action": "LOGIN_BLOCKED_USER_IP",
+      "detail": "Từ chối do tài khoản chỉ cho phép IP riêng: 149.88.22.164",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1791802773235_oo8c4",
+      "timestamp": "2026-10-12T10:59:33.235Z",
+      "username": "cuiyang",
+      "ip": "149.88.22.164",
+      "action": "LOGIN_BLOCKED_USER_IP",
+      "detail": "Từ chối do tài khoản chỉ cho phép IP riêng: 149.88.22.164",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1791802697586_fvsoh",
+      "timestamp": "2026-10-12T10:58:17.586Z",
+      "username": "cuiyang",
+      "ip": "149.88.22.166",
+      "action": "LOGIN_BLOCKED_USER_IP",
+      "detail": "Từ chối do tài khoản chỉ cho phép IP riêng: 149.88.22.166",
+      "status": "blocked"
+    },
+    {
+      "id": "log_1791802692943_8ns12",
+      "timestamp": "2026-10-12T10:58:12.943Z",
+      "username": "michael",
+      "ip": "149.88.22.166",
+      "action": "LOGOUT",
+      "detail": "Người dùng đã đăng xuất khỏi phiên làm việc",
+      "status": "success"
+    },
+    {
+      "id": "log_1791802546388_p20ic",
+      "timestamp": "2026-10-12T10:55:46.388Z",
+      "username": "michael",
+      "ip": "149.88.22.166",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 149.88.22.166. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
+    {
+      "id": "log_1791802527798_3coya",
+      "timestamp": "2026-10-12T10:55:27.798Z",
+      "username": "admin2",
+      "ip": "149.88.22.166",
+      "action": "LOGIN_SUCCESS",
+      "detail": "Đăng nhập thành công từ IP 149.88.22.166. Đã đá phiên làm việc trước đó ra khỏi hệ thống!",
+      "status": "success"
+    },
     {
       "id": "log_1791031136342_sjsur",
       "timestamp": "2026-10-03T12:38:56.342Z",
