@@ -120,6 +120,11 @@ Bộ Extension chuyên dụng chạy ngầm trên trình duyệt, không bị ph
    - **Thời gian nghỉ (Delay Seconds):** Đặt từ `5` đến `6` giây giữa các bài để đảm bảo Spineditor xử lý ổn định, không bị nghẽn lệnh.
 4. Bấm **`💾 Lưu Cấu Hình`**.
 
+> [!WARNING]
+> ⚡ **LƯU Ý QUAN TRỌNG KHI CHECK TRÙNG LẶP:**  
+> **Hệ thống hỗ trợ nạp 1 folder hoặc nhiều folder** cùng lúc. Tuy nhiên, **để hệ thống chạy mượt mà nhất thì chỉ check mỗi lần 1 folder**.  
+> *Lý do:* Hệ thống Spineditor không chịu tải nổi nếu nạp 1 lần quá nhiều bài viết liên tục, rất dễ dẫn đến nghẽn mạng và bị Spineditor kích hoạt kiểm tra **CAPTCHA**, làm gián đoạn bot!
+
 ---
 
 ### 3.3. Cấu trúc thư mục gói bài viết chuẩn & Nạp vào hàng đợi
