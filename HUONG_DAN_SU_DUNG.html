@@ -123,6 +123,45 @@
       font-size: 13.5px;
       color: #a7f3d0;
     }
+    .img-preview {
+      width: 100%;
+      max-width: 820px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      margin: 14px 0 18px;
+      display: block;
+    }
+    .demo-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-download-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-download-demo:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
+    }
     .btn-print {
       position: fixed;
       bottom: 24px;
@@ -224,11 +263,41 @@
       <li>Bấm <strong><code>💾 Lưu Cấu Hình</code></strong>.</li>
     </ul>
 
-    <h3>3.3. Nạp bài viết Word (.docx) vào hàng đợi</h3>
+    <h3>3.3. Cấu trúc thư mục gói bài viết chuẩn & Nạp vào hàng đợi</h3>
+    <div class="card" style="border-color: #38bdf8; background: rgba(56, 189, 248, 0.04);">
+      <p style="margin-top:0;"><strong style="color:#38bdf8; font-size:15px;">📁 QUY CHUẨN CẤU TRÚC THƯ MỤC GÓI CONTENT (BẮT BUỘC):</strong></p>
+      <p>Khi nạp bài kiểm tra trùng lặp hoặc nạp bài xuất bản chuẩn SEO, gói thư mục bài viết (thư mục content) cần được sắp xếp đúng cấu trúc chuẩn như hình dưới đây:</p>
+      
+      <img src="./structure-contentcore-demo.png" alt="Cấu trúc thư mục gói bài viết chuẩn SEO" class="img-preview" />
+
+      <p><strong>Thành phần trong gói thư mục bài viết gồm có:</strong></p>
+      <ul>
+        <li><strong>File Word (.docx) chuẩn SEO:</strong> Ví dụ <code>Acerca_de_Mexboss_SEO_100_RankMath.docx</code>. Trong file chứa đầy đủ Tiêu đề bài viết, các đề mục cấu trúc (H1, H2, H3), nội dung bài viết và vị trí chèn ảnh.</li>
+        <li><strong>Bộ ảnh chuẩn SEO đi kèm bài viết:</strong> Định dạng <code>.jpg</code> hoặc <code>.webp</code>, đặt tên file không dấu, ngăn cách bằng dấu gạch nối (Ví dụ: <code>acerca-de-mexboss-banner-oficial-mexico-seo.jpg</code>). Tên file ảnh trong thư mục phải khớp với tên ảnh đã chú thích trong file Word để tool tự động bắt cặp.</li>
+        <li><strong>(Tùy chọn) File markdown (.md) & HTML preview:</strong> Chứa nội dung thô hoặc bản xem trước bài viết.</li>
+      </ul>
+
+      <div class="tip-box" style="background: rgba(239, 68, 68, 0.12); border-left-color: #ef4444; color: #fca5a5;">
+        ⚠️ <strong>LƯU Ý ĐẶC BIỆT CHO SEOER / WRITER / AI PROMPT:</strong><br>
+        Các bạn SEOer có thể mở file docs mẫu ra để xem cấu trúc content. Khi giao việc cho người viết content hoặc dùng Prompt cho AI (ChatGPT/Claude), <strong>bắt buộc phải đi theo đúng bộ khung cấu trúc đề mục, heading và định dạng này</strong>, chỉ khác phần nội dung tùy theo từng dự án của SEOer. Nếu viết sai cấu trúc hoặc thiếu thẻ heading chuẩn, <strong>Tool sẽ không nhận diện chính xác bài viết và heading!</strong>
+      </div>
+
+      <div class="demo-box">
+        <div>
+          <div style="font-weight: 700; color: #f59e0b; font-size: 14px;">📦 File Demo Content Mẫu Chuẩn:</div>
+          <div style="font-size: 12.5px; color: #94a3b8;">Tải về để xem chi tiết cách sắp xếp file Word, đề mục Heading và bộ ảnh chuẩn SEO.</div>
+        </div>
+        <a href="https://drive.google.com/file/d/1szIAx2-zJ6wy2A08TTxltB810rlnbn5u/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-download-demo">
+          <span>📥 Tải File Demo Content (.zip)</span>
+        </a>
+      </div>
+    </div>
+
+    <p><strong>Các bước nạp vào hàng đợi kiểm tra trùng lặp:</strong></p>
     <ol>
       <li>Bấm nút <strong><code>📄 Nạp Hàng Loạt DOCX</code></strong> trên Tool OnPage.</li>
-      <li>Kéo thả 1 hoặc nhiều file <code>.docx</code> bài viết vào khung tải lên.</li>
-      <li>Hệ thống tự động phân tách Tiêu đề, H1, H2, H3 và nội dung.</li>
+      <li>Kéo thả 1 hoặc nhiều file <code>.docx</code> bài viết chuẩn (hoặc cả thư mục chứa gói bài viết) vào khung tải lên.</li>
+      <li>Hệ thống tự động đọc và phân tách Tiêu đề, H1, H2, H3, đoạn văn bản theo đúng cấu trúc.</li>
       <li>Bấm <strong><code>🚀 Đưa Vào Hàng Đợi Quét Trùng Lặp</code></strong>.</li>
     </ol>
 
@@ -254,20 +323,43 @@
     </ul>
 
     <!-- MỤC 4 -->
-    <h2>4. Biên Tập & Xuất Bản Chuẩn SEO Rank Math 100/100</h2>
+    <h2>4. Biên Tập & Bơm Dữ Liệu Chuẩn SEO Rank Math 100/100</h2>
     <div class="card">
-      <p>Khi bấm nút <strong><code>✏️ Soạn Thảo & Tối Ưu</code></strong> trên bài viết:</p>
+      <p>Khi nạp gói nội dung vào Tool OnPage và bấm nút <strong><code>✏️ Soạn Thảo & Tối Ưu</code></strong> trên bài viết:</p>
+      
+      <p><strong style="color:#38bdf8;">📁 CẤU TRÚC FOLDER BẮT BUỘC ĐỂ BƠM RANK MATH CHÍNH XÁC:</strong></p>
+      <img src="./structure-contentcore-demo.png" alt="Cấu trúc thư mục gói bài viết chuẩn SEO Rank Math" class="img-preview" />
+
+      <div class="tip-box" style="margin-top: 15px;">
+        💡 <strong>Đồng bộ hình ảnh & nội dung tự động:</strong> Nhờ nạp đúng cấu trúc gói thư mục gồm file Word <code>.docx</code> và bộ ảnh chuẩn SEO như hình trên, Tool OnPage sẽ tự động nhận diện chính xác toàn bộ vị trí ảnh trong bài, tự động đối soát với Media Library và tự động gán Ảnh đại diện (Featured Image) mà không bao giờ bị lệch ảnh hay thiếu ảnh.
+      </div>
+
+      <div class="tip-box" style="background: rgba(239, 68, 68, 0.12); border-left-color: #ef4444; color: #fca5a5; margin-top: 10px;">
+        ⚠️ <strong>QUY TẮC CẤU TRÚC BÀI VIẾT CHO AI VÀ WRITER:</strong><br>
+        Các bạn SEOer có thể mở file docs mẫu ra để xem cấu trúc content. Khi giao việc cho người viết content hoặc dùng Prompt cho AI (ChatGPT/Claude), <strong>bắt buộc phải đi theo đúng bộ khung cấu trúc đề mục, heading (H1, H2, H3) và định dạng như file mẫu</strong>, chỉ khác phần nội dung tùy theo từng dự án của SEOer. Nếu không đúng chuẩn, tool sẽ không nhận diện chính xác nội dung và không bơm đủ điểm Rank Math 100/100!
+      </div>
+
       <ul>
         <li><strong>Quản lý Media thông minh:</strong> Khi tải ảnh, hệ thống tự động đối soát với thư viện WordPress Media Library. Nếu ảnh đã có trên hosting, công cụ sẽ dùng lại URL gốc, không tải lên nhiều lần làm sinh ra các ảnh rác đuôi <code>-1.jpg</code>, <code>-2.jpg</code>. Có nút <code>🧹 Dọn Dẹp Ảnh Trùng</code> để làm sạch hosting.</li>
         <li><strong>Gán ảnh đại diện (Featured Image):</strong> Chọn ảnh bất kỳ trong bài bấm <code>🖼️ Đặt Làm Ảnh Đại Diện</code>, plugin sẽ gọi trực tiếp hàm WordPress Core để gán chính xác trên mọi Theme.</li>
-        <li><strong>Tối ưu Rank Math SEO theo thời gian thực:</strong>
+        <li><strong>Tối ưu Rank Math SEO theo thời gian thực (Bơm Metadata 100/100):</strong>
           <ul>
             <li>Điền <strong>Từ khóa chính (Focus Keyword)</strong>: Điểm số SEO (0-100) sẽ tính toán tức thì theo thuật toán Rank Math.</li>
-            <li>Tối ưu <strong>Tiêu đề SEO</strong>, <strong>Mô tả Meta (140-160 ký tự)</strong>, <strong>Slug đường dẫn tĩnh</strong> và <strong>Canonical URL</strong>.</li>
+            <li>Tối ưu <strong>Tiêu đề SEO (Title Tag)</strong>, <strong>Mô tả Meta (Meta Description 140-160 ký tự)</strong>, <strong>Slug đường dẫn tĩnh</strong> và <strong>Canonical URL</strong>.</li>
           </ul>
         </li>
         <li><strong>Xuất bản trực tiếp:</strong> Chọn trạng thái <em>Bản nháp (Draft)</em> hoặc <em>Xuất bản (Publish)</em> ➔ Bấm <strong><code>🚀 Xuất Bản Chuẩn SEO Lên WordPress</code></strong>. Bài viết và toàn bộ metadata Rank Math sẽ hiển thị trên web sau 2-3 giây.</li>
       </ul>
+
+      <div class="demo-box" style="margin-top: 20px;">
+        <div>
+          <div style="font-weight: 700; color: #f59e0b; font-size: 14px;">📦 Tham Khảo File Mẫu Bơm Rank Math:</div>
+          <div style="font-size: 12.5px; color: #94a3b8;">Xem định dạng file Word chuẩn có sẵn cấu trúc Focus Keyword và Schema để đạt điểm tối đa 100/100.</div>
+        </div>
+        <a href="https://drive.google.com/file/d/1szIAx2-zJ6wy2A08TTxltB810rlnbn5u/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-download-demo">
+          <span>📥 Tải File Demo Content Mẫu</span>
+        </a>
+      </div>
     </div>
   </div>
 

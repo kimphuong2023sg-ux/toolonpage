@@ -115,16 +115,31 @@ Bộ Extension chuyên dụng chạy ngầm trên trình duyệt, không bị ph
 
 ---
 
-### 3.3. Nạp tài liệu Word (.docx) hàng loạt vào hàng đợi
+### 3.3. Cấu trúc thư mục gói bài viết chuẩn & Nạp vào hàng đợi
 
-Bạn có thể chuẩn bị sẵn các bài viết mới ở dạng file Word (.docx) của Writer để đưa vào hàng đợi:
+#### 📁 QUY CHUẨN CẤU TRÚC THƯ MỤC GÓI CONTENT (BẮT BUỘC):
+Khi nạp bài kiểm tra trùng lặp hoặc nạp bài xuất bản chuẩn SEO, gói thư mục bài viết (thư mục content) cần được sắp xếp đúng cấu trúc chuẩn như hình dưới đây:
 
-1. Bấm nút **`📄 Nạp Hàng Loạt DOCX`** trên giao diện Tool OnPage.
-2. Kéo thả 1 hoặc nhiều file `.docx` (hoặc cả thư mục chứa tài liệu) vào khung tải lên.
-3. Hệ thống sẽ tự động bóc tách:
-   - Tên bài viết (Title)
-   - Slug / Đường dẫn tĩnh
-   - Cấu trúc đề mục (H1, H2, H3, đoạn văn, danh sách)
+![Cấu trúc thư mục gói bài viết chuẩn SEO](./structure-contentcore-demo.png)
+
+**Thành phần trong gói thư mục bài viết gồm có:**
+- **File Word (.docx) chuẩn SEO:** Ví dụ `Acerca_de_Mexboss_SEO_100_RankMath.docx`. Trong file chứa đầy đủ Tiêu đề bài viết, các đề mục cấu trúc (H1, H2, H3), nội dung bài viết và vị trí chèn ảnh.
+- **Bộ ảnh chuẩn SEO đi kèm bài viết:** Định dạng `.jpg` hoặc `.webp`, đặt tên file không dấu, ngăn cách bằng dấu gạch nối (Ví dụ: `acerca-de-mexboss-banner-oficial-mexico-seo.jpg`). Tên file ảnh trong thư mục phải khớp với tên ảnh đã chú thích trong file Word để tool tự động bắt cặp.
+- **(Tùy chọn) File markdown (.md) & HTML preview:** Chứa nội dung thô hoặc bản xem trước bài viết.
+
+> [!CAUTION]
+> **LƯU Ý ĐẶC BIỆT CHO SEOER / WRITER / AI PROMPT:**  
+> Các bạn SEOer có thể mở file docs mẫu ra để xem cấu trúc content. Khi giao việc cho người viết content hoặc dùng Prompt cho AI (ChatGPT/Claude), **bắt buộc phải đi theo đúng bộ khung cấu trúc đề mục, heading và định dạng này**, chỉ khác phần nội dung tùy theo từng dự án của SEOer. Nếu viết sai cấu trúc hoặc thiếu thẻ heading chuẩn, **Tool sẽ không nhận diện chính xác bài viết và heading!**
+
+> [!TIP]
+> 📦 **File Demo Content Mẫu Chuẩn:**  
+> Bạn có thể tải gói bài viết mẫu chuẩn về máy tính để tham khảo chi tiết cách đặt tên file Word, đề mục Heading và hình ảnh:  
+> 👉 **[Tải File Demo Content Mẫu Chuẩn (Google Drive)](https://drive.google.com/file/d/1szIAx2-zJ6wy2A08TTxltB810rlnbn5u/view?usp=sharing)**
+
+**Các bước nạp vào hàng đợi kiểm tra trùng lặp:**
+1. Bấm nút **`📄 Nạp Hàng Loạt DOCX`** trên Tool OnPage.
+2. Kéo thả 1 hoặc nhiều file `.docx` bài viết chuẩn (hoặc cả thư mục chứa gói bài viết) vào khung tải lên.
+3. Hệ thống tự động đọc và phân tách Tiêu đề, H1, H2, H3, đoạn văn bản theo đúng cấu trúc.
 4. Bấm **`🚀 Đưa Vào Hàng Đợi Quét Trùng Lặp`**.
 
 ---
@@ -162,9 +177,19 @@ Bạn có thể chuẩn bị sẵn các bài viết mới ở dạng file Word (
 
 ---
 
-## 4. BIÊN TẬP & XUẤT BẢN CHUẨN SEO RANK MATH 100/100
+## 4. BIÊN TẬP & BƠM DỮ LIỆU CHUẨN SEO RANK MATH 100/100
 
-Khi bấm nút **`✏️ Soạn Thảo & Tối Ưu`** trên bất kỳ bài viết nào, cửa sổ Editor chuyên sâu sẽ mở ra.
+Khi nạp gói nội dung vào Tool OnPage và bấm nút **`✏️ Soạn Thảo & Tối Ưu`** trên bài viết:
+
+#### 📁 CẤU TRÚC FOLDER BẮT BUỘC ĐỂ BƠM RANK MATH CHÍNH XÁC:
+![Cấu trúc thư mục gói bài viết chuẩn SEO Rank Math](./structure-contentcore-demo.png)
+
+> [!NOTE]
+> 💡 **Đồng bộ hình ảnh & nội dung tự động:** Nhờ nạp đúng cấu trúc gói thư mục gồm file Word `.docx` và bộ ảnh chuẩn SEO như hình trên, Tool OnPage sẽ tự động nhận diện chính xác toàn bộ vị trí ảnh trong bài, tự động đối soát với Media Library và tự động gán Ảnh đại diện (Featured Image) mà không bao giờ bị lệch ảnh hay thiếu ảnh.
+
+> [!CAUTION]
+> **QUY TẮC CẤU TRÚC BÀI VIẾT CHO AI VÀ WRITER:**  
+> Các bạn SEOer có thể mở file docs mẫu ra để xem cấu trúc content. Khi giao việc cho người viết content hoặc dùng Prompt cho AI (ChatGPT/Claude), **bắt buộc phải đi theo đúng bộ khung cấu trúc đề mục, heading (H1, H2, H3) và định dạng như file mẫu**, chỉ khác phần nội dung tùy theo từng dự án của SEOer. Nếu không đúng chuẩn, tool sẽ không nhận diện chính xác nội dung và không bơm đủ điểm Rank Math 100/100!
 
 ### 4.1. Quản lý Media & Quét ảnh thông minh (Chống trùng -1, -2)
 
@@ -195,6 +220,10 @@ Tại cột cấu hình SEO bên tay phải Editor:
   - **Bản nháp (Draft):** Lưu lên WordPress để kiểm duyệt lại.
   - **Xuất bản (Publish):** Đăng trực tiếp ra ngoài website cho Google index.
 - Bấm nút **`🚀 Xuất Bản Chuẩn SEO Lên WordPress`**. Toàn bộ nội dung, hình ảnh và metadata Rank Math 100/100 sẽ được ghi đè chính xác vào WordPress trong vòng 2-3 giây.
+
+> 📦 **Tham Khảo File Mẫu Bơm Rank Math:**  
+> Xem định dạng file Word chuẩn có sẵn cấu trúc Focus Keyword và Schema để đạt điểm tối đa 100/100:  
+> 👉 **[Tải File Demo Content Mẫu Chuẩn (Google Drive)](https://drive.google.com/file/d/1szIAx2-zJ6wy2A08TTxltB810rlnbn5u/view?usp=sharing)**
 
 ---
 *Tài liệu này được cập nhật và lưu trữ trực tiếp trong mã nguồn dự án tại file `HUONG_DAN_SU_DUNG.md`.*
