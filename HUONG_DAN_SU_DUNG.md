@@ -143,9 +143,14 @@ Khi nạp bài kiểm tra trùng lặp hoặc nạp bài xuất bản chuẩn SE
 > Bạn có thể tải gói bài viết mẫu chuẩn về máy tính để tham khảo chi tiết cách đặt tên file Word, đề mục Heading và hình ảnh:  
 > 👉 **[Tải File Demo Content Mẫu Chuẩn (Google Drive)](https://drive.google.com/file/d/1szIAx2-zJ6wy2A08TTxltB810rlnbn5u/view?usp=sharing)**
 
+> [!WARNING]
+> ⚠️ **LƯU Ý VỀ SỐ LƯỢNG FOLDER KHI CHECK TRÙNG LẶP:**  
+> Hệ thống hỗ trợ nạp 1 folder hoặc nhiều folder cùng lúc. **Tuy nhiên, để chạy mượt mà nhất thì bạn chỉ nên check mỗi lần 1 folder**.  
+> *Lý do:* Hệ thống của Spineditor không chịu tải nổi nếu nạp 1 lần quá nhiều bài viết liên tục, rất dễ dẫn đến nghẽn mạng và bị Spineditor kích hoạt khóa kiểm tra **CAPTCHA**, làm gián đoạn quá trình quét tự động.
+
 **Các bước nạp vào hàng đợi kiểm tra trùng lặp:**
 1. Bấm nút **`📄 Nạp Hàng Loạt DOCX`** trên Tool OnPage.
-2. Kéo thả 1 hoặc nhiều file `.docx` bài viết chuẩn (hoặc cả thư mục chứa gói bài viết) vào khung tải lên.
+2. Kéo thả gói thư mục bài viết chuẩn (khuyến nghị từng folder một) vào khung tải lên.
 3. Hệ thống tự động đọc và phân tách Tiêu đề, H1, H2, H3, đoạn văn bản theo đúng cấu trúc.
 4. Bấm **`🚀 Đưa Vào Hàng Đợi Quét Trùng Lặp`**.
 
