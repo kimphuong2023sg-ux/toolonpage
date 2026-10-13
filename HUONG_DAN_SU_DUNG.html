@@ -153,7 +153,7 @@
       </div>
       <h1>TÀI LIỆU HƯỚNG DẪN SỬ DỤNG TOOL ONPAGE & SEO AUTOPOS PRO</h1>
       <p style="margin: 0; color: #94a3b8; font-size: 13.5px;">
-        Tài liệu hướng dẫn thực hành từ A - Z: Cách kết nối WordPress 1-Click, kiểm tra trùng lặp Spineditor tự động, biên soạn chuẩn Rank Math 100/100, quản trị phân quyền IP Whitelist và nâng cấp Server.
+        Tài liệu hướng dẫn thực hành chi tiết: Cách kết nối WordPress 1-Click, kiểm tra trùng lặp Spineditor tự động và quy trình biên soạn xuất bản chuẩn SEO Rank Math 100/100.
       </p>
     </div>
 
@@ -269,27 +269,6 @@
         <li><strong>Xuất bản trực tiếp:</strong> Chọn trạng thái <em>Bản nháp (Draft)</em> hoặc <em>Xuất bản (Publish)</em> ➔ Bấm <strong><code>🚀 Xuất Bản Chuẩn SEO Lên WordPress</code></strong>. Bài viết và toàn bộ metadata Rank Math sẽ hiển thị trên web sau 2-3 giây.</li>
       </ul>
     </div>
-
-    <!-- MỤC 5 -->
-    <h2>5. Quản Trị Hệ Thống & Bảo Mật (Admin Portal)</h2>
-    <div class="card">
-      <ul>
-        <li><strong>Phân quyền thành viên:</strong> Tài khoản <em>Admin</em> (toàn quyền cấu hình bảo mật, quản lý user) và <em>Member</em> (nhân viên dùng tool làm việc).</li>
-        <li><strong>Cơ chế bảo vệ IP Whitelist:</strong> Khi bật tính năng này, chỉ những địa chỉ IP được cấp phép mới có thể đăng nhập vào Tool, ngăn chặn triệt để nguy cơ lộ mật khẩu hoặc truy cập từ bên ngoài.</li>
-        <li><strong>Chống dùng chung tài khoản (Single Session):</strong> Mỗi tài khoản chỉ được đăng nhập trên 1 thiết bị tại một thời điểm. Nếu có người thứ 2 đăng nhập, máy cũ sẽ bị đá văng ra ngay lập tức.</li>
-        <li><strong>Nhật ký kiểm toán (Audit Logs):</strong> Quản trị viên có thể theo dõi ai đang online, ai vừa đăng bài nào, tải bao nhiêu ảnh kèm thời gian và IP chi tiết.</li>
-      </ul>
-    </div>
-
-    <!-- MỤC 6 -->
-    <h2>6. Hướng Dẫn Triển Khai & Nâng Cấp Server</h2>
-    <p>Khi có bản cập nhật mới trên GitHub, trong Terminal Server tại <code>/var/www/toolonpage</code>, chỉ cần chạy các lệnh sau:</p>
-    <pre>cd /var/www/toolonpage
-git stash
-git pull origin main
-cd server && npm install && npm run build
-pm2 delete all && pm2 start dist/main.js --name "toolseo-backend" && pm2 save
-cd ../client && npm install && npm run build</pre>
   </div>
 
   <button class="btn-print" onclick="window.print()">🖨️ In / Lưu file PDF</button>
