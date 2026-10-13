@@ -101,17 +101,24 @@ Bộ Extension chuyên dụng chạy ngầm trên trình duyệt, không bị ph
 
 ---
 
-### 3.2. Cấu hình Extension (API Server & Domain loại trừ)
+### 3.2. Cấu hình Extension (LƯU Ý QUAN TRỌNG: BẮT BUỘC CHỌN MỤC "SERVER")
 
-1. Bấm vào biểu tượng Extension **ToolOnpage Bot ⚡** trên góc trình duyệt.
-2. **Cấu hình 3 thông số cơ bản:**
-   - **Địa chỉ API ToolOnpage:** 
-     - Bấm nút **`🌐 Server`** để tự điền: `https://api.toolseo.uk` (nếu dùng web online).
-     - Bấm nút **`💻 Local`** nếu bạn chạy tool ở máy cá nhân: `http://localhost:5000`.
-   - **Domain loại trừ (Excluded Domain):** Nhập tên miền website của bạn (VD: `juegalotto365.com` hoặc `mexboss.sh`).  
-     *Ý nghĩa:* Khi Spineditor quét các bài viết đã đăng trên chính web này của bạn, nó sẽ **bỏ qua không tính là trùng lặp**, giúp phản ánh chính xác bài viết có bị đối thủ copy hay không.
-   - **Thời gian nghỉ (Delay Seconds):** Mặc định là `6` giây giữa các bài để đảm bảo Spineditor xử lý ổn định, không bị chặn CAPTCHA.
-3. Bấm **`💾 Lưu Cấu Hình`**.
+1. Bấm vào biểu tượng Extension **ToolOnpage Bot ⚡** trên góc trình duyệt hoặc bảng điều khiển nổi.
+2. **Lưu ý chọn chế độ kết nối Server:**
+
+![Lưu ý chọn nút Server trên ToolOnpage Bot Extension](./extension-select-server.png)
+
+> [!IMPORTANT]
+> **🔴 BẮT BUỘC BẤM CHỌN NÚT `🌐 Server`:**  
+> Hệ thống sẽ tự động điền địa chỉ API chuẩn: `https://api.toolseo.uk`.  
+> ⚠️ **Tuyệt đối không chọn `💻 Local`** (localhost) vì bot sẽ không thể kết nối tới máy chủ chung để lấy danh sách bài viết từ hàng đợi và không lưu được kết quả về hệ thống!
+
+3. **Cấu hình 3 thông số chi tiết:**
+   - **Địa chỉ API ToolOnpage:** Bấm nút **`🌐 Server`** ➔ Nhận tự động: `https://api.toolseo.uk`.
+   - **Domain loại trừ (Excluded Domain):** Nhập tên miền website của bạn (VD: `https://juegalotto365.com/`).  
+     *Ý nghĩa:* Khi Spineditor quét các bài viết đã đăng trên chính web này của bạn, nó sẽ **bỏ qua không tính là trùng lặp**, giúp phản ánh chính xác bài viết có bị đối thủ ngoài copy hay không.
+   - **Thời gian nghỉ (Delay Seconds):** Đặt từ `5` đến `6` giây giữa các bài để đảm bảo Spineditor xử lý ổn định, không bị nghẽn lệnh.
+4. Bấm **`💾 Lưu Cấu Hình`**.
 
 ---
 
