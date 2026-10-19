@@ -11,6 +11,7 @@ import KickoutModal from './components/KickoutModal';
 import BotGuideModal from './components/BotGuideModal';
 import DocxBatchModal from './components/DocxBatchModal';
 import ReportModal from './components/ReportModal';
+import ExportLinksModal from './components/ExportLinksModal';
 import { getToken, setToken, getUser, setUser, clearAuth, authFetch } from './utils/auth';
 import { setTrackerSite, setTrackerAction, sendHeartbeatWithTracking } from './utils/activityTracker';
 
@@ -50,11 +51,18 @@ export default function App() {
   const [isDocxBatchOpen, setIsDocxBatchOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportItems, setReportItems] = useState([]);
+  const [isExportLinksOpen, setIsExportLinksOpen] = useState(false);
+  const [exportItems, setExportItems] = useState([]);
   const [docxQueueCount, setDocxQueueCount] = useState(0);
 
   const handleOpenReport = (itemsToReport) => {
     setReportItems(itemsToReport && itemsToReport.length > 0 ? itemsToReport : items);
     setIsReportModalOpen(true);
+  };
+
+  const handleOpenExportLinks = (itemsToExport) => {
+    setExportItems(itemsToExport && itemsToExport.length > 0 ? itemsToExport : items);
+    setIsExportLinksOpen(true);
   };
 
   // Lắng nghe sự kiện thay đổi URL từ trình duyệt (nút Back/Forward)
@@ -421,6 +429,7 @@ export default function App() {
         onOpenBotGuide={() => setIsBotGuideOpen(true)}
         onOpenDocxBatch={() => setIsDocxBatchOpen(true)}
         onOpenReport={() => handleOpenReport(items)}
+        onOpenExportLinks={() => handleOpenExportLinks(items)}
         docxQueueCount={docxQueueCount}
         currentUser={toolUser}
         onNavigate={navigate}
@@ -484,6 +493,7 @@ export default function App() {
             onSelectForEdit={handleSelectForEdit}
             onAddNew={handleAddNew}
             onOpenReport={handleOpenReport}
+            onOpenExportLinks={handleOpenExportLinks}
             onUpdateItem={(updatedItem) => {
               setItems(prev => prev.map(i => (i.id === updatedItem.id && i.type === updatedItem.type) ? { ...i, ...updatedItem } : i));
             }}
@@ -542,6 +552,16 @@ export default function App() {
             setIsReportModalOpen(false);
             handleSelectForEdit(item);
           }}
+        />
+      )}
+
+      {/* MODAL XUẤT VÀ SAO CHÉP TOÀN BỘ ĐƯỜNG DẪN (URLS) */}
+      {isExportLinksOpen && (
+        <ExportLinksModal
+          items={exportItems}
+          allItems={items}
+          wpStatus={wpStatus}
+          onClose={() => setIsExportLinksOpen(false)}
         />
       )}
 

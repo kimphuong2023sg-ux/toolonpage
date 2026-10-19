@@ -13,7 +13,8 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
     const text = sp.duplicateSentences.map((s, idx) => {
       const sentenceText = s.sentence || s.text || s;
       const sourceUrl = s.source_url || s.url || '';
-      return `${idx + 1}. "${sentenceText}"${sourceUrl ? `\n   ↳ Nguồn trùng: ${sourceUrl}` : ''}`;
+      const partTag = s.partIndex ? `[Phần ${s.partIndex}] ` : '';
+      return `${idx + 1}. ${partTag}"${sentenceText}"${sourceUrl ? `\n   ↳ Nguồn trùng: ${sourceUrl}` : ''}`;
     }).join('\n\n');
 
     navigator.clipboard.writeText(text);
@@ -23,16 +24,36 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
 
   const handleDownloadDuplicateFile = () => {
     if (!sp?.duplicateSentences || sp.duplicateSentences.length === 0) return;
-    let content = `BÁO CÁO CÂU TRÙNG LẶP SPINETITOR\n`;
+    let content = `BÁO CÁO CÂU TRÙNG LẶP NỘI DUNG (SPINETITOR / SNIPER)\n`;
     content += `Bài viết: ${item.title || item.slug}\n`;
-    content += `Tỷ lệ: ${sp.uniqueScore}% Unique | Trùng lặp: ${sp.duplicateScore}%\n`;
-    content += `Thời gian: ${new Date().toLocaleString('vi-VN')}\n`;
+    content += `Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
     content += `--------------------------------------------------------\n\n`;
-    content += `DANH SÁCH CÁC CÂU TRÙNG LẶP CẦN VIẾT LẠI (${sp.duplicateSentences.length} CÂU):\n\n`;
+
+    if (sp.isSplit && sp.parts) {
+      content += `CẤU HÌNH: BÀI > 1000 TỪ (ĐÃ CHIA ${sp.totalParts || 2} LẦN CHECK ĐỂ TRÁNH NGHẼN SPINEDITOR)\n`;
+      content += `⭐ TỔNG HỢP CẢ ${sp.totalParts || 2} LẦN CHECK (GỘP ${sp.totalParts || 2} PHẦN):\n`;
+      content += `  • Tỷ lệ Unique trung bình: ${sp.uniqueScore}%\n`;
+      content += `  • Tỷ lệ Trùng lặp trung bình: ${sp.duplicateScore}%\n`;
+      content += `  • Đánh giá: ${sp.duplicateScore <= 10 ? '🟢 ĐẠT CHUẨN (≤ 10%)' : '🔴 TỪ CHỐI (> 10%)'}\n`;
+      content += `  • Tổng số câu trùng phát hiện được: ${sp.duplicateSentences.length} câu\n\n`;
+      content += `📊 CHI TIẾT TỪNG PHẦN:\n`;
+      Object.keys(sp.parts).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(k => {
+        const p = sp.parts[k];
+        content += `  • Phần ${p.partIndex || k}/${sp.totalParts || 2}: ${p.uniqueScore}% Unique | Trùng ${p.duplicateScore}% (${p.duplicateCount || (p.duplicateSentences || []).length} câu trùng)\n`;
+      });
+      content += `--------------------------------------------------------\n\n`;
+    } else {
+      content += `Tỷ lệ: ${sp.uniqueScore}% Unique | Trùng lặp: ${sp.duplicateScore}%\n`;
+      content += `Tổng số câu trùng: ${sp.duplicateSentences.length} câu\n`;
+      content += `--------------------------------------------------------\n\n`;
+    }
+
+    content += `DANH SÁCH TẤT CẢ CÂU TRÙNG LẶP CẦN VIẾT LẠI (${sp.duplicateSentences.length} CÂU):\n\n`;
     sp.duplicateSentences.forEach((s, idx) => {
       const sentenceText = typeof s === 'string' ? s : (s.sentence || s.text || '');
       const sourceUrl = typeof s === 'object' ? (s.source_url || s.url || '') : '';
-      content += `${idx + 1}. "${sentenceText}"\n`;
+      const partTag = s.partIndex ? `[Phần ${s.partIndex}] ` : '';
+      content += `${idx + 1}. ${partTag}"${sentenceText}"\n`;
       if (sourceUrl) content += `   ↳ Nguồn trùng: ${sourceUrl}\n`;
       content += `\n`;
     });
@@ -40,7 +61,7 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Cau_Trung_Lap_${item.slug || 'bai-viet'}.txt`;
+    a.download = `Cau_Trung_Lap_${(item.slug || 'bai-viet').replace(/[^a-zA-Z0-9_\u00C0-\u1EF9-]/g, '_')}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -235,8 +256,23 @@ export default function SpineditorModal({ item, onClose, onRecheckRequested }) {
                           fontSize: '12.5px'
                         }}
                       >
-                        <div style={{ color: '#fca5a5', fontWeight: 600, lineHeight: 1.5 }}>
-                          "{text}"
+                        <div style={{ color: '#fca5a5', fontWeight: 600, lineHeight: 1.5, display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                          {itemSentence.partIndex && (
+                            <span style={{
+                              background: 'rgba(250, 204, 21, 0.15)',
+                              color: '#facc15',
+                              border: '1px solid rgba(250, 204, 21, 0.4)',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0
+                            }}>
+                              Phần {itemSentence.partIndex}
+                            </span>
+                          )}
+                          <span>"{text}"</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: '#94a3b8', flexWrap: 'wrap', gap: '6px' }}>
                           <div>

@@ -2,8 +2,18 @@ import React, { useState, useMemo } from 'react';
 import SpineditorModal from './SpineditorModal';
 import FeaturedImageModal from './FeaturedImageModal';
 import { extractInternalLinks } from '../utils/internalLinker';
+import { getItemFullUrl, copyTextToClipboard } from './ExportLinksModal';
 
-export default function ContentTable({ items = [], wpStatus = null, onSelectForEdit, onAddNew, onOpenReport, onUpdateItem, onRefresh }) {
+export default function ContentTable({ 
+  items = [], 
+  wpStatus = null, 
+  onSelectForEdit, 
+  onAddNew, 
+  onOpenReport, 
+  onOpenExportLinks,
+  onUpdateItem, 
+  onRefresh 
+}) {
   const siteDomain = useMemo(() => {
     return (wpStatus?.site || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
   }, [wpStatus?.site]);
@@ -12,6 +22,16 @@ export default function ContentTable({ items = [], wpStatus = null, onSelectForE
   const [selectedSpineditorItem, setSelectedSpineditorItem] = useState(null);
   const [featuredImageModalItem, setFeaturedImageModalItem] = useState(null);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
+  const [copiedRowKey, setCopiedRowKey] = useState(null);
+
+  const handleCopySingleLink = async (item, rowKey) => {
+    const fullUrl = getItemFullUrl(item, wpStatus?.site);
+    const ok = await copyTextToClipboard(fullUrl);
+    if (ok) {
+      setCopiedRowKey(rowKey);
+      setTimeout(() => setCopiedRowKey(null), 2000);
+    }
+  };
 
   // Lọc dữ liệu theo tab và từ khóa
   const filteredItems = useMemo(() => {
@@ -144,6 +164,27 @@ export default function ContentTable({ items = [], wpStatus = null, onSelectForE
               title="Mở bảng báo cáo kiểm định 14 tiêu chí Rank Math và trùng lặp cho các bài viết"
             >
               <span>📊</span> Báo Cáo SEO ({selectedKeys.size > 0 ? `${selectedKeys.size} bài đã chọn` : 'Toàn Bộ'})
+            </button>
+          )}
+
+          {/* NÚT XUẤT TẤT CẢ LINK RA ĐỂ COPY */}
+          {onOpenExportLinks && (
+            <button 
+              type="button"
+              className="btn-secondary"
+              onClick={() => onOpenExportLinks(selectedKeys.size > 0 ? selectedItems : items)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderColor: 'rgba(16, 185, 129, 0.45)',
+                color: '#34d399',
+                background: 'rgba(16, 185, 129, 0.12)',
+                fontWeight: 700
+              }}
+              title="Xuất và sao chép toàn bộ danh sách link (URL) chuẩn http/https để dán vào công cụ Index"
+            >
+              <span>🔗</span> Xuất Link ({selectedKeys.size > 0 ? `${selectedKeys.size} bài chọn` : 'Toàn Bộ'})
             </button>
           )}
 
@@ -455,6 +496,23 @@ export default function ContentTable({ items = [], wpStatus = null, onSelectForE
                           ⚡ Bơm bài Rank Math
                         </button>
 
+                        {/* Nút sao chép nhanh link của bài viết này */}
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => handleCopySingleLink(item, rowKey)}
+                          style={{
+                            padding: '6px 10px',
+                            color: copiedRowKey === rowKey ? '#34d399' : '#94a3b8',
+                            borderColor: copiedRowKey === rowKey ? '#10b981' : undefined,
+                            background: copiedRowKey === rowKey ? 'rgba(16, 185, 129, 0.15)' : undefined,
+                            transition: 'all 0.15s ease'
+                          }}
+                          title={copiedRowKey === rowKey ? 'Đã sao chép link vào bộ nhớ tạm!' : 'Sao chép nhanh link (URL) bài này'}
+                        >
+                          {copiedRowKey === rowKey ? '✅' : '🔗'}
+                        </button>
+
                         {item.link && (
                           <a 
                             href={item.link} 
@@ -518,6 +576,28 @@ export default function ContentTable({ items = [], wpStatus = null, onSelectForE
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {onOpenExportLinks && (
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => onOpenExportLinks(selectedItems)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderColor: 'rgba(16, 185, 129, 0.5)',
+                  color: '#34d399',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  fontSize: '12.5px',
+                  padding: '7px 16px',
+                  fontWeight: 700
+                }}
+                title="Xuất và sao chép danh sách URL của các bài đang chọn"
+              >
+                <span>🔗</span> Xuất Link ({selectedKeys.size} bài)
+              </button>
+            )}
+
             {onOpenReport && (
               <button
                 type="button"

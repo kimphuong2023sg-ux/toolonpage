@@ -241,25 +241,51 @@ export default function DocxBatchModal({ onClose, onArticleSelected }) {
       if (!sp) {
         report += `Trạng thái: ⚪ Chưa kiểm tra\n\n`;
       } else if (sp.status === 'passed') {
-        report += `Kết quả: 🟢 ĐẠT CHUẨN (Unique: ${sp.uniqueScore}% | Trùng lặp: ${sp.duplicateScore}% ≤ 10%)\n`;
+        report += `Kết quả: 🟢 ĐẠT CHUẨN (Unique: ${sp.uniqueScore}% | Trùng lặp: ${sp.duplicateScore}% ≤ 10%)`;
+        if (sp.isSplit) {
+          report += ` - [TỔNG HỢP CẢ ${sp.totalParts || 2} LẦN CHECK]\n`;
+          if (sp.parts) {
+            report += `Chi tiết từng lần check:\n`;
+            Object.keys(sp.parts).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(k => {
+              const p = sp.parts[k];
+              report += `  • Phần ${p.partIndex || k}/${sp.totalParts || 2}: ${p.uniqueScore}% Unique | Trùng ${p.duplicateScore}% (${p.duplicateCount || (p.duplicateSentences || []).length} câu trùng)\n`;
+            });
+          }
+        } else {
+          report += `\n`;
+        }
         if (sp.duplicateSentences && sp.duplicateSentences.length > 0) {
-          report += `Các câu trùng lặp phát hiện được (có thể viết lại để tối ưu 100% Unique):\n`;
+          report += `Các câu trùng lặp phát hiện được (tổng hợp cả ${sp.isSplit ? (sp.totalParts || 2) + ' phần' : 'bài'}):\n`;
           sp.duplicateSentences.forEach((s, sIdx) => {
             const text = typeof s === 'string' ? s : (s.sentence || s.text || '');
             const url = typeof s === 'object' ? (s.source_url || s.url || '') : '';
-            report += `  ${sIdx + 1}. "${text}"\n`;
+            const partTag = s.partIndex ? `[Phần ${s.partIndex}] ` : '';
+            report += `  ${sIdx + 1}. ${partTag}"${text}"\n`;
             if (url) report += `     ↳ Nguồn trùng: ${url}\n`;
           });
         }
         report += `\n`;
       } else {
-        report += `Kết quả: 🔴 TỪ CHỐI (Trùng lặp: ${sp.duplicateScore}% > 10% - Phát hiện ${sp.duplicateCount || 0} câu trùng)\n`;
+        report += `Kết quả: 🔴 TỪ CHỐI (Trùng lặp: ${sp.duplicateScore}% > 10% - Phát hiện ${sp.duplicateCount || 0} câu trùng)`;
+        if (sp.isSplit) {
+          report += ` - [TỔNG HỢP CẢ ${sp.totalParts || 2} LẦN CHECK]\n`;
+          if (sp.parts) {
+            report += `Chi tiết từng lần check:\n`;
+            Object.keys(sp.parts).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(k => {
+              const p = sp.parts[k];
+              report += `  • Phần ${p.partIndex || k}/${sp.totalParts || 2}: ${p.uniqueScore}% Unique | Trùng ${p.duplicateScore}% (${p.duplicateCount || (p.duplicateSentences || []).length} câu trùng)\n`;
+            });
+          }
+        } else {
+          report += `\n`;
+        }
         if (sp.duplicateSentences && sp.duplicateSentences.length > 0) {
-          report += `Danh sách câu BẮT BUỘC cần viết lại:\n`;
+          report += `Danh sách câu BẮT BUỘC cần viết lại (tổng hợp cả ${sp.isSplit ? (sp.totalParts || 2) + ' phần' : 'bài'}):\n`;
           sp.duplicateSentences.forEach((s, sIdx) => {
             const text = typeof s === 'string' ? s : (s.sentence || s.text || '');
             const url = typeof s === 'object' ? (s.source_url || s.url || '') : '';
-            report += `  ${sIdx + 1}. "${text}"\n`;
+            const partTag = s.partIndex ? `[Phần ${s.partIndex}] ` : '';
+            report += `  ${sIdx + 1}. ${partTag}"${text}"\n`;
             if (url) report += `     ↳ Nguồn trùng: ${url}\n`;
           });
         }

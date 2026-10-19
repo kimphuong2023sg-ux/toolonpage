@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Header({ wpStatus, onRefresh, loading, onOpenSiteModal, onOpenBotGuide, onOpenDocxBatch, onOpenReport, docxQueueCount = 0, currentUser, onNavigate, onLogout }) {
+export default function Header({ wpStatus, onRefresh, loading, onOpenSiteModal, onOpenBotGuide, onOpenDocxBatch, onOpenReport, onOpenExportLinks, docxQueueCount = 0, currentUser, onNavigate, onLogout }) {
   const siteDisplay = wpStatus?.site 
     ? wpStatus.site.replace(/^https?:\/\//, '')
     : (wpStatus?.siteName || 'Chưa kết nối website');
@@ -93,6 +93,27 @@ export default function Header({ wpStatus, onRefresh, loading, onOpenSiteModal, 
               title="Xem và xuất báo cáo kiểm định 14 tiêu chí Rank Math và độ trùng lặp nội dung"
             >
               <span>📊</span> Báo Cáo SEO
+            </button>
+          )}
+
+          {/* Nút Xuất Toàn Bộ Link để Copy */}
+          {onOpenExportLinks && (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onOpenExportLinks}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderColor: 'rgba(16, 185, 129, 0.45)',
+                color: '#34d399',
+                background: 'rgba(16, 185, 129, 0.1)',
+                fontWeight: 700
+              }}
+              title="Xuất và sao chép toàn bộ danh sách link (URL) để dán vào công cụ Index / SEO"
+            >
+              <span>🔗</span> Xuất Link
             </button>
           )}
 

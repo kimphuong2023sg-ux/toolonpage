@@ -215,7 +215,10 @@ class SpineditorService {
         articleId,
         uniqueScore: finalUniqueScore,
         duplicateScore: dScore,
-        duplicateSentences: Array.isArray(duplicateSentences) ? duplicateSentences : [],
+        duplicateSentences: (Array.isArray(duplicateSentences) ? duplicateSentences : []).map(s => ({
+          ...(typeof s === 'object' ? s : { sentence: s }),
+          partIndex: pIdx
+        })),
         duplicateCount: (duplicateSentences || []).length,
         checkedAt: new Date().toISOString()
       };
@@ -233,7 +236,10 @@ class SpineditorService {
           p.duplicateSentences.forEach(s => {
             const txt = typeof s === 'string' ? s : (s.sentence || s.text || '');
             if (txt && !allDupSentences.some(existing => (existing.sentence || existing.text || existing) === txt)) {
-              allDupSentences.push(s);
+              allDupSentences.push({
+                ...(typeof s === 'object' ? s : { sentence: s }),
+                partIndex: p.partIndex || parseInt(k, 10)
+              });
             }
           });
         }

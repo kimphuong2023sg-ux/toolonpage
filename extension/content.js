@@ -182,13 +182,13 @@
       });
     }
 
-    // Nút xuất file câu trùng trực tiếp từ Spineditor
+    // Nút xuất file câu trùng trực tiếp từ Spineditor (Tự động tổng hợp cả 2 lần check nếu bài chia đôi)
     const btnDownload = document.getElementById('top-btn-download-file');
     if (btnDownload) {
-      btnDownload.addEventListener('click', () => {
-        const title = articlesQueue[currentIndex]?.title || 'Spineditor';
+      btnDownload.addEventListener('click', async () => {
         const snap = getResultSnapshot();
-        downloadDuplicateSentencesFile(title, snap.dup, snap.uniq);
+        const activeTitle = articlesQueue[currentIndex]?.title || 'Spineditor';
+        await handleExportDuplicateFile(activeTitle, snap.dup, snap.uniq);
       });
     }
 
@@ -343,6 +343,14 @@
   async function startAutomation() {
     if (isRunning) return;
     isRunning = true;
+
+    // Làm mới danh sách kết quả đã lưu trong phiên trước
+    if (chrome?.storage?.local) {
+      chrome.storage.local.remove(['top_session_results']);
+    }
+    try {
+      localStorage.removeItem('top_session_results');
+    } catch (e) {}
 
     const btnStart = document.getElementById('top-btn-start');
     const btnStop = document.getElementById('top-btn-stop');
@@ -515,6 +523,9 @@
         checkedBy: 'ToolOnpage Chrome Extension'
       });
 
+      // Lưu kết quả của phần này vào session storage để tổng hợp cả 2 lần check
+      await savePartSessionResult(item, result);
+
       logMessage(`Đã đồng bộ kết quả bài ${itemNum} ${partTag}về ToolOnpage!`, 'success');
 
       // 6. Lưu trạng thái và RELOAD TRANG SPINEDITOR để chạy bài tiếp theo
@@ -522,11 +533,13 @@
 
       if (currentIndex < articlesQueue.length) {
         // Còn bài tiếp theo → lưu state vào chrome.storage + reload
+        const sessionResultsData = await getSessionResults();
         const stateToSave = {
           top_queue_data: JSON.stringify(articlesQueue),
           top_queue_index: currentIndex,
           top_queue_running: true,
-          top_queue_api_url: currentConfig.apiUrl
+          top_queue_api_url: currentConfig.apiUrl,
+          top_session_results: JSON.stringify(sessionResultsData)
         };
         if (chrome?.storage?.local) {
           chrome.storage.local.set(stateToSave);
@@ -537,7 +550,7 @@
         await sleep(delaySec * 1000);
         window.location.reload();
       } else {
-        // Hết bài → xóa state và dừng
+        // Hết bài → xóa queue state nhưng GIỮ LẠI top_session_results để người dùng xuất file câu trùng bất kỳ lúc nào
         if (chrome?.storage?.local) {
           chrome.storage.local.remove(['top_queue_data', 'top_queue_index', 'top_queue_running']);
         }
@@ -960,8 +973,220 @@
     return duplicateSentences;
   }
 
-  // Tải file .txt báo cáo chi tiết các câu trùng lặp về máy
-  function downloadDuplicateSentencesFile(title = '', dupScore = null, uniqScore = null) {
+  // ==============================================================
+  // QUẢN LÝ KẾT QUẢ PHIÊN QUÉT & TỔNG HỢP CẢ 2 LẦN CHECK
+  // ==============================================================
+
+  async function getSessionResults() {
+    if (chrome?.storage?.local) {
+      return new Promise(resolve => {
+        chrome.storage.local.get(['top_session_results'], res => {
+          let data = {};
+          try {
+            if (res.top_session_results) data = JSON.parse(res.top_session_results);
+          } catch (e) {}
+          resolve(data);
+        });
+      });
+    }
+    try {
+      const raw = localStorage.getItem('top_session_results');
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  async function savePartSessionResult(item, checkResult) {
+    const all = await getSessionResults();
+    const parentKey = (item.parent_id || item.slug || item.id || '').toString().toLowerCase();
+    if (!parentKey) return;
+
+    const cleanTitle = (item.title || item.slug || '').replace(/\s*\([Pp]hần\s*\d+\/\d+\)\s*$/, '').trim();
+    const partIdx = parseInt(item.part_index, 10) || 1;
+    const totParts = parseInt(item.total_parts, 10) || 1;
+
+    let entry = all[parentKey];
+    if (!entry) {
+      entry = {
+        parentKey,
+        parentId: item.parent_id || item.id,
+        slug: item.slug,
+        title: cleanTitle,
+        totalParts: totParts,
+        isSplit: totParts > 1,
+        parts: {},
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    entry.parts[partIdx] = {
+      partIndex: partIdx,
+      articleId: item.id,
+      title: item.title,
+      uniqueScore: checkResult.uniqueScore,
+      duplicateScore: checkResult.duplicateScore,
+      duplicateSentences: (checkResult.duplicateSentences || []).map(s => ({
+        ...(typeof s === 'object' ? s : { sentence: s }),
+        partIndex: partIdx
+      })),
+      duplicateCount: (checkResult.duplicateSentences || []).length,
+      checkedAt: new Date().toISOString()
+    };
+
+    entry.updatedAt = new Date().toISOString();
+    all[parentKey] = entry;
+
+    const serialized = JSON.stringify(all);
+    if (chrome?.storage?.local) {
+      await new Promise(r => chrome.storage.local.set({ top_session_results: serialized }, r));
+    }
+    try {
+      localStorage.setItem('top_session_results', serialized);
+    } catch (e) {}
+  }
+
+  // Xuất file báo cáo câu trùng lặp: Tự động phát hiện và tổng hợp đầy đủ cả 2 lần check
+  async function handleExportDuplicateFile(fallbackTitle = '', fallbackDup = null, fallbackUniq = null) {
+    const sessionResults = await getSessionResults();
+    const parentKeys = Object.keys(sessionResults);
+
+    // Nếu có dữ liệu trong session results qua các lần reload
+    if (parentKeys.length > 0) {
+      let content = `BÁO CÁO CÂU TRÙNG LẶP NỘI DUNG (SPINETITOR / SNIPER)\n`;
+      content += `Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
+      content += `Tổng số bài kiểm tra: ${parentKeys.length} bài\n`;
+      content += `========================================================================\n\n`;
+
+      let totalSentencesAll = 0;
+
+      parentKeys.forEach((pKey, idx) => {
+        const item = sessionResults[pKey];
+        const partKeys = Object.keys(item.parts || {}).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+        content += `[BÀI ${idx + 1}]: ${item.title || item.slug || 'Chưa đặt tiêu đề'}\n`;
+        if (item.slug) content += `Đường dẫn / Slug: /${item.slug}/\n`;
+
+        if (item.isSplit || partKeys.length > 1) {
+          // GỘP CẢ 2 (HOẶC NHIỀU) LẦN CHECK
+          let sumDup = 0;
+          let sumUniq = 0;
+          const allSentences = [];
+
+          partKeys.forEach(pk => {
+            const p = item.parts[pk];
+            sumDup += (typeof p.duplicateScore === 'number' ? p.duplicateScore : 0);
+            sumUniq += (typeof p.uniqueScore === 'number' ? p.uniqueScore : 100);
+
+            if (Array.isArray(p.duplicateSentences)) {
+              p.duplicateSentences.forEach(s => {
+                const txt = typeof s === 'string' ? s : (s.sentence || s.text || '');
+                if (txt && !allSentences.some(existing => (existing.sentence || existing.text || existing) === txt)) {
+                  allSentences.push({
+                    ...(typeof s === 'object' ? s : { sentence: s }),
+                    partIndex: p.partIndex || pk
+                  });
+                }
+              });
+            }
+          });
+
+          const totalPartsCount = item.totalParts || partKeys.length || 2;
+          const avgDup = Math.round((sumDup / partKeys.length) * 10) / 10;
+          const avgUniq = Math.round((100 - avgDup) * 10) / 10;
+          const isPassed = avgDup <= 10.0;
+          totalSentencesAll += allSentences.length;
+
+          content += `Cấu hình: BÀI > 1000 TỪ - ĐÃ CHIA ${totalPartsCount} LẦN CHECK ĐỂ TRÁNH NGHẼN SPINEDITOR\n`;
+          content += `------------------------------------------------------------------------\n`;
+          content += `⭐ TỔNG HỢP CẢ ${partKeys.length} LẦN CHECK (GỘP ${partKeys.length} PHẦN):\n`;
+          content += `  • Tỷ lệ Unique trung bình: ${avgUniq}%\n`;
+          content += `  • Tỷ lệ Trùng lặp trung bình: ${avgDup}%\n`;
+          content += `  • Đánh giá: ${isPassed ? '🟢 ĐẠT CHUẨN (≤ 10%)' : '🔴 TỪ CHỐI (> 10%)'}\n`;
+          content += `  • Tổng số câu trùng phát hiện được: ${allSentences.length} câu\n\n`;
+
+          content += `📊 CHI TIẾT TỪNG LẦN CHECK:\n`;
+          partKeys.forEach(pk => {
+            const p = item.parts[pk];
+            content += `  • Phần ${p.partIndex || pk}/${totalPartsCount}: ${p.uniqueScore}% Unique | Trùng ${p.duplicateScore}% (${p.duplicateCount || (p.duplicateSentences || []).length} câu trùng)\n`;
+          });
+          content += `------------------------------------------------------------------------\n`;
+
+          if (allSentences.length === 0) {
+            content += `✨ Tuyệt vời! Cả ${partKeys.length} lần check đều không phát hiện câu trùng lặp nào.\n\n`;
+          } else {
+            content += `DANH SÁCH TẤT CẢ CÂU TRÙNG LẶP CẦN VIẾT LẠI (TỔNG HỢP CẢ ${partKeys.length} PHẦN):\n\n`;
+            allSentences.forEach((s, sIdx) => {
+              const txt = typeof s === 'string' ? s : (s.sentence || s.text || '');
+              const url = typeof s === 'object' ? (s.source_url || s.url || '') : '';
+              const pTag = s.partIndex ? `[Phần ${s.partIndex}/${totalPartsCount}] ` : '';
+              content += `${sIdx + 1}. ${pTag}"${txt}"\n`;
+              if (url) {
+                content += `   ↳ Nguồn trùng: ${url}\n`;
+              } else {
+                content += `   ↳ Nguồn: Phát hiện trùng lặp trên Google\n`;
+              }
+              content += `\n`;
+            });
+          }
+        } else {
+          // BÀI 1 LẦN CHECK BÌNH THƯỜNG
+          const p1 = item.parts[1] || item.parts[partKeys[0]] || {};
+          const uScore = p1.uniqueScore ?? 100;
+          const dScore = p1.duplicateScore ?? 0;
+          const sents = p1.duplicateSentences || [];
+          const isPassed = dScore <= 10.0;
+          totalSentencesAll += sents.length;
+
+          content += `Kết quả: ${isPassed ? '🟢 ĐẠT CHUẨN' : '🔴 TỪ CHỐI'} (Unique: ${uScore}% | Trùng lặp: ${dScore}%)\n`;
+          content += `Số câu trùng: ${sents.length} câu\n`;
+          content += `------------------------------------------------------------------------\n`;
+
+          if (sents.length === 0) {
+            content += `✨ Tuyệt vời! Không phát hiện câu trùng lặp nào.\n\n`;
+          } else {
+            content += `DANH SÁCH CÂU TRÙNG LẶP CẦN VIẾT LẠI:\n\n`;
+            sents.forEach((s, sIdx) => {
+              const txt = typeof s === 'string' ? s : (s.sentence || s.text || '');
+              const url = typeof s === 'object' ? (s.source_url || s.url || '') : '';
+              content += `${sIdx + 1}. "${txt}"\n`;
+              if (url) {
+                content += `   ↳ Nguồn trùng: ${url}\n`;
+              } else {
+                content += `   ↳ Nguồn: Phát hiện trùng lặp trên Google\n`;
+              }
+              content += `\n`;
+            });
+          }
+        }
+
+        content += `========================================================================\n\n`;
+      });
+
+      content += `HƯỚNG DẪN DÀNH CHO BIÊN TẬP VIÊN / WRITER:\n`;
+      content += `1. Hãy viết lại toàn bộ các câu bị trùng lặp ở trên theo văn phong mới.\n`;
+      content += `2. Đảm bảo tỷ lệ trùng lặp ≤ 10% (Unique ≥ 90%) để đạt chuẩn 100/100 Rank Math trước khi xuất bản.\n`;
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const firstTitle = (sessionResults[parentKeys[0]]?.title || 'Spineditor').replace(/[^a-zA-Z0-9_\u00C0-\u1EF9-]/g, '_').slice(0, 40);
+      a.download = parentKeys.length === 1
+        ? `Bao_Cao_Trung_Lap_TongHop_${firstTitle}.txt`
+        : `Bao_Cao_Trung_Lap_TongHop_${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      logMessage(`📥 Đã xuất file báo cáo tổng hợp ${totalSentencesAll} câu trùng (gộp cả 2 lần check)!`, 'success');
+      return;
+    }
+
+    // 2. Fallback nếu không có session data: lấy trực tiếp từ DOM hiện tại
+    downloadDuplicateSentencesFileFallback(fallbackTitle, fallbackDup, fallbackUniq);
+  }
+
+  // Tải file .txt báo cáo chi tiết các câu trùng lặp về máy (Fallback từ DOM)
+  function downloadDuplicateSentencesFileFallback(title = '', dupScore = null, uniqScore = null) {
     const list = extractDuplicateSentences();
     let content = `BÁO CÁO CÂU TRÙNG LẶP NỘI DUNG (SPINETITOR / SNIPER)\n`;
     content += `Thời gian: ${new Date().toLocaleString('vi-VN')}\n`;

@@ -201,7 +201,10 @@ export class SpineditorService implements OnModuleInit {
         articleId,
         uniqueScore: finalUniqueScore,
         duplicateScore: dScore,
-        duplicateSentences: Array.isArray(duplicateSentences) ? duplicateSentences : [],
+        duplicateSentences: (Array.isArray(duplicateSentences) ? duplicateSentences : []).map((s: any) => ({
+          ...(typeof s === 'object' ? s : { sentence: s }),
+          partIndex: pIdx,
+        })),
         duplicateCount: (duplicateSentences || []).length,
         checkedAt: new Date().toISOString(),
       };
@@ -218,7 +221,10 @@ export class SpineditorService implements OnModuleInit {
           p.duplicateSentences.forEach((s) => {
             const txt = typeof s === 'string' ? s : s.sentence || s.text || '';
             if (txt && !allDupSentences.some((existing) => (existing.sentence || existing.text || existing) === txt)) {
-              allDupSentences.push(s);
+              allDupSentences.push({
+                ...(typeof s === 'object' ? s : { sentence: s }),
+                partIndex: p.partIndex || parseInt(k, 10),
+              });
             }
           });
         }
