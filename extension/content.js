@@ -6,8 +6,9 @@
 
   // Cấu hình mặc định
   const DEFAULT_CONFIG = {
-    apiUrl: 'http://localhost:5000',
+    apiUrl: 'https://api.toolseo.uk',
     serverApiUrl: 'https://api.toolseo.uk',
+    localApiUrl: 'http://localhost:5000',
     excludedDomain: 'mexboss.sh',
     delaySeconds: 5,
     maxWaitSeconds: 240
@@ -165,9 +166,34 @@
     const btnQuickServer = document.getElementById('top-btn-quick-server');
     const inputApi = document.getElementById('top-input-api');
 
+    function updateQuickButtonStyles(url) {
+      const isLocal = url && (url.includes('localhost') || url.includes('127.0.0.1'));
+      if (btnQuickLocal) {
+        btnQuickLocal.style.background = isLocal ? '#0369a1' : '#1e293b';
+        btnQuickLocal.style.borderColor = isLocal ? '#38bdf8' : '#475569';
+        btnQuickLocal.style.color = isLocal ? '#fff' : '#94a3b8';
+        btnQuickLocal.style.fontWeight = isLocal ? '700' : 'normal';
+      }
+      if (btnQuickServer) {
+        btnQuickServer.style.background = !isLocal ? '#0369a1' : '#1e293b';
+        btnQuickServer.style.borderColor = !isLocal ? '#38bdf8' : '#475569';
+        btnQuickServer.style.color = !isLocal ? '#fff' : '#94a3b8';
+        btnQuickServer.style.fontWeight = !isLocal ? '700' : 'normal';
+      }
+    }
+
+    if (inputApi) {
+      updateQuickButtonStyles(inputApi.value);
+      inputApi.addEventListener('input', () => {
+        updateQuickButtonStyles(inputApi.value);
+        saveConfigFromInputs();
+      });
+    }
+
     if (btnQuickLocal && inputApi) {
       btnQuickLocal.addEventListener('click', () => {
         inputApi.value = 'http://localhost:5000';
+        updateQuickButtonStyles(inputApi.value);
         saveConfigFromInputs();
         logMessage('💻 Đã chuyển sang API Local (http://localhost:5000)', 'info');
       });
@@ -177,6 +203,7 @@
       btnQuickServer.addEventListener('click', () => {
         const targetServer = currentConfig.serverApiUrl || 'https://api.toolseo.uk';
         inputApi.value = targetServer;
+        updateQuickButtonStyles(inputApi.value);
         saveConfigFromInputs();
         logMessage(`🌐 Đã chuyển sang API Server (${targetServer})`, 'success');
       });

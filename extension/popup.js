@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Nạp cấu hình từ storage
   if (chrome?.storage?.local) {
     chrome.storage.local.get(['top_api_url', 'top_excluded_domain', 'top_delay_seconds'], (res) => {
-      if (res.top_api_url) inputApi.value = res.top_api_url;
+      inputApi.value = res.top_api_url || 'https://api.toolseo.uk';
       if (res.top_excluded_domain !== undefined) inputDomain.value = res.top_excluded_domain;
       if (res.top_delay_seconds) inputDelay.value = res.top_delay_seconds;
     });
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Lưu cấu hình
   btnSave.addEventListener('click', () => {
-    const apiUrl = inputApi.value.trim().replace(/\/+$/, '');
+    const apiUrl = inputApi.value.trim().replace(/\/+$/, '') || 'https://api.toolseo.uk';
     const excludedDomain = inputDomain.value.trim();
     const delaySeconds = parseInt(inputDelay.value, 10) || 6;
 
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Mở ToolOnpage
   btnTool.addEventListener('click', () => {
-    const url = inputApi.value.trim() || 'http://localhost:5000';
+    const url = inputApi.value.trim() || 'https://toolseo.uk';
     chrome.tabs.create({ url });
   });
 });
