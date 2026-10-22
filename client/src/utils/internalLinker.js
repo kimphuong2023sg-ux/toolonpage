@@ -227,6 +227,80 @@ function createAccentInsensitivePattern(text) {
 }
 
 /**
+ * Danh sách từ đơn generic không được phép đứng độc lập làm từ khóa neo tự động
+ * Nhằm tránh việc một từ chung chung như 'seguridad', 'juego', 'casino' bị gán bừa bãi
+ */
+const GENERIC_DISALLOWED_STANDALONE = new Set([
+  'seguridad', 'juego', 'juegos', 'guia', 'guía', 'trucos', 'consejos', 'mexico', 'méxico',
+  'online', 'oficial', 'gratis', '2026', 'slots', 'slot', 'casino', 'paginas', 'sitio', 'app', 'apk'
+]);
+
+const GENERIC_TITLES_REGEX = /^(trucos\s+y\s+consejos|consejos\s+y\s+trucos|guia\s+completa|guía\s+completa|sitio\s+oficial|pagina\s+oficial|opiniones\s+reales)$/i;
+
+/**
+ * Kiểm tra xem một chuỗi có phải là từ khóa neo hợp lệ, an toàn cho SEO hay không
+ */
+function isValidAnchorPhrase(phrase) {
+  if (!phrase || typeof phrase !== 'string') return false;
+  const trimmed = phrase.trim().toLowerCase();
+  if (trimmed.length < 4 || trimmed.length > 50) return false;
+
+  // Loại trừ từ đơn generic
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length === 1 && GENERIC_DISALLOWED_STANDALONE.has(words[0])) {
+    return false;
+  }
+
+  // Loại trừ cụm từ mô tả chung chung
+  if (GENERIC_TITLES_REGEX.test(trimmed)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Danh sách các trang tiện ích, chính sách, hệ thống (Utility Pages)
+ * Tuyệt đối không gán từ khóa dịch vụ/nghiệp vụ/game cho các trang này
+ */
+export function isUtilityPage(item) {
+  if (!item) return false;
+  const cleanSlug = (item.slug || '').toLowerCase().replace(/(^\/|\/$)/g, '');
+  const utilitySlugs = [
+    'preguntas-frecuentes', 'faq', 'faqs', 'preguntas',
+    'terminos-y-condiciones', 'terminos', 'condiciones', 'terms', 'terms-conditions',
+    'politica-de-privacidad', 'privacidad', 'privacy', 'privacy-policy',
+    'contacto', 'contactanos', 'contact', 'contact-us',
+    'aviso-legal', 'disclaimer',
+    'sobre-nosotros', 'quienes-somos', 'acerca-de', 'about', 'about-us'
+  ];
+  return utilitySlugs.some(u => cleanSlug === u || cleanSlug.startsWith(u + '-') || cleanSlug.endsWith('-' + u));
+}
+
+/**
+ * Lấy từ khóa neo chuẩn xác, an toàn cho trang tiện ích
+ */
+function getUtilityKeywords(slug) {
+  const cleanSlug = (slug || '').toLowerCase().replace(/(^\/|\/$)/g, '');
+  if (['preguntas-frecuentes', 'faq', 'faqs', 'preguntas'].some(s => cleanSlug.includes(s))) {
+    return ['preguntas frecuentes', 'sección de preguntas frecuentes', 'seccion de preguntas frecuentes', 'faq'];
+  }
+  if (['terminos-y-condiciones', 'terminos', 'condiciones', 'terms'].some(s => cleanSlug.includes(s))) {
+    return ['términos y condiciones', 'terminos y condiciones', 'condiciones de uso'];
+  }
+  if (['politica-de-privacidad', 'privacidad', 'privacy'].some(s => cleanSlug.includes(s))) {
+    return ['política de privacidad', 'politica de privacidad', 'aviso de privacidad'];
+  }
+  if (['contacto', 'contactanos', 'contact'].some(s => cleanSlug.includes(s))) {
+    return ['atención al cliente', 'contacto', 'contáctanos', 'contactanos'];
+  }
+  if (['sobre-nosotros', 'quienes-somos', 'acerca-de', 'about'].some(s => cleanSlug.includes(s))) {
+    return ['sobre nosotros', 'quiénes somos', 'quienes somos'];
+  }
+  return [];
+}
+
+/**
  * Trích xuất các cụm từ ngữ nghĩa sạch từ Tiêu đề bài viết (Title)
  */
 function extractPhrasesFromTitle(title) {
@@ -242,22 +316,22 @@ function extractPhrasesFromTitle(title) {
   const stopWordsRegex = /\b(en\s+mexico|en\s+méxico|en\s+juegalotto|sitio\s+oficial|oficial|2026|hasta\s+\$?\d+[\d,.]*\s*(?:mxn)?|guia\s+completa|guía\s+completa|guia|guía|consejos|trucos)\b/gi;
 
   chunks.forEach(chunk => {
-    const trimmed = chunk.replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
-    if (trimmed.length >= 6 && trimmed.length <= 48) {
-      phrases.add(trimmed.toLowerCase());
+    const trimmed = chunk.replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (isValidAnchorPhrase(trimmed)) {
+      phrases.add(trimmed);
     }
 
-    const stripped = chunk.replace(stopWordsRegex, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
-    if (stripped.length >= 6 && stripped.length <= 42) {
-      phrases.add(stripped.toLowerCase());
+    const stripped = chunk.replace(stopWordsRegex, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (isValidAnchorPhrase(stripped)) {
+      phrases.add(stripped);
     }
 
     // Tách thêm theo dấu phẩy nếu vế sau có từ khóa độc lập (VD: "Opiniones, Seguridad y Licencia SEGOB")
     if (chunk.includes(',')) {
       chunk.split(',').forEach(sub => {
-        const subTrimmed = sub.replace(stopWordsRegex, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
-        if (subTrimmed.length >= 8 && subTrimmed.length <= 35) {
-          phrases.add(subTrimmed.toLowerCase());
+        const subTrimmed = sub.replace(stopWordsRegex, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (isValidAnchorPhrase(subTrimmed)) {
+          phrases.add(subTrimmed);
         }
       });
     }
@@ -276,13 +350,18 @@ function extractPhrasesFromSlug(slug) {
   // Tách slug thành từ ngữ tự nhiên
   const rawWords = slug.toLowerCase().split(/[-_]+/).filter(w => w.length > 1 && !['en', 'de', 'el', 'la', 'los', 'las', 'un', 'una', 'y', 'o'].includes(w));
 
-  const full = slug.replace(/[-_]+/g, ' ').trim();
-  if (full.length >= 5) phrases.add(full);
+  const full = slug.replace(/[-_]+/g, ' ').trim().toLowerCase();
+  if (isValidAnchorPhrase(full)) {
+    phrases.add(full);
+  }
 
   // Bỏ từ thương hiệu hoặc số năm nếu có để lấy từ khóa lõi
   const filteredWords = rawWords.filter(w => !['juegalotto', 'mexico', '2026', 'oficial'].includes(w));
   if (filteredWords.length >= 2) {
-    phrases.add(filteredWords.join(' '));
+    const core = filteredWords.join(' ').toLowerCase();
+    if (isValidAnchorPhrase(core)) {
+      phrases.add(core);
+    }
   }
 
   return Array.from(phrases);
@@ -360,9 +439,11 @@ export function checkSiteReadiness(siteItems = [], currentSiteUrl = '', currentE
 
 /**
  * Tạo bản đồ từ khóa thông minh -> Link URL từ tất cả Pages & Posts của website
- * RULE CỐT LÕI:
+ * NGUYÊN TẮC CHUẨN SEO:
  * 1. LOẠI TRỪ 100% TRANG CHỦ.
- * 2. ĐỌC NỘI DUNG THỰC TẾ (content_html) CỦA CÁC BÀI ĐÃ XUẤT BẢN TRÊN WEB ĐỂ BÓC TÁCH KEY & H2/H3 SÁT NHẤT.
+ * 2. CÁCH LY TRANG TIỆN ÍCH / FAQ: Không bao giờ gán từ khóa dịch vụ (OXXO, Bono, Slot...) cho trang FAQ/Chính sách.
+ * 3. TUYỆT ĐỐI KHÔNG bóc tách H2/H3/strong từ bài khác làm từ khóa neo trỏ về bài đó.
+ * 4. PHÂN ĐỊNH RÕ ĐỘ ƯU TIÊN: Focus Keyword (3) > Tiêu đề chính H1/Slug (2) > Cụm Topic Cluster (1).
  */
 export function buildSiteLinkDictionary(items = [], siteUrl = '') {
   const dictionary = [];
@@ -375,50 +456,65 @@ export function buildSiteLinkDictionary(items = [], siteUrl = '') {
     if (!item.slug) return;
     const cleanSlug = item.slug.toLowerCase().replace(/(^\/|\/$)/g, '');
     const url = baseUrl ? `${baseUrl}/${cleanSlug}/` : `/${cleanSlug}/`;
-    const keywords = new Set();
+    const keywordsMap = new Map(); // keyword -> priority level
 
-    // 1. Ánh xạ từ điển chuyên đề Topic Cluster
-    TOPIC_SYNONYMS.forEach(topic => {
-      if (topic.matchSlugs.some(s => s === cleanSlug || cleanSlug === s || cleanSlug.includes(s) || s.includes(cleanSlug))) {
-        topic.keywords.forEach(kw => {
-          keywords.add(kw.toLowerCase().trim());
-        });
+    // 1. NẾU LÀ TRANG TIỆN ÍCH / CHÍNH SÁCH / FAQ:
+    if (isUtilityPage(item)) {
+      const utilKws = getUtilityKeywords(cleanSlug);
+      utilKws.forEach(kw => keywordsMap.set(kw.toLowerCase().trim(), 3));
+      if (item.focus_keyword && isValidAnchorPhrase(item.focus_keyword)) {
+        keywordsMap.set(item.focus_keyword.toLowerCase().trim(), 3);
+      }
+      dictionary.push({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        slug: cleanSlug,
+        url: url,
+        keywords: Array.from(keywordsMap.keys()),
+        keywordsMap: keywordsMap
+      });
+      return; // Không áp dụng Topic Synonyms hay bóc tách từ khóa khác cho trang tiện ích
+    }
+
+    // 2. NẾU LÀ TRANG NỘI DUNG / BÀI VIẾT CHUYÊN ĐỀ:
+    // 2.1. Focus Keyword (Ưu tiên cao nhất = 3)
+    if (item.focus_keyword && isValidAnchorPhrase(item.focus_keyword)) {
+      keywordsMap.set(item.focus_keyword.toLowerCase().trim(), 3);
+    }
+
+    // 2.2. Tiêu đề bài viết chính (H1) & Slug (Ưu tiên = 2)
+    const titlePhrases = extractPhrasesFromTitle(item.title);
+    titlePhrases.forEach(tp => {
+      if (isValidAnchorPhrase(tp) && !keywordsMap.has(tp)) {
+        keywordsMap.set(tp, 2);
       }
     });
 
-    // 2. Tách từ tiêu đề bài viết
-    const titlePhrases = extractPhrasesFromTitle(item.title);
-    titlePhrases.forEach(tp => keywords.add(tp));
-
-    // 3. Tách từ Slug
     const slugPhrases = extractPhrasesFromSlug(cleanSlug);
-    slugPhrases.forEach(sp => keywords.add(sp));
+    slugPhrases.forEach(sp => {
+      if (isValidAnchorPhrase(sp) && !keywordsMap.has(sp)) {
+        keywordsMap.set(sp, 2);
+      }
+    });
 
-    // 4. ĐỌC NỘI DUNG THẬT TỪ BÀI ĐÃ XUẤT BẢN TRÊN WEB (content_html)
-    if (item.content_html) {
-      // 4.1. Lấy các thẻ H2 và H3 thực tế của bài viết để làm anchor ngữ cảnh
-      const headingMatches = [...item.content_html.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/gi)];
-      headingMatches.forEach(hm => {
-        const rawH = hm[1].replace(/<[^>]+>/g, '').trim();
-        const hPhrases = extractPhrasesFromTitle(rawH);
-        hPhrases.forEach(hp => keywords.add(hp));
+    // 2.3. Ánh xạ từ điển chuyên đề Topic Cluster (Ưu tiên = 1, khớp chính xác theo ranh giới slug)
+    TOPIC_SYNONYMS.forEach(topic => {
+      const isMatched = topic.matchSlugs.some(s => {
+        if (cleanSlug === s) return true;
+        const regex = new RegExp(`(^|-)${s.replace(/-/g, '[-_]')}(-|$)`, 'i');
+        return regex.test(cleanSlug);
       });
 
-      // 4.2. Lấy các cụm in đậm quan trọng (<strong>) ở phần mở đầu bài viết
-      const introSnippet = item.content_html.substring(0, 1500);
-      const strongMatches = [...introSnippet.matchAll(/<strong[^>]*>([\s\S]*?)<\/strong>/gi)];
-      strongMatches.forEach(sm => {
-        const cleanStrong = sm[1].replace(/<[^>]+>/g, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').trim().toLowerCase();
-        if (cleanStrong.length >= 8 && cleanStrong.length <= 35 && !cleanStrong.includes('http')) {
-          keywords.add(cleanStrong);
-        }
-      });
-    }
-
-    // 5. Bổ sung Focus Keyword nếu có sẵn trong metadata
-    if (item.focus_keyword) {
-      keywords.add(item.focus_keyword.toLowerCase().trim());
-    }
+      if (isMatched) {
+        topic.keywords.forEach(kw => {
+          const cleanKw = kw.toLowerCase().trim();
+          if (isValidAnchorPhrase(cleanKw) && !keywordsMap.has(cleanKw)) {
+            keywordsMap.set(cleanKw, 1);
+          }
+        });
+      }
+    });
 
     dictionary.push({
       id: item.id,
@@ -426,7 +522,8 @@ export function buildSiteLinkDictionary(items = [], siteUrl = '') {
       title: item.title,
       slug: cleanSlug,
       url: url,
-      keywords: Array.from(keywords).filter(k => k.length >= 4)
+      keywords: Array.from(keywordsMap.keys()).filter(k => k.length >= 4),
+      keywordsMap: keywordsMap
     });
   });
 
@@ -570,23 +667,32 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
   // Lọc ra các trang đích (loại trừ chính bài viết hiện tại và loại trừ trang chủ)
   const targetPages = dictionary.filter(d => d.slug !== cleanCurrentSlug && !isHomePage(d));
 
-  // Thu thập tất cả các cặp { keyword, url, title, slug }
+  // Thu thập tất cả các cặp { keyword, url, title, slug, priority }
   const allKeywords = [];
   targetPages.forEach(target => {
+    const kMap = target.keywordsMap || new Map();
     target.keywords.forEach(kw => {
       if (kw && kw.length >= 4) {
         allKeywords.push({
           keyword: kw,
           url: target.url,
           title: target.title,
-          slug: target.slug
+          slug: target.slug,
+          priority: kMap.get(kw) || 1
         });
       }
     });
   });
 
-  // Ưu tiên từ khóa dài nhất lên trước để tránh match đè các từ khóa ngắn
-  allKeywords.sort((a, b) => b.keyword.length - a.keyword.length);
+  // Ưu tiên:
+  // 1. Độ ưu tiên ngữ nghĩa (Focus Keyword = 3 > Title/Slug = 2 > Topic Cluster = 1)
+  // 2. Độ dài từ khóa dài hơn lên trước để tránh match đè các từ khóa ngắn
+  allKeywords.sort((a, b) => {
+    if (b.priority !== a.priority) {
+      return b.priority - a.priority;
+    }
+    return b.keyword.length - a.keyword.length;
+  });
 
   // Tách HTML thành các đoạn Tags và Text thuần để xử lý an toàn
   const parts = workingHtml.split(/(<[^>]+>)/g);

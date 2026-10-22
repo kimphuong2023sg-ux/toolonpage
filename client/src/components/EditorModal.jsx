@@ -1585,7 +1585,7 @@ export default function EditorModal({ item, siteItems = [], wpStatus = null, onC
                       }
                       .preview-content-box strong, .preview-content-box b {
                         font-weight: 700 !important;
-                        color: #ffffff !important;
+                        color: inherit !important;
                       }
                       .preview-content-box u {
                         text-decoration: underline !important;

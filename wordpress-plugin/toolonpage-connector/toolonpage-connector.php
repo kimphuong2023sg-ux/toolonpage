@@ -60,8 +60,8 @@ class ToolOnPageConnector {
 
     public function inject_frontend_formatting_css() {
         echo '<style id="toolonpage-formatting-css">
-            .entry-content strong, .post-content strong, article strong, main strong, strong { font-weight: 700 !important; }
-            .entry-content b, .post-content b, article b, main b, b { font-weight: 700 !important; }
+            .entry-content strong, .post-content strong, article strong, main strong, strong { font-weight: 700 !important; color: inherit !important; }
+            .entry-content b, .post-content b, article b, main b, b { font-weight: 700 !important; color: inherit !important; }
             .entry-content u, .post-content u, article u, main u, u { text-decoration: underline !important; text-underline-offset: 3px; }
             .entry-content em, .post-content em, article em, main em, em { font-style: italic !important; }
             .entry-content i, .post-content i, article i, main i, i { font-style: italic !important; }
