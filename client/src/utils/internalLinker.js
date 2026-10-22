@@ -703,20 +703,36 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
   let insideFigure = 0;
   let insideToc = 0;
 
+  // Hàm chuẩn hóa bóc tách slug sạch từ URL (hỗ trợ cả absolute URL và relative path)
+  const extractSlug = (href) => {
+    if (!href) return '';
+    try {
+      if (href.startsWith('http')) {
+        const u = new URL(href);
+        return u.pathname.replace(/(^\/|\/$)/g, '').toLowerCase();
+      }
+    } catch (e) {}
+    return href.split('?')[0].replace(/(^\/|\/$)/g, '').toLowerCase();
+  };
+
   // Lấy các URL và anchor đã có sẵn trong bài
   const existingLinks = extractInternalLinks(workingHtml);
   existingLinks.forEach(l => {
+    const s = extractSlug(l.href);
+    if (s) usedUrls.add(s);
     usedUrls.add(l.href.toLowerCase().replace(/(^\/|\/$)/g, ''));
     if (l.anchor) usedAnchors.add(l.anchor.toLowerCase().trim());
   });
 
-  // Tính số lượng link cần chèn thêm để đạt tối đa maxLinks (khuyên dùng 3-5 link chuẩn SEO)
+  // TỔNG SỐ LINK TỐI ĐA TRONG BÀI (Chuẩn SEO Rank Math khuyên dùng 3-5 link, tối đa 5)
+  // Nếu bài viết ĐÃ CÓ đủ hoặc nhiều hơn maxLinks thì DỪNG NGAY, không chèn thêm dồn dập!
   const quotaRemaining = Math.max(0, maxLinks - existingLinks.length);
   if (quotaRemaining === 0) {
     return {
       newHtml: workingHtml,
-      injectedCount: injectedLinks.length,
-      links: injectedLinks
+      injectedCount: 0,
+      links: injectedLinks,
+      maxReached: true
     };
   }
 
@@ -742,7 +758,7 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
     let currentText = part;
 
     for (const item of allKeywords) {
-      if (injectedLinks.length >= maxLinks) break;
+      if (injectedLinks.length >= quotaRemaining) break;
       if (usedUrls.has(item.slug)) continue;
 
       const patternStr = `(?<![\\p{L}\\p{N}])(${createAccentInsensitivePattern(item.keyword)})(?![\\p{L}\\p{N}])`;
@@ -772,7 +788,7 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
     }
 
     parts[i] = currentText;
-    if (injectedLinks.length >= maxLinks) break;
+    if (injectedLinks.length >= quotaRemaining) break;
   }
 
   return {
@@ -1007,6 +1023,19 @@ export function insertNewLinkLine(contentHtml, anchorText, targetUrl, position =
   }
 
   return contentHtml.trim() + '\n\n' + formattedHtml;
+}
+
+/**
+ * Gỡ bỏ toàn bộ tất cả liên kết nội bộ trong HTML để người dùng có thể quét lại từ đầu
+ */
+export function removeAllInternalLinks(contentHtml, siteDomain = '') {
+  if (!contentHtml) return '';
+  const links = extractInternalLinks(contentHtml, siteDomain);
+  let updated = contentHtml;
+  links.forEach(l => {
+    updated = removeInternalLink(updated, l.anchor, l.href);
+  });
+  return updated;
 }
 
 function escapeRegex(string) {

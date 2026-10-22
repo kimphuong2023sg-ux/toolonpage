@@ -5,6 +5,7 @@ import {
   extractInternalLinks, 
   updateLinkTarget, 
   removeInternalLink, 
+  removeAllInternalLinks,
   insertCustomInternalLink,
   updateLinkAnchorText,
   insertNewLinkLine,
@@ -74,10 +75,10 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
       });
     } else {
       const existing = extractInternalLinks(contentHtml, siteDomain);
-      if (existing.length >= 3) {
+      if (result.maxReached || existing.length >= 5) {
         setFeedbackMsg({
           type: 'info',
-          text: `Bài viết đã có sẵn ${existing.length} liên kết nội bộ (đã đạt chuẩn SEO Rank Math 🟢).`
+          text: `Bài viết đã đạt giới hạn tối đa ${existing.length} liên kết nội bộ (chuẩn SEO Rank Math khuyên dùng 3-5 link). Không chèn thêm để tránh spam liên kết.`
         });
       } else {
         setFeedbackMsg({
@@ -88,6 +89,20 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
     }
 
     setTimeout(() => setFeedbackMsg(null), 5000);
+  };
+
+  // Gỡ bỏ toàn bộ tất cả link nội bộ trong bài để quét lại từ đầu
+  const handleRemoveAllLinks = () => {
+    if (!window.confirm(`Bạn có chắc chắn muốn gỡ bỏ toàn bộ ${activeLinks.length} liên kết nội bộ trong bài để quét lại từ đầu không?`)) {
+      return;
+    }
+    const cleanHtml = removeAllInternalLinks(contentHtml, siteDomain);
+    setContentHtml(cleanHtml);
+    setFeedbackMsg({
+      type: 'info',
+      text: `🗑️ Đã gỡ bỏ toàn bộ ${activeLinks.length} liên kết nội bộ. Bây giờ bạn có thể bấm "⚡ Tự Động Quét" để chèn lại chuẩn SEO!`
+    });
+    setTimeout(() => setFeedbackMsg(null), 4000);
   };
 
   // 2. Đổi trang đích của 1 link bằng Dropdown
@@ -200,14 +215,37 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
           </div>
         </div>
 
-        <button 
-          type="button"
-          className="btn-action-post"
-          style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700 }}
-          onClick={handleAutoInject}
-        >
-          ⚡ Tự Động Quét & Chèn Internal Links
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {activeLinks.length > 0 && (
+            <button 
+              type="button"
+              className="btn-secondary"
+              style={{
+                padding: '8px 14px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#f87171',
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                cursor: 'pointer',
+                borderRadius: '6px'
+              }}
+              onClick={handleRemoveAllLinks}
+              title="Gỡ sạch tất cả các liên kết trong bài viết để quét lại từ đầu"
+            >
+              🗑️ Gỡ Tất Cả Link ({activeLinks.length})
+            </button>
+          )}
+
+          <button 
+            type="button"
+            className="btn-action-post"
+            style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700 }}
+            onClick={handleAutoInject}
+          >
+            ⚡ Tự Động Quét & Chèn Internal Links
+          </button>
+        </div>
 
         {/* CẤU HÌNH TỪ KHÓA TRANG CHỦ (BRAND KEY) */}
         <div style={{
