@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   buildSiteLinkDictionary, 
   autoInjectInternalLinks, 
   extractInternalLinks, 
+  extractSlug,
   updateLinkTarget, 
   removeInternalLink, 
   removeAllInternalLinks,
@@ -13,7 +14,7 @@ import {
   extractHeadings
 } from '../utils/internalLinker';
 
-export default function InternalLinkManager({ contentHtml, setContentHtml, siteItems = [], currentSlug = '', siteDomain = '', focusKeyword = '', onLocateLink }) {
+export default function InternalLinkManager({ contentHtml, setContentHtml, siteItems = [], currentSlug = '', siteDomain = '', focusKeyword = '', currentTitle = '', onLocateLink }) {
   const [insertMode, setInsertMode] = useState('new-line'); // 'new-line' | 'wrap-keyword'
   const [newLinkText, setNewLinkText] = useState('');
   const [newLinkTarget, setNewLinkTarget] = useState('');
@@ -23,6 +24,52 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
   const [manualKeyword, setManualKeyword] = useState('');
   const [manualTargetUrl, setManualTargetUrl] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(null);
+
+  // Chuẩn hóa slug hiện tại của bài viết/page đang biên tập
+  const cleanCurrentSlug = useMemo(() => {
+    return (currentSlug || '').toLowerCase().replace(/(^\/|\/$)/g, '');
+  }, [currentSlug]);
+
+  const canonicalHome = useMemo(() => {
+    return siteDomain 
+      ? (siteDomain.startsWith('http') ? siteDomain.replace(/\/+$/, '') + '/' : `https://${siteDomain.replace(/\/+$/, '')}/`) 
+      : '/';
+  }, [siteDomain]);
+
+  const canonicalSelfUrl = useMemo(() => {
+    if (!cleanCurrentSlug) return '';
+    const base = canonicalHome !== '/' ? canonicalHome.replace(/\/+$/, '') : '';
+    return base ? `${base}/${cleanCurrentSlug}/` : `/${cleanCurrentSlug}/`;
+  }, [cleanCurrentSlug, canonicalHome]);
+
+  // Từ khóa mặc định trỏ về chính bài viết (Ưu tiên Focus Keyword, hoặc bóc tách từ Title/Slug)
+  const defaultSelfKeyword = useMemo(() => {
+    if (focusKeyword && focusKeyword.trim()) {
+      return focusKeyword.trim();
+    }
+    if (currentTitle && currentTitle.trim()) {
+      const clean = currentTitle.replace(/<[^>]+>/g, '').trim();
+      const part = clean.split(/[|\-–—]/)[0].trim();
+      if (part.length >= 3) return part;
+      return clean;
+    }
+    if (cleanCurrentSlug) {
+      return cleanCurrentSlug.replace(/[-_]+/g, ' ').trim();
+    }
+    return '';
+  }, [focusKeyword, currentTitle, cleanCurrentSlug]);
+
+  const [selfKeyInput, setSelfKeyInput] = useState(defaultSelfKeyword);
+  const [injectSelfLink, setInjectSelfLink] = useState(true);
+
+  // Đồng bộ khi focusKeyword hoặc tiêu đề thay đổi
+  useEffect(() => {
+    if (focusKeyword && focusKeyword.trim()) {
+      setSelfKeyInput(focusKeyword.trim());
+    } else if (defaultSelfKeyword && !selfKeyInput) {
+      setSelfKeyInput(defaultSelfKeyword);
+    }
+  }, [focusKeyword, defaultSelfKeyword]);
 
   // Tự động nhận diện từ khóa chính thương hiệu (VD: juegalotto từ juegalotto365.com hoặc juegalotto.sh)
   const defaultBrand = useMemo(() => {
@@ -53,20 +100,25 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
     return extractInternalLinks(contentHtml, siteDomain);
   }, [contentHtml, siteDomain]);
 
-  // 1. Tự động quét và chèn Internal Links (Gồm 1 link Trang Chủ theo key chính + các link cụm Topic Cluster)
+  // 1. Tự động quét và chèn Internal Links (Gồm 1 link về chính bài viết + 1 link Trang Chủ + các link cụm Topic Cluster)
   const handleAutoInject = () => {
-    const canonicalHome = siteDomain ? (siteDomain.startsWith('http') ? siteDomain.replace(/\/+$/, '') + '/' : `https://${siteDomain.replace(/\/+$/, '')}/`) : '/';
     const result = autoInjectInternalLinks(contentHtml, siteDictionary, currentSlug, 5, {
       brandKeyword: injectHomeBrand ? brandKeyInput.trim() : '',
       focusKeyword: focusKeyword,
       injectHome: injectHomeBrand,
-      homeUrl: canonicalHome
+      homeUrl: canonicalHome,
+      injectSelf: injectSelfLink,
+      selfKeyword: injectSelfLink ? selfKeyInput.trim() : '',
+      selfUrl: canonicalSelfUrl,
+      currentTitle: currentTitle
     });
     if (result.injectedCount > 0) {
       setContentHtml(result.newHtml);
-      const homeLink = result.links.find(l => l.url === '/' || l.url === canonicalHome);
-      const otherLinksCount = result.links.length - (homeLink ? 1 : 0);
+      const selfLink = result.links.find(l => l.isSelf || l.slug === cleanCurrentSlug || l.url === canonicalSelfUrl);
+      const homeLink = result.links.find(l => l.isHome || l.url === '/' || l.url === canonicalHome);
+      const otherLinksCount = result.links.length - (selfLink ? 1 : 0) - (homeLink ? 1 : 0);
       let detail = `🎉 Đã tự động chèn ${result.injectedCount} liên kết chuẩn SEO:`;
+      if (selfLink) detail += ` 1 link về chính bài viết (key: "${selfLink.anchor}"),`;
       if (homeLink) detail += ` 1 link về Trang Chủ (key: "${homeLink.anchor}"),`;
       if (otherLinksCount > 0) detail += ` ${otherLinksCount} link cụm Topic Cluster.`;
       setFeedbackMsg({
@@ -247,59 +299,111 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
           </button>
         </div>
 
-        {/* CẤU HÌNH TỪ KHÓA TRANG CHỦ (BRAND KEY) */}
+        {/* CẤU HÌNH TỪ KHÓA: LINK CHÍNH BÀI VIẾT & TRANG CHỦ */}
         <div style={{
           width: '100%',
-          marginTop: '6px',
-          paddingTop: '10px',
+          marginTop: '10px',
+          paddingTop: '12px',
           borderTop: '1px solid rgba(59, 130, 246, 0.2)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
+          flexDirection: 'column',
           gap: '10px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              color: '#93c5fd',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}>
-              <input 
-                type="checkbox" 
-                checked={injectHomeBrand}
-                onChange={(e) => setInjectHomeBrand(e.target.checked)}
-                style={{ cursor: 'pointer' }}
-              />
-              🏠 Link sức mạnh về Trang Chủ (/):
-            </label>
-            <input 
-              type="text"
-              value={brandKeyInput}
-              onChange={(e) => setBrandKeyInput(e.target.value)}
-              placeholder="VD: juegalotto"
-              disabled={!injectHomeBrand}
-              style={{
-                background: '#070b14',
-                border: '1px solid rgba(59, 130, 246, 0.4)',
-                borderRadius: '4px',
-                color: '#facc15',
-                fontWeight: 700,
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            {/* 1. LINK VỀ CHÍNH BÀI VIẾT (MẶC ĐỊNH BẬT THEO YÊU CẦU SEO) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
                 fontSize: '12px',
-                padding: '3px 8px',
-                width: '130px',
-                outline: 'none'
-              }}
-              title="Từ khóa chính của website (không phân biệt hoa/thường). Thuật toán sẽ quét từ trên xuống tìm từ xuất hiện đầu tiên gần nhất để gắn 1 link duy nhất về Trang Chủ."
-            />
+                color: '#6ee7b7',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}>
+                <input 
+                  type="checkbox" 
+                  checked={injectSelfLink}
+                  onChange={(e) => setInjectSelfLink(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                🎯 Link về chính bài viết/page này:
+              </label>
+              <input 
+                type="text"
+                value={selfKeyInput}
+                onChange={(e) => setSelfKeyInput(e.target.value)}
+                placeholder="Từ khóa chính (Focus Keyword)"
+                disabled={!injectSelfLink}
+                style={{
+                  background: '#070b14',
+                  border: '1px solid rgba(16, 185, 129, 0.45)',
+                  borderRadius: '4px',
+                  color: '#34d399',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  padding: '3px 8px',
+                  minWidth: '160px',
+                  outline: 'none'
+                }}
+                title="Từ khóa neo trỏ về URL của chính bài viết này (thường là Focus Keyword). Thuật toán sẽ quét và chèn 1 link chuẩn Canonical SEO."
+              />
+              {cleanCurrentSlug && (
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+                  (/{cleanCurrentSlug}/)
+                </span>
+              )}
+            </div>
+
+            {/* 2. LINK SỨC MẠNH VỀ TRANG CHỦ */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                color: '#93c5fd',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}>
+                <input 
+                  type="checkbox" 
+                  checked={injectHomeBrand}
+                  onChange={(e) => setInjectHomeBrand(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                🏠 Link sức mạnh về Trang Chủ (/):
+              </label>
+              <input 
+                type="text"
+                value={brandKeyInput}
+                onChange={(e) => setBrandKeyInput(e.target.value)}
+                placeholder="VD: juegalotto"
+                disabled={!injectHomeBrand}
+                style={{
+                  background: '#070b14',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
+                  borderRadius: '4px',
+                  color: '#facc15',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  padding: '3px 8px',
+                  width: '130px',
+                  outline: 'none'
+                }}
+                title="Từ khóa thương hiệu chính của website (không phân biệt hoa/thường). Quét từ trên xuống gắn đúng 1 link duy nhất về Trang Chủ."
+              />
+            </div>
           </div>
 
           <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-            ℹ️ Quét từ trên xuống, gắn <strong style={{ color: '#facc15' }}>đúng 1 text</strong> cho key chính gần nhất về trang chủ để có sức mạnh Trang Chủ.
+            ℹ️ Mặc định chuẩn SEO: Tự động gắn <strong style={{ color: '#34d399' }}>1 link về chính bài viết</strong> (Canonical SEO), <strong style={{ color: '#facc15' }}>1 link Trang Chủ</strong> và các link cụm Topic Cluster (tổng 3-5 links).
           </div>
         </div>
       </div>
@@ -340,7 +444,9 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {activeLinks.map((link, idx) => {
               // Tìm thông tin trang đang khớp với href này
-              const cleanHref = link.href.replace(/(^\/|\/$)/g, '');
+              const cleanHref = extractSlug(link.href);
+              const isSelf = Boolean(cleanCurrentSlug && cleanHref === cleanCurrentSlug);
+              const isHome = isHomePage({ slug: cleanHref }, siteDomain) || cleanHref === '' || link.href === '/' || (siteDomain && link.href.replace(/\/+$/, '') === `https://${siteDomain}`);
               const matchedSiteItem = siteItems.find(s => s.slug?.toLowerCase().replace(/(^\/|\/$)/g, '') === cleanHref);
 
               return (
@@ -362,7 +468,33 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
                     <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span>Từ khóa neo:</span>
-                        {link.isCustom ? (
+                        {isSelf ? (
+                          <span style={{
+                            background: 'rgba(16, 185, 129, 0.18)',
+                            color: '#34d399',
+                            border: '1px solid rgba(16, 185, 129, 0.45)',
+                            padding: '1px 6px',
+                            borderRadius: '3px',
+                            fontSize: '9.5px',
+                            fontWeight: 700,
+                            letterSpacing: '0'
+                          }}>
+                            🎯 Chính bài này (Self Link)
+                          </span>
+                        ) : isHome ? (
+                          <span style={{
+                            background: 'rgba(59, 130, 246, 0.18)',
+                            color: '#60a5fa',
+                            border: '1px solid rgba(59, 130, 246, 0.45)',
+                            padding: '1px 6px',
+                            borderRadius: '3px',
+                            fontSize: '9.5px',
+                            fontWeight: 700,
+                            letterSpacing: '0'
+                          }}>
+                            🏠 Trang Chủ (Home)
+                          </span>
+                        ) : link.isCustom ? (
                           <span style={{
                             background: 'rgba(245, 158, 11, 0.18)',
                             color: '#fbbf24',
@@ -393,8 +525,8 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
                       <span style={{ fontSize: '10px', color: '#94a3b8' }}>✏️ Sửa</span>
                     </div>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <span style={{ position: 'absolute', left: '8px', color: link.isCustom ? '#fbbf24' : '#38bdf8', fontSize: '11px', pointerEvents: 'none' }}>
-                        {link.isCustom ? '📌' : '🔗'}
+                      <span style={{ position: 'absolute', left: '8px', color: isSelf ? '#34d399' : isHome ? '#60a5fa' : link.isCustom ? '#fbbf24' : '#38bdf8', fontSize: '11px', pointerEvents: 'none' }}>
+                        {isSelf ? '🎯' : isHome ? '🏠' : link.isCustom ? '📌' : '🔗'}
                       </span>
                       <input
                         type="text"
@@ -402,10 +534,10 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
                         style={{
                           fontSize: '12px',
                           padding: '5px 8px 5px 24px',
-                          color: link.isCustom ? '#fbbf24' : '#38bdf8',
+                          color: isSelf ? '#34d399' : isHome ? '#60a5fa' : link.isCustom ? '#fbbf24' : '#38bdf8',
                           fontWeight: 700,
                           background: '#070b14',
-                          border: link.isCustom ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(56, 189, 248, 0.35)',
+                          border: isSelf ? '1px solid rgba(16, 185, 129, 0.4)' : link.isCustom ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(56, 189, 248, 0.35)',
                           borderRadius: '5px',
                           width: '100%',
                           outline: 'none'
@@ -432,15 +564,31 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
                     <select
                       className="form-select"
                       style={{ fontSize: '12px', padding: '5px 8px', height: 'auto', background: '#0e1626' }}
-                      value={matchedSiteItem ? `/${matchedSiteItem.slug}/` : link.href}
+                      value={isSelf ? (canonicalSelfUrl || link.href) : (isHome ? '/' : (matchedSiteItem ? `/${matchedSiteItem.slug}/` : link.href))}
                       onChange={(e) => handleChangeTarget(link.href, e.target.value)}
                     >
                       <option value={link.href}>
-                        {matchedSiteItem ? `[${matchedSiteItem.type === 'page' ? 'Trang' : 'Bài'}] ${matchedSiteItem.title} (${link.href})` : `URL: ${link.href}`}
+                        {isSelf 
+                          ? `🎯 [Chính bài viết này] ${currentTitle || cleanCurrentSlug} (${link.href})`
+                          : isHome 
+                            ? `🏠 [Trang Chủ] Trang chủ website (${link.href})`
+                            : matchedSiteItem 
+                              ? `[${matchedSiteItem.type === 'page' ? 'Trang' : 'Bài'}] ${matchedSiteItem.title} (${link.href})` 
+                              : `URL: ${link.href}`}
                       </option>
                       <optgroup label="── Đổi sang Trang / Bài viết khác ──">
+                        {!isSelf && cleanCurrentSlug && (
+                          <option value={canonicalSelfUrl || `/${cleanCurrentSlug}/`}>
+                            🎯 [Chính bài viết này] {currentTitle || cleanCurrentSlug} (/{cleanCurrentSlug}/)
+                          </option>
+                        )}
+                        {!isHome && (
+                          <option value="/">
+                            🏠 [Trang Chủ] Trang chủ website (/)
+                          </option>
+                        )}
                         {siteItems
-                          .filter(s => s.slug && s.slug !== currentSlug && !isHomePage(s, siteDomain))
+                          .filter(s => s.slug && s.slug.toLowerCase().replace(/(^\/|\/$)/g, '') !== cleanCurrentSlug && !isHomePage(s, siteDomain))
                           .map(s => (
                             <option key={`${s.type}-${s.id}`} value={`/${s.slug}/`}>
                               [{s.type === 'page' ? 'Trang' : 'Bài'}] {s.title} (/{s.slug}/)
@@ -560,8 +708,16 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
                   required
                 >
                   <option value="">-- Chọn Trang hoặc Bài viết --</option>
+                  {cleanCurrentSlug && (
+                    <option value={canonicalSelfUrl || `/${cleanCurrentSlug}/`}>
+                      🎯 [Chính bài viết này] {currentTitle || cleanCurrentSlug} (/{cleanCurrentSlug}/)
+                    </option>
+                  )}
+                  <option value="/">
+                    🏠 [Trang Chủ] Trang chủ website (/)
+                  </option>
                   {siteItems
-                    .filter(s => s.slug && s.slug !== currentSlug && !isHomePage(s, siteDomain))
+                    .filter(s => s.slug && s.slug.toLowerCase().replace(/(^\/|\/$)/g, '') !== cleanCurrentSlug && !isHomePage(s, siteDomain))
                     .map(s => (
                       <option key={`${s.type}-${s.id}`} value={`/${s.slug}/`}>
                         [{s.type === 'page' ? 'Trang' : 'Bài'}] {s.title} (/{s.slug}/)
@@ -652,8 +808,16 @@ export default function InternalLinkManager({ contentHtml, setContentHtml, siteI
                 required
               >
                 <option value="">-- Chọn Trang hoặc Bài viết --</option>
+                {cleanCurrentSlug && (
+                  <option value={canonicalSelfUrl || `/${cleanCurrentSlug}/`}>
+                    🎯 [Chính bài viết này] {currentTitle || cleanCurrentSlug} (/{cleanCurrentSlug}/)
+                  </option>
+                )}
+                <option value="/">
+                  🏠 [Trang Chủ] Trang chủ website (/)
+                </option>
                 {siteItems
-                  .filter(s => s.slug && s.slug !== currentSlug && !isHomePage(s, siteDomain))
+                  .filter(s => s.slug && s.slug.toLowerCase().replace(/(^\/|\/$)/g, '') !== cleanCurrentSlug && !isHomePage(s, siteDomain))
                   .map(s => (
                     <option key={`${s.type}-${s.id}`} value={`/${s.slug}/`}>
                       [{s.type === 'page' ? 'Trang' : 'Bài'}] {s.title} (/{s.slug}/)

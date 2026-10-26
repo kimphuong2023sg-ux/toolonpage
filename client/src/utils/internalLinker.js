@@ -612,9 +612,137 @@ export function injectHomeBrandLink(contentHtml, brandKeyword, homeUrl = '/', fo
 }
 
 /**
+ * Hàm chuẩn hóa bóc tách slug sạch từ URL (hỗ trợ cả absolute URL và relative path)
+ */
+export function extractSlug(href) {
+  if (!href) return '';
+  try {
+    if (href.startsWith('http://') || href.startsWith('https://')) {
+      const u = new URL(href);
+      return u.pathname.replace(/(^\/|\/$)/g, '').toLowerCase();
+    }
+  } catch (e) {}
+  return href.split('?')[0].replace(/(^\/|\/$)/g, '').toLowerCase();
+}
+
+/**
+ * Gắn đúng DUY NHẤT 1 link trỏ về chính bài viết / page hiện tại (Self-referencing Canonical Link)
+ * Chuẩn SEO On-page / Rank Math:
+ * - Tự động cài 1 link nội bộ trỏ về chính URL của bài viết/page đó.
+ * - Khẳng định từ khóa chính (Focus Keyword) và URL canonical của bài viết.
+ * - Giúp Google và công cụ tìm kiếm hiểu rõ chủ đề thực thể của bài viết.
+ * 
+ * Nguyên tắc an toàn:
+ * - Không chèn nếu bài viết đã có sẵn link trỏ về chính nó.
+ * - Ưu tiên Focus Keyword -> Cụm từ Tiêu đề H1 -> Cụm từ Slug.
+ * - Không chèn vào thẻ Heading, thẻ <a> đã có, code block, TOC...
+ * - Giữ nguyên định dạng chữ hoa/thường nguyên bản trong bài viết.
+ */
+export function injectSelfArticleLink(contentHtml, selfUrl, selfSlug = '', candidateKeywords = []) {
+  if (!contentHtml || !selfUrl) {
+    return { html: contentHtml, injected: false, anchor: null };
+  }
+
+  const cleanSlug = (selfSlug || '').toLowerCase().replace(/(^\/|\/$)/g, '');
+
+  // 1. Kiểm tra xem bài viết ĐÃ CÓ link trỏ về chính nó chưa
+  const existingLinks = extractInternalLinks(contentHtml);
+  const alreadyHasSelf = existingLinks.some(l => {
+    const s = extractSlug(l.href);
+    if (cleanSlug && s === cleanSlug) return true;
+    if (selfUrl && l.href.toLowerCase().replace(/\/+$/, '') === selfUrl.toLowerCase().replace(/\/+$/, '')) return true;
+    return false;
+  });
+
+  if (alreadyHasSelf) {
+    return { html: contentHtml, injected: false, anchor: null, alreadyHasSelf: true };
+  }
+
+  // 2. Chuẩn bị danh sách từ khóa hợp lệ để quét
+  const validKeywords = [];
+  const seenKws = new Set();
+
+  (candidateKeywords || []).forEach(kw => {
+    if (!kw) return;
+    const cleanKw = kw.trim();
+    const lower = cleanKw.toLowerCase();
+    if (lower.length >= 3 && !seenKws.has(lower) && isValidAnchorPhrase(lower)) {
+      seenKws.add(lower);
+      validKeywords.push(cleanKw);
+    }
+  });
+
+  if (validKeywords.length === 0) {
+    return { html: contentHtml, injected: false, anchor: null };
+  }
+
+  // 3. Tách HTML thành tags và text để quét an toàn
+  const parts = contentHtml.split(/(<[^>]+>)/g);
+  let insideAnchor = 0;
+  let insideHeading = 0;
+  let insideCode = 0;
+  let insideFigure = 0;
+  let insideToc = 0;
+  let injectedAnchor = null;
+  let updated = false;
+
+  for (const keyword of validKeywords) {
+    if (updated) break;
+
+    const pattern = `(?<![\\p{L}\\p{N}])(${createAccentInsensitivePattern(keyword)})(?![\\p{L}\\p{N}])`;
+    const regex = new RegExp(pattern, 'iu');
+
+    insideAnchor = 0;
+    insideHeading = 0;
+    insideCode = 0;
+    insideFigure = 0;
+    insideToc = 0;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+
+      if (part.startsWith('<')) {
+        if (/^<a\b/i.test(part)) insideAnchor++;
+        if (/^<\/a>/i.test(part)) insideAnchor = Math.max(0, insideAnchor - 1);
+        if (/^<h[1-6]\b/i.test(part)) insideHeading++;
+        if (/^<\/h[1-6]>/i.test(part)) insideHeading = Math.max(0, insideHeading - 1);
+        if (/^<(code|pre|script|style)\b/i.test(part)) insideCode++;
+        if (/^<\/(code|pre|script|style)>/i.test(part)) insideCode = Math.max(0, insideCode - 1);
+        if (/^<(figure|figcaption)\b/i.test(part)) insideFigure++;
+        if (/^<\/(figure|figcaption)>/i.test(part)) insideFigure = Math.max(0, insideFigure - 1);
+        if (/^<(div|nav|aside)\b[^>]*(?:ez-toc|table-of-contents|toc|rank-math|preview)[^>]*>/i.test(part)) insideToc++;
+        if (/^<\/(div|nav|aside)>/i.test(part) && insideToc > 0) insideToc--;
+        continue;
+      }
+
+      if (insideAnchor > 0 || insideHeading > 0 || insideCode > 0 || insideFigure > 0 || insideToc > 0) {
+        continue;
+      }
+
+      const match = part.match(regex);
+      if (match) {
+        const matchedWord = match[1];
+        parts[i] = part.replace(regex, `<a href="${selfUrl}" style="text-decoration: underline;">${matchedWord}</a>`);
+        injectedAnchor = matchedWord;
+        updated = true;
+        break; // Dừng ngay: chỉ duy nhất 1 link về chính bài viết
+      }
+    }
+  }
+
+  return {
+    html: parts.join(''),
+    injected: updated,
+    anchor: injectedAnchor,
+    url: selfUrl
+  };
+}
+
+/**
  * Tự động quét và chèn các liên kết nội bộ (Internal Links) chuẩn SEO Rank Math:
- * 1. Cài đúng 1 text vào key chính thương hiệu (VD: "juegalotto", không phân biệt hoa/thường) trỏ về Trang Chủ để có sức mạnh Trang Chủ.
- * 2. Quét và chèn các link còn lại theo cụm Topic Cluster cho các Trang và Bài viết khác trên website.
+ * 1. Cài đúng 1 text vào từ khóa chính (Focus Keyword) trỏ về chính bài viết / page đó (Self Canonical Link).
+ * 2. Cài đúng 1 text vào key chính thương hiệu (VD: "juegalotto", không phân biệt hoa/thường) trỏ về Trang Chủ để có sức mạnh Trang Chủ.
+ * 3. Quét và chèn các link còn lại theo cụm Topic Cluster cho các Trang và Bài viết khác trên website.
  * - Không trùng URL trong cùng 1 bài.
  * - Không trùng Anchor text.
  * - Không chèn vào thẻ Heading, link đã có, code block hoặc callout.
@@ -627,8 +755,12 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
   const {
     brandKeyword = '',
     focusKeyword = '',
+    selfKeyword = '',
+    selfUrl = '',
+    currentTitle = '',
     homeUrl = '/',
-    injectHome = true
+    injectHome = true,
+    injectSelf = true
   } = (typeof options === 'object' && options !== null) ? options : {};
 
   let workingHtml = contentHtml;
@@ -636,84 +768,8 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
   const usedUrls = new Set();
   const usedAnchors = new Set();
 
-  // BƯỚC 1: CÀI ĐÚNG 1 LINK CHO KEY CHÍNH VỀ TRANG CHỦ (TÌM TỪ TRÊN XUỐNG THẤY TỪ GẦN NHẤT)
-  const isCurrentPageHome = isHomePage({ slug: currentSlug });
-  if (injectHome && brandKeyword && !isCurrentPageHome) {
-    const homeResult = injectHomeBrandLink(workingHtml, brandKeyword, homeUrl, focusKeyword);
-    if (homeResult.injected && homeResult.anchor) {
-      workingHtml = homeResult.html;
-      usedUrls.add('');
-      usedUrls.add('/');
-      usedAnchors.add(homeResult.anchor.toLowerCase().trim());
-      injectedLinks.push({
-        anchor: homeResult.anchor,
-        url: homeUrl,
-        title: 'Trang chủ (Thương hiệu chính)',
-        slug: ''
-      });
-    } else if (homeResult.alreadyHasHome) {
-      usedUrls.add('');
-      usedUrls.add('/');
-    }
-  }
-
-  // BƯỚC 2: QUÉT VÀ CHÈN CÁC INTERNAL LINKS THEO CỤM TOPIC CLUSTER CHO CÁC BÀI KHÁC
-  if (!dictionary || dictionary.length === 0) {
-    return { newHtml: workingHtml, injectedCount: injectedLinks.length, links: injectedLinks };
-  }
-
   const cleanCurrentSlug = (currentSlug || '').toLowerCase().replace(/(^\/|\/$)/g, '');
-
-  // Lọc ra các trang đích (loại trừ chính bài viết hiện tại và loại trừ trang chủ)
-  const targetPages = dictionary.filter(d => d.slug !== cleanCurrentSlug && !isHomePage(d));
-
-  // Thu thập tất cả các cặp { keyword, url, title, slug, priority }
-  const allKeywords = [];
-  targetPages.forEach(target => {
-    const kMap = target.keywordsMap || new Map();
-    target.keywords.forEach(kw => {
-      if (kw && kw.length >= 4) {
-        allKeywords.push({
-          keyword: kw,
-          url: target.url,
-          title: target.title,
-          slug: target.slug,
-          priority: kMap.get(kw) || 1
-        });
-      }
-    });
-  });
-
-  // Ưu tiên:
-  // 1. Độ ưu tiên ngữ nghĩa (Focus Keyword = 3 > Title/Slug = 2 > Topic Cluster = 1)
-  // 2. Độ dài từ khóa dài hơn lên trước để tránh match đè các từ khóa ngắn
-  allKeywords.sort((a, b) => {
-    if (b.priority !== a.priority) {
-      return b.priority - a.priority;
-    }
-    return b.keyword.length - a.keyword.length;
-  });
-
-  // Tách HTML thành các đoạn Tags và Text thuần để xử lý an toàn
-  const parts = workingHtml.split(/(<[^>]+>)/g);
-  
-  let insideAnchor = 0;
-  let insideHeading = 0;
-  let insideCode = 0;
-  let insideFigure = 0;
-  let insideToc = 0;
-
-  // Hàm chuẩn hóa bóc tách slug sạch từ URL (hỗ trợ cả absolute URL và relative path)
-  const extractSlug = (href) => {
-    if (!href) return '';
-    try {
-      if (href.startsWith('http')) {
-        const u = new URL(href);
-        return u.pathname.replace(/(^\/|\/$)/g, '').toLowerCase();
-      }
-    } catch (e) {}
-    return href.split('?')[0].replace(/(^\/|\/$)/g, '').toLowerCase();
-  };
+  const isCurrentPageHome = isHomePage({ slug: currentSlug });
 
   // Lấy các URL và anchor đã có sẵn trong bài
   const existingLinks = extractInternalLinks(workingHtml);
@@ -724,8 +780,7 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
     if (l.anchor) usedAnchors.add(l.anchor.toLowerCase().trim());
   });
 
-  // TỔNG SỐ LINK TỐI ĐA TRONG BÀI (Chuẩn SEO Rank Math khuyên dùng 3-5 link, tối đa 5)
-  // Nếu bài viết ĐÃ CÓ đủ hoặc nhiều hơn maxLinks thì DỪNG NGAY, không chèn thêm dồn dập!
+  // TỔNG SỐ LINK TỐI ĐA TRONG BÀI (Chuẩn SEO Rank Math khuyên dùng 3-5 link, mặc định tối đa 5)
   const quotaRemaining = Math.max(0, maxLinks - existingLinks.length);
   if (quotaRemaining === 0) {
     return {
@@ -736,63 +791,168 @@ export function autoInjectInternalLinks(contentHtml, dictionary = [], currentSlu
     };
   }
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
+  // Xác định URL chuẩn của chính bài viết này
+  const canonicalSelfUrl = selfUrl || (
+    cleanCurrentSlug 
+      ? (homeUrl && homeUrl !== '/' ? `${homeUrl.replace(/\/+$/, '')}/${cleanCurrentSlug}/` : `/${cleanCurrentSlug}/`)
+      : ''
+  );
 
-    if (part.startsWith('<')) {
-      if (/^<a\b/i.test(part)) insideAnchor++;
-      if (/^<\/a>/i.test(part)) insideAnchor = Math.max(0, insideAnchor - 1);
-      if (/^<h[1-6]\b/i.test(part)) insideHeading++;
-      if (/^<\/h[1-6]>/i.test(part)) insideHeading = Math.max(0, insideHeading - 1);
-      if (/^<(code|pre|script|style)\b/i.test(part)) insideCode++;
-      if (/^<\/(code|pre|script|style)>/i.test(part)) insideCode = Math.max(0, insideCode - 1);
-      if (/^<(figure|figcaption)\b/i.test(part)) insideFigure++;
-      if (/^<\/(figure|figcaption)>/i.test(part)) insideFigure = Math.max(0, insideFigure - 1);
-      if (/^<(div|nav|aside)\b[^>]*(?:ez-toc|table-of-contents|toc|rank-math|preview)[^>]*>/i.test(part)) insideToc++;
-      if (/^<\/(div|nav|aside)>/i.test(part) && insideToc > 0) insideToc--;
-      continue;
+  // BƯỚC 1: CÀI ĐÚNG 1 LINK VỀ CHÍNH BÀI VIẾT / PAGE NÀY (MẶC ĐỊNH BẬT THEO YÊU CẦU SEO)
+  if (injectSelf && cleanCurrentSlug && canonicalSelfUrl && !isCurrentPageHome && injectedLinks.length < quotaRemaining) {
+    const selfCandidates = [];
+    if (selfKeyword && selfKeyword.trim()) {
+      selfCandidates.push(selfKeyword.trim());
     }
-
-    if (insideAnchor > 0 || insideHeading > 0 || insideCode > 0 || insideFigure > 0 || insideToc > 0) continue;
-
-    let currentText = part;
-
-    for (const item of allKeywords) {
-      if (injectedLinks.length >= quotaRemaining) break;
-      if (usedUrls.has(item.slug)) continue;
-
-      const patternStr = `(?<![\\p{L}\\p{N}])(${createAccentInsensitivePattern(item.keyword)})(?![\\p{L}\\p{N}])`;
-      const regex = new RegExp(patternStr, 'iu');
-      const match = currentText.match(regex);
-
-      if (match) {
-        const matchedWord = match[1];
-        const normalizedAnchor = matchedWord.toLowerCase().trim();
-
-        if (usedAnchors.has(normalizedAnchor)) continue;
-
-        const linkTag = `<a href="${item.url}" style="text-decoration: underline;">${matchedWord}</a>`;
-        
-        currentText = currentText.replace(regex, linkTag);
-        usedUrls.add(item.slug);
-        usedAnchors.add(normalizedAnchor);
-        injectedLinks.push({
-          anchor: matchedWord,
-          url: item.url,
-          title: item.title,
-          slug: item.slug
-        });
-
-        break;
+    if (focusKeyword && focusKeyword.trim() && !selfCandidates.some(c => c.toLowerCase() === focusKeyword.trim().toLowerCase())) {
+      selfCandidates.push(focusKeyword.trim());
+    }
+    if (currentTitle) {
+      extractPhrasesFromTitle(currentTitle).forEach(tp => {
+        if (!selfCandidates.some(c => c.toLowerCase() === tp.toLowerCase())) {
+          selfCandidates.push(tp);
+        }
+      });
+    }
+    extractPhrasesFromSlug(cleanCurrentSlug).forEach(sp => {
+      if (!selfCandidates.some(c => c.toLowerCase() === sp.toLowerCase())) {
+        selfCandidates.push(sp);
       }
+    });
+
+    const selfResult = injectSelfArticleLink(workingHtml, canonicalSelfUrl, cleanCurrentSlug, selfCandidates);
+    if (selfResult.injected && selfResult.anchor) {
+      workingHtml = selfResult.html;
+      usedUrls.add(cleanCurrentSlug);
+      usedUrls.add(canonicalSelfUrl.toLowerCase().replace(/(^\/|\/$)/g, ''));
+      usedAnchors.add(selfResult.anchor.toLowerCase().trim());
+      injectedLinks.push({
+        anchor: selfResult.anchor,
+        url: canonicalSelfUrl,
+        title: currentTitle || 'Chính bài viết này (Self Link)',
+        slug: cleanCurrentSlug,
+        isSelf: true
+      });
+    } else if (selfResult.alreadyHasSelf) {
+      usedUrls.add(cleanCurrentSlug);
+    }
+  }
+
+  // BƯỚC 2: CÀI ĐÚNG 1 LINK CHO KEY CHÍNH VỀ TRANG CHỦ (TÌM TỪ TRÊN XUỐNG THẤY TỪ GẦN NHẤT)
+  if (injectHome && brandKeyword && !isCurrentPageHome && injectedLinks.length < quotaRemaining) {
+    const homeResult = injectHomeBrandLink(workingHtml, brandKeyword, homeUrl, focusKeyword);
+    if (homeResult.injected && homeResult.anchor) {
+      workingHtml = homeResult.html;
+      usedUrls.add('');
+      usedUrls.add('/');
+      usedAnchors.add(homeResult.anchor.toLowerCase().trim());
+      injectedLinks.push({
+        anchor: homeResult.anchor,
+        url: homeUrl,
+        title: 'Trang chủ (Thương hiệu chính)',
+        slug: '',
+        isHome: true
+      });
+    } else if (homeResult.alreadyHasHome) {
+      usedUrls.add('');
+      usedUrls.add('/');
+    }
+  }
+
+  // BƯỚC 3: QUÉT VÀ CHÈN CÁC INTERNAL LINKS THEO CỤM TOPIC CLUSTER CHO CÁC BÀI KHÁC
+  if (dictionary && dictionary.length > 0 && injectedLinks.length < quotaRemaining) {
+    const targetPages = dictionary.filter(d => d.slug !== cleanCurrentSlug && !isHomePage(d));
+
+    const allKeywords = [];
+    targetPages.forEach(target => {
+      const kMap = target.keywordsMap || new Map();
+      target.keywords.forEach(kw => {
+        if (kw && kw.length >= 4) {
+          allKeywords.push({
+            keyword: kw,
+            url: target.url,
+            title: target.title,
+            slug: target.slug,
+            priority: kMap.get(kw) || 1
+          });
+        }
+      });
+    });
+
+    allKeywords.sort((a, b) => {
+      if (b.priority !== a.priority) {
+        return b.priority - a.priority;
+      }
+      return b.keyword.length - a.keyword.length;
+    });
+
+    const parts = workingHtml.split(/(<[^>]+>)/g);
+    let insideAnchor = 0;
+    let insideHeading = 0;
+    let insideCode = 0;
+    let insideFigure = 0;
+    let insideToc = 0;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+
+      if (part.startsWith('<')) {
+        if (/^<a\b/i.test(part)) insideAnchor++;
+        if (/^<\/a>/i.test(part)) insideAnchor = Math.max(0, insideAnchor - 1);
+        if (/^<h[1-6]\b/i.test(part)) insideHeading++;
+        if (/^<\/h[1-6]>/i.test(part)) insideHeading = Math.max(0, insideHeading - 1);
+        if (/^<(code|pre|script|style)\b/i.test(part)) insideCode++;
+        if (/^<\/(code|pre|script|style)>/i.test(part)) insideCode = Math.max(0, insideCode - 1);
+        if (/^<(figure|figcaption)\b/i.test(part)) insideFigure++;
+        if (/^<\/(figure|figcaption)>/i.test(part)) insideFigure = Math.max(0, insideFigure - 1);
+        if (/^<(div|nav|aside)\b[^>]*(?:ez-toc|table-of-contents|toc|rank-math|preview)[^>]*>/i.test(part)) insideToc++;
+        if (/^<\/(div|nav|aside)>/i.test(part) && insideToc > 0) insideToc--;
+        continue;
+      }
+
+      if (insideAnchor > 0 || insideHeading > 0 || insideCode > 0 || insideFigure > 0 || insideToc > 0) continue;
+
+      let currentText = part;
+
+      for (const item of allKeywords) {
+        if (injectedLinks.length >= quotaRemaining) break;
+        if (usedUrls.has(item.slug)) continue;
+
+        const patternStr = `(?<![\\p{L}\\p{N}])(${createAccentInsensitivePattern(item.keyword)})(?![\\p{L}\\p{N}])`;
+        const regex = new RegExp(patternStr, 'iu');
+        const match = currentText.match(regex);
+
+        if (match) {
+          const matchedWord = match[1];
+          const normalizedAnchor = matchedWord.toLowerCase().trim();
+
+          if (usedAnchors.has(normalizedAnchor)) continue;
+
+          const linkTag = `<a href="${item.url}" style="text-decoration: underline;">${matchedWord}</a>`;
+          
+          currentText = currentText.replace(regex, linkTag);
+          usedUrls.add(item.slug);
+          usedAnchors.add(normalizedAnchor);
+          injectedLinks.push({
+            anchor: matchedWord,
+            url: item.url,
+            title: item.title,
+            slug: item.slug
+          });
+
+          break;
+        }
+      }
+
+      parts[i] = currentText;
+      if (injectedLinks.length >= quotaRemaining) break;
     }
 
-    parts[i] = currentText;
-    if (injectedLinks.length >= quotaRemaining) break;
+    workingHtml = parts.join('');
   }
 
   return {
-    newHtml: parts.join(''),
+    newHtml: workingHtml,
     injectedCount: injectedLinks.length,
     links: injectedLinks
   };

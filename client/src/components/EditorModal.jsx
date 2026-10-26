@@ -1649,6 +1649,7 @@ export default function EditorModal({ item, siteItems = [], wpStatus = null, onC
                       currentSlug={slug}
                       siteDomain={currentDomain}
                       focusKeyword={focusKeyword}
+                      currentTitle={seoTitle || item?.title || ''}
                       onLocateLink={handleLocateLink}
                     />
                   )}
