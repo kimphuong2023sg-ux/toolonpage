@@ -371,7 +371,12 @@ export default function EditorModal({ item, siteItems = [], wpStatus = null, onC
         lastModified: file.lastModified || Date.now()
       });
       const formData = new FormData();
-      formData.append('targetItem', JSON.stringify(item || {}));
+      formData.append('targetItem', JSON.stringify({
+        ...(item || {}),
+        siteId: wpStatus?.siteId,
+        siteUrl: wpStatus?.site,
+        siteName: wpStatus?.siteName
+      }));
       formData.append('files', memFile, file.name);
 
       let res;
@@ -1243,7 +1248,12 @@ export default function EditorModal({ item, siteItems = [], wpStatus = null, onC
             {/* KHU VỰC UPLOAD VÀ CHECK TÍNH HỢP LỆ CỦA FOLDER CONTENT */}
             {showFolderUploader && (
               <ContentFolderUploader 
-                targetItem={item}
+                targetItem={{
+                  ...(item || {}),
+                  siteId: wpStatus?.siteId,
+                  siteUrl: wpStatus?.site,
+                  siteName: wpStatus?.siteName
+                }}
                 onApplyContent={handleApplyPackage}
                 onClose={() => setShowFolderUploader(false)}
               />

@@ -10,12 +10,12 @@ import { SpineditorService } from '../spineditor/spineditor.service';
 export class ContentService {
   constructor(private readonly spineditorService: SpineditorService) {}
 
-  getFolderContents() {
-    return ContentParser.getFolderContents();
+  getFolderContents(contentDir?: string) {
+    return ContentParser.getFolderContents(contentDir);
   }
 
-  async parseDocument(filename: string) {
-    return ContentParser.parseDocument(filename);
+  async parseDocument(filename: string, contentDir?: string) {
+    return ContentParser.parseDocument(filename, contentDir);
   }
 
   async validateAndParsePackage(params: any) {
@@ -25,8 +25,17 @@ export class ContentService {
     });
   }
 
-  async processUploadedPackage(uploadedFiles: Express.Multer.File[], targetItem: any = {}) {
-    const contentDir = getContentDir();
+  async processUploadedPackage(
+    uploadedFiles: Express.Multer.File[],
+    targetItem: any = {},
+    userId?: string,
+    siteId?: string,
+    siteInfo?: any,
+  ) {
+    const contentDir = getContentDir(userId, siteId);
+    if (!fs.existsSync(contentDir)) {
+      fs.mkdirSync(contentDir, { recursive: true });
+    }
     const allExtractedFiles: any[] = [];
 
     for (const file of uploadedFiles) {
@@ -64,7 +73,7 @@ export class ContentService {
         try {
           fs.writeFileSync(destPath, file.buffer);
         } catch (copyErr: any) {
-          console.error(`Không thể ghi file ${destFilename} vào content/:`, copyErr.message);
+          console.error(`Không thể ghi file ${destFilename} vào content:`, copyErr.message);
         }
 
         allExtractedFiles.push({
@@ -90,6 +99,11 @@ export class ContentService {
     const result = await ContentParser.validateAndParsePackage({
       uploadedFiles: combinedFiles,
       targetItem,
+      userId,
+      siteId,
+      contentDir,
+      siteInfo,
+      spineditorService: this.spineditorService,
     });
 
     return {

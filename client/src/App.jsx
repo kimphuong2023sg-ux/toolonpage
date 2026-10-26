@@ -12,7 +12,7 @@ import BotGuideModal from './components/BotGuideModal';
 import DocxBatchModal from './components/DocxBatchModal';
 import ReportModal from './components/ReportModal';
 import ExportLinksModal from './components/ExportLinksModal';
-import { getToken, setToken, getUser, setUser, clearAuth, authFetch } from './utils/auth';
+import { getToken, setToken, getUser, setUser, clearAuth, authFetch, setActiveSiteId } from './utils/auth';
 import { setTrackerSite, setTrackerAction, sendHeartbeatWithTracking } from './utils/activityTracker';
 
 export default function App() {
@@ -223,6 +223,9 @@ export default function App() {
       const statusRes = await authFetch('/api/status', {}, 'user');
       const statusData = await statusRes.json();
       setWpStatus(statusData);
+      if (statusData?.siteId) {
+        setActiveSiteId(statusData.siteId);
+      }
 
       if (!statusData.connected) {
         setItems([]);

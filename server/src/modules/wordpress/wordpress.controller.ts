@@ -274,16 +274,18 @@ export class WordPressController {
     @Query('siteId') querySiteId: string,
   ) {
     const { filename, alt, title, caption } = body || {};
-    const filePath = findContentFile(filename);
+    const siteId = headerSiteId || querySiteId;
+    const client = this.wpService.getUserSiteClient(user, siteId);
+    if (!client) {
+      throw new BadRequestException({ success: false, error: 'Tài khoản chưa kết nối hoặc chưa chọn website WordPress nào!' });
+    }
+    const currentSiteId = client.site?.id || siteId;
+    const filePath = findContentFile(filename, user?.id, currentSiteId);
 
     if (!filePath || !fs.existsSync(filePath)) {
       throw new NotFoundException({ success: false, error: `File ảnh không tìm thấy: ${filename}` });
     }
 
-    const client = this.wpService.getUserSiteClient(user, headerSiteId || querySiteId);
-    if (!client) {
-      throw new BadRequestException({ success: false, error: 'Tài khoản chưa kết nối hoặc chưa chọn website WordPress nào!' });
-    }
     const uploaded = await client.uploadMedia(filePath, alt, title, caption);
     return { success: true, media: uploaded };
   }
@@ -306,6 +308,7 @@ export class WordPressController {
     if (!client) {
       throw new BadRequestException({ success: false, error: 'Tài khoản chưa kết nối hoặc chưa chọn website WordPress nào!' });
     }
+    const currentSiteId = client.site?.id || headerSiteId || querySiteId;
     const postId = Number(postIdStr);
     const type = typeStr === 'page' ? 'page' : 'post';
 
@@ -313,7 +316,7 @@ export class WordPressController {
     let featMediaUrl = '';
 
     if (file) {
-      const contentDir = getContentDir();
+      const contentDir = getContentDir(user?.id, currentSiteId);
       if (!fs.existsSync(contentDir)) fs.mkdirSync(contentDir, { recursive: true });
       const cleanName = path.basename(file.originalname).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
       const savePath = path.join(contentDir, cleanName);
@@ -359,10 +362,11 @@ export class WordPressController {
     if (!client) {
       throw new BadRequestException({ success: false, error: 'Tài khoản chưa kết nối hoặc chưa chọn website WordPress nào!' });
     }
+    const currentSiteId = client.site?.id || headerSiteId || querySiteId;
     const results: any[] = [];
 
     for (const img of images) {
-      let filePath = findContentFile(img.filename);
+      let filePath = findContentFile(img.filename, user?.id, currentSiteId);
 
       // Nếu không tìm thấy file trên ổ cứng, kiểm tra xem có link ảnh ngoại vi (externalUrl, url, wpUrl, src)
       if ((!filePath || !fs.existsSync(filePath)) && (img.externalUrl || img.url || img.wpUrl || img.src)) {
@@ -380,7 +384,7 @@ export class WordPressController {
               const buffer = Buffer.from(arrayBuffer);
               const urlObj = new URL(remoteUrl);
               const cleanBase = path.basename(urlObj.pathname) || img.filename;
-              const contentDir = getContentDir();
+              const contentDir = getContentDir(user?.id, currentSiteId);
               if (!fs.existsSync(contentDir)) fs.mkdirSync(contentDir, { recursive: true });
               const savePath = path.join(contentDir, cleanBase);
               fs.writeFileSync(savePath, buffer);

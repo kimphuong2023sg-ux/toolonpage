@@ -120,9 +120,32 @@ export function removeUser(scope = 'auto') {
   } catch (e) {}
 }
 
+const ACTIVE_SITE_KEY = 'autopost_active_site_id';
+
+export function getActiveSiteId() {
+  try {
+    return localStorage.getItem(ACTIVE_SITE_KEY) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+export function setActiveSiteId(siteId) {
+  try {
+    if (siteId) {
+      localStorage.setItem(ACTIVE_SITE_KEY, siteId);
+    } else {
+      localStorage.removeItem(ACTIVE_SITE_KEY);
+    }
+  } catch (e) {}
+}
+
 export function clearAuth(scope = 'auto') {
   removeToken(scope);
   removeUser(scope);
+  if (scope === 'user' || scope === 'auto') {
+    setActiveSiteId('');
+  }
 }
 
 // Base URL của API (Ví dụ: https://api.toolseo.uk hoặc để trống nếu chạy cùng domain)
@@ -144,6 +167,12 @@ export async function authFetch(url, options = {}, scope = 'auto') {
 
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  // Tự động đính kèm x-site-id để backend cô lập 100% tài nguyên theo từng website
+  const activeSiteId = getActiveSiteId();
+  if (activeSiteId && !headers.has('x-site-id')) {
+    headers.set('x-site-id', activeSiteId);
   }
 
   // Tự động gán Content-Type nếu body là JSON string và chưa có header

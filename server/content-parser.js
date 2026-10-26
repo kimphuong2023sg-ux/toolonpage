@@ -368,12 +368,16 @@ export class ContentParser {
     }
 
     // Nếu người dùng chỉ upload file docx lẻ (không kèm ảnh trong đợt này),
-    // cho phép dùng kho ảnh sẵn có trong content/ để hỗ trợ map minh họa
+    // chỉ lọc ảnh nếu thực sự khớp với slug bài viết hiện tại
     if (imageFiles.length === 0) {
-      imageFiles = allFiles.filter(f => {
-        const ext = path.extname(f).toLowerCase();
-        return imgExtensions.includes(ext);
-      });
+      const targetSlug = (targetItem?.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (targetSlug && targetSlug.length > 2) {
+        imageFiles = allFiles.filter(f => {
+          const ext = path.extname(f).toLowerCase();
+          if (!imgExtensions.includes(ext)) return false;
+          return f.toLowerCase().replace(/[^a-z0-9]/g, '').includes(targetSlug);
+        });
+      }
     }
 
     // Sắp xếp ưu tiên: ảnh .webp lên đầu, sau đó theo bảng chữ cái

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authFetch, getApiUrl } from '../utils/auth';
+import { authFetch, getApiUrl, setActiveSiteId } from '../utils/auth';
 
 export default function SiteModal({ isOpen, onClose, onSiteChanged }) {
   const [sites, setSites] = useState([]);
@@ -90,6 +90,7 @@ export default function SiteModal({ isOpen, onClose, onSiteChanged }) {
       });
       const data = await res.json();
       if (data.success) {
+        setActiveSiteId(siteId);
         setStatusMsg({ type: 'success', text: `✅ Đã chuyển thành công sang ${data.site.name || data.site.url} qua Plugin trung gian!` });
         await fetchSites();
         if (onSiteChanged) onSiteChanged();

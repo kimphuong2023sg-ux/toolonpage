@@ -74,13 +74,14 @@ export class ContentParser {
     res = res.replace(/<b\b(?![^>]*style=)[^>]*>/gi, '<b style="font-weight: 700;">');
     return res;
   }
-  // Lấy danh sách các tài liệu và hình ảnh trong thư mục content/
-  static getFolderContents() {
-    if (!fs.existsSync(CONTENT_DIR)) {
-      fs.mkdirSync(CONTENT_DIR, { recursive: true });
+  // Lấy danh sách các tài liệu và hình ảnh trong thư mục content/ (theo từng user/site)
+  static getFolderContents(contentDir?: string) {
+    const activeDir = contentDir || getContentDir();
+    if (!fs.existsSync(activeDir)) {
+      fs.mkdirSync(activeDir, { recursive: true });
     }
 
-    const files = fs.readdirSync(CONTENT_DIR);
+    const files = fs.readdirSync(activeDir);
     const docs = [];
     const images = [];
 
@@ -88,7 +89,7 @@ export class ContentParser {
       if (file.startsWith('~$') || isExcludedAsset(file)) return; // Bỏ qua temp file và logo header/site asset
 
       const ext = path.extname(file).toLowerCase();
-      const filePath = path.join(CONTENT_DIR, file);
+      const filePath = path.join(activeDir, file);
       const stat = fs.statSync(filePath);
 
       if (['.docx', '.md', '.html'].includes(ext)) {
@@ -301,8 +302,9 @@ export class ContentParser {
   }
 
   // Phân tích chi tiết file bài viết chuẩn Rank Math
-  static async parseDocument(filename) {
-    const filePath = path.join(CONTENT_DIR, filename);
+  static async parseDocument(filename: string, contentDir?: string) {
+    const activeDir = contentDir || getContentDir();
+    const filePath = path.join(activeDir, filename);
     if (!fs.existsSync(filePath)) {
       throw new Error(`File không tồn tại: ${filename}`);
     }
@@ -311,7 +313,8 @@ export class ContentParser {
       uploadedFiles: [{ filename, originalname: filename }],
       targetItem: {
         title: path.basename(filename, path.extname(filename)).replace(/[_\-]+/g, ' ')
-      }
+      },
+      contentDir: activeDir,
     });
 
     if (pkg && pkg.success && pkg.data) {
@@ -335,12 +338,22 @@ export class ContentParser {
   }
 
   // 3. Bóc tách và kiểm tra tính hợp lệ của Folder Content tải lên hoặc đường dẫn thư mục
-  static async validateAndParsePackage({ uploadedFiles = [], targetItem = {} as any, folderPath = null, spineditorService = null }: any) {
-    if (!fs.existsSync(CONTENT_DIR)) {
-      fs.mkdirSync(CONTENT_DIR, { recursive: true });
+  static async validateAndParsePackage({
+    uploadedFiles = [],
+    targetItem = {} as any,
+    folderPath = null,
+    spineditorService = null,
+    userId = null,
+    siteId = null,
+    contentDir = null,
+    siteInfo = null,
+  }: any) {
+    const activeContentDir = contentDir || getContentDir(userId, siteId);
+    if (!fs.existsSync(activeContentDir)) {
+      fs.mkdirSync(activeContentDir, { recursive: true });
     }
 
-    // Nếu truyền folderPath trên máy tính, đọc và sao chép các file vào thư mục content/ để hiển thị & upload WordPress
+    // Nếu truyền folderPath trên máy tính, đọc và sao chép các file vào thư mục độc lập
     let targetFolderFiles = [];
     if (folderPath && fs.existsSync(folderPath)) {
       const srcDir = path.resolve(folderPath);
@@ -361,7 +374,7 @@ export class ContentParser {
       const foundFiles = readDirRecursive(srcDir);
       for (const srcFilePath of foundFiles) {
         const baseName = path.basename(srcFilePath);
-        const destPath = path.join(CONTENT_DIR, baseName);
+        const destPath = path.join(activeContentDir, baseName);
         try {
           fs.copyFileSync(srcFilePath, destPath);
           targetFolderFiles.push(baseName);
@@ -371,8 +384,8 @@ export class ContentParser {
       }
     }
 
-    // 1. Phân loại danh sách file tải lên hoặc quét từ content/
-    const allFiles = fs.readdirSync(CONTENT_DIR);
+    // 1. Phân loại danh sách file tải lên hoặc quét từ activeContentDir
+    const allFiles = fs.readdirSync(activeContentDir);
     
     // Thu thập danh sách tên file tải lên trong đợt này
     const uploadedNames = [];
@@ -412,7 +425,7 @@ export class ContentParser {
       });
     }
 
-    // Lọc các file hình ảnh minh họa (loại bỏ hoàn toàn asset giao diện như logo header, site logo, favicon)
+    // Lọc các file hình ảnh minh họa (loại bỏ asset giao diện như logo header, site logo, favicon)
     let imageFiles = [];
     if (uploadedNames.length > 0) {
       imageFiles = allFiles.filter(f => {
@@ -423,38 +436,46 @@ export class ContentParser {
       });
     }
 
-    // Nếu người dùng chỉ upload file docx lẻ (không kèm ảnh trong đợt này),
-    // cho phép dùng kho ảnh sẵn có trong content/ nhưng LỌC ĐÚNG ẢNH CỦA BÀI VIẾT (tránh lấy lung tung các bài khác)
+    // Nhận diện thương hiệu động (Dynamic Brand Detection) từ siteInfo, targetItem
+    const extractDomainBrand = (str = '') => {
+      if (!str) return '';
+      const clean = str.replace(/^https?:\/\//i, '').replace(/:\d+$/, '').replace(/\/.*$/, '').toLowerCase();
+      const parts = clean.split('.');
+      return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+    };
+
+    const currentBrand = (
+      extractDomainBrand(siteInfo?.url || targetItem?.url || '') ||
+      (siteInfo?.name || targetItem?.siteName || '').toLowerCase().replace(/[^a-z0-9]/g, '') ||
+      (targetItem?.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+    ).trim();
+
+    // Nếu người dùng KHÔNG upload ảnh trong đợt này (imageFiles.length === 0):
+    // CHỈ cho phép lấy ảnh có sẵn TRONG THƯ MỤC CỦA CHÍNH WEBSITE NÀY nếu ảnh thực sự khớp với slug bài viết!
+    // TUYỆT ĐỐI KHÔNG quét bừa bãi toàn bộ ảnh trên máy tính!
     if (imageFiles.length === 0) {
-      let targetHint = `${targetItem?.slug || ''} ${targetItem?.title || ''}`.toLowerCase().replace(/[^a-z0-9]/g, ' ');
-      const brandKeywords = ['juegalotto', 'loco777', 'mexboss', 'top-slots'];
-      let activeBrands = brandKeywords.filter(b => targetHint.includes(b));
-      if (activeBrands.length === 0 && docFiles.length > 0) {
-        targetHint = `${docFiles[0]}`.toLowerCase().replace(/[^a-z0-9]/g, ' ');
-        activeBrands = brandKeywords.filter(b => targetHint.includes(b));
-      }
+      const targetSlug = (targetItem?.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-      imageFiles = allFiles.filter(f => {
-        const ext = path.extname(f).toLowerCase();
-        if (!imgExtensions.includes(ext)) return false;
-        if (isExcludedAsset(f) || f === 'featured-image.webp') return false;
-
-        const lowerF = f.toLowerCase();
-        if (activeBrands.length > 0) {
-          const hasOtherBrand = brandKeywords.some(b => !activeBrands.includes(b) && lowerF.includes(b));
-          if (hasOtherBrand) return false;
-          const matchesActive = activeBrands.some(b => lowerF.includes(b));
-          return matchesActive;
-        }
-        return true;
-      });
-
-      if (imageFiles.length === 0) {
+      if (targetSlug && targetSlug.length > 2) {
         imageFiles = allFiles.filter(f => {
           const ext = path.extname(f).toLowerCase();
-          return imgExtensions.includes(ext) && !isExcludedAsset(f) && f !== 'featured-image.webp';
+          if (!imgExtensions.includes(ext)) return false;
+          if (isExcludedAsset(f) || f === 'featured-image.webp') return false;
+
+          const lowerF = f.toLowerCase().replace(/[^a-z0-9]/g, '');
+          // Bắt buộc phải chứa slug của bài viết
+          const matchesSlug = lowerF.includes(targetSlug);
+          if (!matchesSlug) return false;
+
+          // Loại trừ triệt để ảnh chứa thương hiệu website khác
+          const otherKnownBrands = ['juegalotto', 'loco777', 'mexboss', 'mexwin', 'top-slots', 'winmxco'].filter(b => b !== currentBrand);
+          if (otherKnownBrands.some(ob => lowerF.includes(ob))) {
+            return false;
+          }
+          return true;
         });
       }
+      // NẾU VẪN KHÔNG CÓ ẢNH NÀO KHỚP: GIỮ NGUYÊN imageFiles = [] (0 ảnh), KHÔNG TỰ Ý LẤY BỪA TOÀN BỘ ẢNH!
     }
 
     // Deduplicate banner nếu đã có file banner webp cụ thể của bài viết
@@ -545,7 +566,7 @@ export class ContentParser {
 
       // Duyệt qua từng file văn bản ứng viên (nếu 1 file lỗi sẽ tự động thử file kế tiếp)
       for (const docCandidate of docFiles) {
-        const docPath = path.join(CONTENT_DIR, docCandidate);
+        const docPath = path.join(activeContentDir, docCandidate);
         const ext = path.extname(docCandidate).toLowerCase();
         let fullHtml = '';
 
@@ -714,7 +735,7 @@ export class ContentParser {
         const fileSizes: { [key: string]: number } = {};
         for (const f of imageFiles) {
           try {
-            const fPath = path.join(CONTENT_DIR, f);
+            const fPath = path.join(activeContentDir, f);
             if (fs.existsSync(fPath)) {
               fileSizes[f] = fs.statSync(fPath).size;
             }
@@ -804,14 +825,14 @@ export class ContentParser {
                 if (img.toLowerCase().endsWith('.webp')) score += 1;
 
                 // Ưu tiên ảnh cùng thương hiệu (Brand) và loại trừ ảnh của trang khác
-                const brandList = ['juegalotto', 'loco777', 'mexboss', 'top-slots'];
-                const currentActive = brandList.filter(b => `${targetItem?.slug || ''} ${docData.filename || ''} ${docData.focusKeyword || ''}`.toLowerCase().includes(b));
-                for (const b of currentActive) {
-                  if (cleanImgName.includes(b)) score += 50;
-                }
-                const otherBrands = brandList.filter(b => !currentActive.includes(b));
-                for (const b of otherBrands) {
-                  if (cleanImgName.includes(b)) score -= 100;
+                if (currentBrand && currentBrand.length > 2) {
+                  if (cleanImgName.includes(currentBrand)) {
+                    score += 50;
+                  }
+                  const otherKnownBrands = ['juegalotto', 'loco777', 'mexboss', 'mexwin', 'top-slots', 'winmxco'].filter(b => b !== currentBrand);
+                  for (const b of otherKnownBrands) {
+                    if (cleanImgName.includes(b)) score -= 200;
+                  }
                 }
 
                 if (score > bestScore) {

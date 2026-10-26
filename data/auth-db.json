@@ -262,8 +262,8 @@
       "lastLoginAt": "2026-10-16T12:03:57.977Z",
       "lastLoginIp": "127.0.0.1",
       "createdAt": "2026-09-25T02:20:26.339Z",
-      "lastActiveAt": "2026-10-20T08:07:12.226Z",
-      "lastHeartbeatAt": "2026-10-20T08:07:12.226Z",
+      "lastActiveAt": "2026-10-23T02:05:03.215Z",
+      "lastHeartbeatAt": "2026-10-23T02:05:03.215Z",
       "currentSite": {
         "id": "https://juegalotto365.com",
         "name": "juegalotto365.com",
@@ -271,12 +271,84 @@
       },
       "currentAction": {
         "type": "viewing_list",
-        "title": "Đang xem danh sách bài viết & trang (0 bài)",
-        "detail": "Trang chủ Tool",
+        "title": "Đang xem danh sách bài viết & trang (21 bài)",
+        "detail": "Website: juegalotto365.com",
         "siteName": "juegalotto365.com",
-        "timestamp": "2026-10-20T08:07:08.850Z"
+        "timestamp": "2026-10-23T02:04:55.565Z"
       },
       "activityHistory": [
+        {
+          "id": "act_1792721095565_x6rj",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (21 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-23T02:04:55.565Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792721093909_lf5z",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-23T02:04:53.909Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792720137247_6mcq",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (21 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-23T01:48:57.247Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792720131068_4e02",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (0 bài)",
+          "detail": "Trang chủ Tool",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-23T01:48:51.068Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792666024048_nxoc",
+          "type": "site_modal",
+          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
+          "detail": "Xem danh sách website đã kết nối",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-22T10:47:04.048Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792666023072_m9ho",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (21 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-22T10:47:03.072Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792665997770_9zbt",
+          "type": "editing",
+          "title": "Đang biên tập: \"Nguyen Leo: Autora y Analista Experta en Casinos Online en México (2026)\"",
+          "detail": "Tab: Soạn thảo trực quan",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-22T10:46:37.770Z",
+          "ip": "127.0.0.1"
+        },
+        {
+          "id": "act_1792665994036_k6xl",
+          "type": "viewing_list",
+          "title": "Đang xem danh sách bài viết & trang (21 bài)",
+          "detail": "Website: juegalotto365.com",
+          "siteName": "juegalotto365.com",
+          "timestamp": "2026-10-22T10:46:34.036Z",
+          "ip": "127.0.0.1"
+        },
         {
           "id": "act_1792403497083_pe5g",
           "type": "viewing_list",
@@ -654,78 +726,6 @@
           "siteName": "juegalotto365.com",
           "timestamp": "2026-10-12T10:55:52.181Z",
           "ip": "149.88.22.166"
-        },
-        {
-          "id": "act_1791802549385_achu",
-          "type": "site_modal",
-          "title": "Đang mở Quản Lý & Chuyển Đổi Website WordPress",
-          "detail": "Xem danh sách website đã kết nối",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T10:55:49.385Z",
-          "ip": "149.88.22.166"
-        },
-        {
-          "id": "act_1791802547024_5rhm",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (0 bài)",
-          "detail": "Trang chủ Tool",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T10:55:47.024Z",
-          "ip": "149.88.22.166"
-        },
-        {
-          "id": "act_1791802546386_mayn",
-          "type": "login",
-          "title": "Đăng nhập vào hệ thống",
-          "detail": "Đăng nhập từ IP 149.88.22.166 (Đã đá phiên cũ)",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T10:55:46.386Z",
-          "ip": "149.88.22.166"
-        },
-        {
-          "id": "act_1791802087701_tbmt",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T10:48:07.701Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791802080915_aaik",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (0 bài)",
-          "detail": "Trang chủ Tool",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T10:48:00.914Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791778778593_3s6o",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T04:19:38.593Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791778776764_f7qa",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (0 bài)",
-          "detail": "Trang chủ Tool",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T04:19:36.764Z",
-          "ip": "127.0.0.1"
-        },
-        {
-          "id": "act_1791777980124_h9ee",
-          "type": "viewing_list",
-          "title": "Đang xem danh sách bài viết & trang (20 bài)",
-          "detail": "Website: juegalotto365.com",
-          "siteName": "juegalotto365.com",
-          "timestamp": "2026-10-12T04:06:20.124Z",
-          "ip": "127.0.0.1"
         }
       ],
       "activeSiteId": "juegalotto365-com"
